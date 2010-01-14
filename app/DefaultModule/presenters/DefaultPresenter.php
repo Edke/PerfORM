@@ -23,7 +23,7 @@ class Default_DefaultPresenter extends Default_BasePresenter {
     {
 	$edke= $this->getModel();
 
-	$sql = $edke->sqlsync();
+	$sql = $edke->operationSyncdb();
 	$this->template->sql = $sql;
     }
 
@@ -31,18 +31,17 @@ class Default_DefaultPresenter extends Default_BasePresenter {
     {
 	$edke= $this->getModel();
 
-	//$sql = $edke->sqlall();
-	//$this->template->sql = $sql;
+	$sql = $edke->operationSqlall();
+	$this->template->sql = $sql;
     }
 
     public function actionSqlclear()
     {
 	$edke= $this->getModel();
 
-	//$sql = $edke->sqlall();
-	//$this->template->sql = $sql;
+	$sql = $edke->operationSqlclear();
+	$this->template->sql = $sql;
     }
-
 
 }
 

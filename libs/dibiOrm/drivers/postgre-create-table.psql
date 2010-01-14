@@ -1,13 +1,8 @@
-
-{if $addDropTable}
-DROP TABLE {$table->getTableName()};
-{/if}
-
 CREATE TABLE {$table->getTableName()} (
 {foreach $fields as $field}
     {$field->name} {$field->type} {!$field->default} {$field->notnull}{if !$iterator->isLast()},{/if}
 {/foreach}
-)
+);
 
 {foreach $keys as $key}
 ALTER TABLE ONLY {$table->getTableName()}

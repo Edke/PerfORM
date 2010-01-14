@@ -75,8 +75,7 @@ class DibiOrmPostgreDriver {
      */
     public function createTable($orm) {
 	
-	$template= $this->getTemplate( dirname(__FILE__). '/'. self::DRIVER . '-create-table-dll.psql' );
-
+	$template= $this->getTemplate( dirname(__FILE__). '/'. self::DRIVER . '-create-table.psql' );
 
 	$fields= array();
 	foreach($orm->getFields() as $field) {
@@ -107,6 +106,15 @@ class DibiOrmPostgreDriver {
 	return ob_get_clean();
     }
 
+
+    public function dropTable($orm) {
+	$template= $this->getTemplate( dirname(__FILE__). '/'. self::DRIVER . '-drop-table.psql' );
+	$template->table= $orm;
+
+	ob_start();
+	$template->render();
+	return ob_get_clean();
+    }
 
     protected function createFromMigrator() {
 

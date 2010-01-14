@@ -186,18 +186,35 @@ class Orm {
     }
 
 
-    public function sqlsync()
+    public function operationSyncdb()
     {
 
 	if ( $this->getConnection()->getDatabaseInfo()->hasTable($this->getTableName()) ) {
 	    
-		
+	    
 
 	}
 
 	else {
-	    return $this->getDriver()->createTable($this);
-	    
+	    $sql= $this->getDriver()->createTable($this);
+	    $this->getConnection()->query($sql);
+	    return $sql;
+	}
+    }
+
+
+    public function operationSqlall()
+    {
+	$sql= $this->getDriver()->createTable($this);
+	return $sql;
+    }
+
+    public function operationSqlclear()
+    {
+	if ( $this->getConnection()->getDatabaseInfo()->hasTable($this->getTableName()) ) {
+	    $sql= $this->getDriver()->dropTable($this);
+	    $this->getConnection()->query($sql);
+	    return $sql;
 	}
     }
 
