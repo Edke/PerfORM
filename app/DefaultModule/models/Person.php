@@ -15,6 +15,7 @@ class Person extends Orm {
 	$this->gender = new CharField('max_length=1', 'null', 'default=m');
 	$this->age= new IntegerField('notnull');
 	$this->test_case = new IntegerField('null', 'default=5');
+/*	$this->test2 = new IntegerField('notnull');*/
     }
 
 }

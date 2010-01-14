@@ -1,0 +1,3 @@
+
+ALTER TABLE {$table->getTableName()}
+    ADD COLUMN {$field->name} {$field->type} {!$field->default} {$field->notnull};

@@ -190,9 +190,11 @@ class Orm {
     {
 
 	if ( $this->getConnection()->getDatabaseInfo()->hasTable($this->getTableName()) ) {
-	    
-	    
-
+	    $sql= $this->getDriver()->syncTable($this);
+	    if ( !is_null($sql)) {
+		$this->getConnection()->query($sql);
+	    }
+	    return $sql;
 	}
 
 	else {
@@ -234,6 +236,20 @@ class Orm {
 	}
 	return $this->fields[$name];
     }
+
+    /**
+     * @return Field
+     */
+    public function hasField($name){
+
+	foreach($this->getFields() as $field) {
+	    if ( $field->getRealName() == $name ) {
+		return true;
+	    }
+	}
+	return false;
+    }
+
 
     /**
      * validate fields definition
