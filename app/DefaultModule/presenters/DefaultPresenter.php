@@ -6,14 +6,43 @@
  */
 class Default_DefaultPresenter extends Default_BasePresenter {
 
-    public function actionDefault()
-    {
-
+    public function getModel() {
 	$edke = new Person;
 	$edke->name= 'Edke';
-	//$edke->save();
 
-	$this->template->sql = $edke->sqlsync();
+	return $edke;
     }
+
+    public function actionDefault()
+    {
+	$edke= $this->getModel();
+    }
+
+
+    public function actionSyncdb()
+    {
+	$edke= $this->getModel();
+
+	$sql = $edke->sqlsync();
+	$this->template->sql = $sql;
+    }
+
+    public function actionSqlall()
+    {
+	$edke= $this->getModel();
+
+	//$sql = $edke->sqlall();
+	//$this->template->sql = $sql;
+    }
+
+    public function actionSqlclear()
+    {
+	$edke= $this->getModel();
+
+	//$sql = $edke->sqlall();
+	//$this->template->sql = $sql;
+    }
+
+
 }
 
