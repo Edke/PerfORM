@@ -7,7 +7,8 @@
 class Default_BasePresenter extends Presenter {
 
     public function startup() {
-
+	parent::startup();
+	
 	$texy = new Texy();
 	$texy->addHandler('block', array("TexyHandlers", 'blockHandler'));
 
