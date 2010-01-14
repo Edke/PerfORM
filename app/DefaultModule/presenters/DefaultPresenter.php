@@ -9,17 +9,18 @@ class Default_DefaultPresenter extends Default_BasePresenter {
     public function getModel() {
 	$edke = new Person;
 	$edke->name= 'Edke';
-
-	$edke->save();
-
-	$this->template->sql= dibi::$sql;
-
 	return $edke;
     }
 
     public function actionDefault()
     {
 	$edke= $this->getModel();
+
+	$edke->gender= 'm';
+	$edke->age= 33;
+	$edke->save();
+
+	$this->template->sql= dibi::$sql;
     }
 
 
