@@ -17,6 +17,11 @@ abstract class DibiOrmDriver {
 	return $template;
     }
 
+    protected function renderTemplate($template) {
+    	ob_start();
+	$template->render();
+	return ob_get_clean();
+    }
 
     protected function createFromMigrator() {
 

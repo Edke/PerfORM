@@ -80,9 +80,7 @@ class DibiOrmPostgreDriver extends DibiOrmDriver {
 	$template->indexes= array();
 	$template->table= $orm;
 
-	ob_start();
-	$template->render();
-	return ob_get_clean();
+	return $this->renderTemplate($template);
     }
 
     protected function addField($field) {
@@ -101,37 +99,50 @@ class DibiOrmPostgreDriver extends DibiOrmDriver {
 	);
     }
 
-
     /**
      * @param Orm $orm
      */
     public function syncTable($orm) {
 	$tableInfo= $orm->getConnection()->getDatabaseInfo()->getTable($orm->getTableName());
+	$sql= null;
 
 	// checking model against db
 	foreach ($orm->getFields() as $name => $field) {
 
 	    // column exists
-	    if ( $column= $tableInfo->getColumn($field->getRealName()) ) {
+	    if ( $tableInfo->hasColumn($field->getRealName()) ) {
+		//TODO
 
 	    }
 	    else {
-		
-
+		$template= $this->getTemplate('alter-table-add-column.psql' );
+		$template->table= $orm;
+		$template->field= $this->addField($field);
+		$sql .= $this->renderTemplate($template);
 	    }
 	}
 
+	// checking db against model
+	foreach ( $tableInfo->getColumnNames() as $column) {
+
+	    // column doesn't exists, needs to be dropped
+	    if ( !$orm->hasField($column) ) {
+		$template= $this->getTemplate('alter-table-drop-column.psql' );
+		$template->table= $orm;
+		$template->field= $column;
+		$sql .= $this->renderTemplate($template);
+	    }
+	}
 	
-    }
+
+	return $sql;
+   }
 
 
     public function dropTable($orm) {
 	$template= $this->getTemplate('drop-table.psql' );
 	$template->table= $orm;
-
-	ob_start();
-	$template->render();
-	return ob_get_clean();
+	return $this->renderTemplate($template);
     }
 
     protected function createFromMigrator() {
