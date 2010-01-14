@@ -11,6 +11,7 @@ $robot = new RobotLoader();
 $robot->addDirectory(APP_DIR);
 $robot->addDirectory(LIBS_DIR);
 $robot->autoRebuild = true;
+$robot->ignoreDirs= '.*, *.old, *.bak, *.tmp, temp, fshl_cache';
 $robot->register(); 
 
 // 2b) load configuration from config.ini file

@@ -1,0 +1,22 @@
+
+
+{if $addDropTable}
+DROP TABLE {$table};
+{/if}
+
+CREATE TABLE {$table} (
+{foreach $columns as $column}
+    {$column->name} {$columnt->type} {$column->default} {$column->notnull}{if !$iterator->isLast()},{/if}
+{/foreach}
+)
+
+{foreach $keys as $key}
+ALTER TABLE ONLY {$table}
+    ADD CONSTRAINT {$key->name} {$key->type};
+{/foreach}
+
+{foreach $indexes as $index}
+CREATE INDEX {$index->name} ON {$table} USING {$index->type};
+{/foreach}
+
+

@@ -26,6 +26,12 @@ class Orm {
      */
     protected $primaryKey= null;
 
+    /**
+     * @var DibiOrmPostgreDriver
+     */
+    protected $driver;
+
+
     public function  __construct()
     {
 	if ( is_null($this->getTableName())) {
@@ -39,6 +45,21 @@ class Orm {
 	    $this->id = new AutoField();
 	    $this->setPrimaryKey('id');
 	}
+    }
+
+    /**
+     * @return DibiOrmPostgreDriver
+     */
+    protected function getDriver() {
+	if ( !$this->driver) {
+	    $driverName= $this->getConnection()->getConfig('driver');
+	    $driverClassName= 'DibiOrm'.ucwords($driverName).'Driver';
+	    if ( !class_exists($driverClassName)) {
+		throw new Exception("driver for '$driverName' not found");
+	    }
+	    $this->driver= new $driverClassName;
+	}
+	return $this->driver;
     }
 
     /**
@@ -166,27 +187,15 @@ class Orm {
 
     public function sqlsync()
     {
-	$driverName= Debug::consoleDump($this->getConnection()->getConfig('driver'));
-	$driverClassName= 'DibiOrm'.ucwords($driverName).'Driver';
-	if ( !class_exists($driverClassName)) {
-	    throw new Exception("driver for '$driverName' not found");
-	}
-	$driver= new $driverClassName;
-
 
 	if ( $this->getConnection()->getDatabaseInfo()->hasTable($this->getTableName()) ) {
-
-
-
-
 	    
 		
 
 	}
 
 	else {
-	    $driver->createTable($this);
-	    
+	    return $this->getDriver()->createTable($this);
 	    
 	}
 
