@@ -14,7 +14,6 @@ class DibiOrmPostgreDriver {
     protected $addDropTable= false;
 
 
-
     protected function getTemplate($templateFile) {
 	$template= new Template();
 	$template->registerFilter('LatteFilter::invoke');
@@ -23,15 +22,60 @@ class DibiOrmPostgreDriver {
 	return $template;
     }
 
+
+    protected function translateType($field){
+	$fieldClass= get_class($field);
+
+	switch ($fieldClass)
+	{
+	    case 'AutoField':
+		return 'serial';
+
+	    case 'IntegerField':
+		return 'integer';
+
+
+	    case 'CharField':
+		return sprintf('character varying(%d)', $field->getSize());
+
+	    default:
+		throw new Exception("datatype for class '$fieldClass' not recognized by translator");
+		
+	}
+    }
+
+    /**
+     *
+     * @param Orm $orm
+     * @return string
+     */
     public function createTable($orm) {
 	
 	$template= $this->getTemplate( dirname(__FILE__). '/'. self::DRIVER . '-create-table-dll.psql' );
 
+	
 
-	$template->columns= array();
+
+	$fields= array();
+	foreach($orm->getFields() as $field) {
+
+	    $fields[]= (object) array(
+		'name' => $field->getRealName(),
+		'type' => $this->translateType($field),
+
+	    );
+
+
+	    
+	}
+	Debug::consoleDump($orm->getFields());
+	Debug::consoleDump($fields);
+
+
+	$template->fields= $fields;
 	$template->keys= array();
 	$template->indexes= array();
-
+	$template->table= $orm;
 
 	ob_start();
 	$template->render();

@@ -20,7 +20,7 @@ final class CharField extends Field {
 		$options->remove($option);
 	    }
 	    else{
-		throw new Exception ("invalid option '$option'");
+		$this->addError("unknown option '$option'");
 	    }
 	}
     }
@@ -34,12 +34,20 @@ final class CharField extends Field {
     }
 
 
+    public function getSize() {
+	return $this->size;
+    }
+
+
     final public function retyped($value) {
 	return (string) $value;
     }
 
-
+    public function validate() {
+	if ( is_null($this->size)) {
+	    $this->addError("required option max_length was not set");
+	}
+	return parent::validate();
+    }
 }
-
-
 

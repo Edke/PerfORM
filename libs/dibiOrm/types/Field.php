@@ -7,7 +7,7 @@
  */
 abstract class Field {
 
-    protected $column;
+    protected $name;
 
     /**
      * @var boolean
@@ -28,11 +28,13 @@ abstract class Field {
     /**
      * @var string
      */
-    protected $dbColumn= null;
+    protected $dbName= null;
 
     protected $type;
 
     protected $value= null;
+
+    protected $errors= array();
 
     public function __construct($_options)
     {
@@ -54,7 +56,7 @@ abstract class Field {
 	    }
 	    
 	    elseif ( preg_match('#db_column=(.+)#i', $option, $matches) ) {
-		$this->setDbColumn( $matches[1]);
+		$this->setDbName( $matches[1]);
 		$options->remove($option);
 	    }
 	    elseif ( strtolower($option) == 'primary_key' ) {
@@ -69,7 +71,8 @@ abstract class Field {
     protected function setNotNull()
     {
 	if( !is_null($this->isNull) ) {
-	    throw new Exception('field already has null/notnull');
+	    $this->addError("has already null/notnull");
+	    return false;
 	}
 	$this->isNull= false;
     }
@@ -77,33 +80,37 @@ abstract class Field {
     protected function setNull()
     {
 	if( !is_null($this->isNull) ) {
-	    throw new Exception('field already has null/notnull');
+	    $this->addError("has already null/notnull");
+	    return false;
 	}
 	$this->isNull= true;
     }
 
     final public function setDefault($default) {
 	if( !is_null($this->default) ) {
-	    throw new Exception("field already has default value '$this->default'");
+	    $this->addError("has already default value '$this->default'");
+	    return false;
 	}
 
 	$retypedDefault= $this->retyped($default);
 	if ( (string) $default != (string) $retypedDefault ) {
-	    throw new Exception("invalid datatype of default value '$default'");
+	    $this->addError("invalid datatype of default value '$default'");
+	    return false;
 	}
 
 	$this->default= $retypedDefault;
     }
 
-    protected function setDbColumn($dbColumn) {
-	if( !is_null($this->dbColumn) ) {
-	    throw new Exception("field already has db_column '$this->dbColumn'");
+    protected function setDbName($dbName) {
+	if( !is_null($this->dbName) ) {
+	    $this->addError("has already set db_column '$this->dbName'");
+	    return false;
 	}
-	$this->dbColumn= $dbColumn;
+	$this->dbName= $dbName;
     }
 
-    public function setName($column) {
-	$this->column= $column;
+    public function setName($name) {
+	$this->name= $name;
     }
 
     public function setValue($value) {
@@ -124,15 +131,15 @@ abstract class Field {
 
     public function getName()
     {
-	return $this->column;
+	return $this->name;
     }
 
     public function getRealName()
     {
-	if ( $this->dbColumn ) {
-	    return $this->dbColumn;
+	if ( $this->dbName ) {
+	    return $this->dbName;
 	}
-	return $this->column;
+	return $this->name;
     }
 
     public  function getDefaultValue() {
@@ -151,5 +158,21 @@ abstract class Field {
 	return $this->type;
     }
 
+    public function validate() {
+	foreach($this->errors as $key => $error) {
+	    $this->errors[$key] = str_replace('%s', $this->name, $error);
+	}
+	return $this->errors;
+    }
+    
+    protected function addError($msg) {
+	if ( $this->name ) {
+	    $this->errors[]= sprintf('%s (%s): %s', $this->name, get_class($this), $msg);
+	}
+	else {
+	    $this->errors[]= '%s '. sprintf('(%s): %s',get_class($this), $msg);
+	}
+	
+    }
 }
 

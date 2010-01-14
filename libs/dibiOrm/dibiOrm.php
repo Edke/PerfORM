@@ -12,9 +12,9 @@ class Orm {
     protected $connection;
 
     /**
-     * @var Hashtable
+     * @var array
      */
-    protected $fields;
+    protected $fields= array();
 
     /**
      * @var string
@@ -38,13 +38,15 @@ class Orm {
 	    $this->tableName= get_class($this);
 	}
 
-	$this->fields= new Hashtable();
 	$this->setup();
 
 	if ( !$this->getPrimaryKey()) {
-	    $this->id = new AutoField();
+	    $this->fields= array('id' => new AutoField()) + $this->fields; //unshift primary to beginning
+	    $this->fields['id']->setName('id');
 	    $this->setPrimaryKey('id');
 	}
+
+	$this->validate();
     }
 
     /**
@@ -75,15 +77,15 @@ class Orm {
     public function  __set($field,  $value)
     {
 	// setting value for existing field
-	if ( $this->fields->offsetExists($field) && !is_object($value) ) {
+	if ( key_exists($field, $this->fields) && !is_object($value) ) {
 	    $this->fields[$field]->setValue($value);
 	}
 	// setting new field
-	elseif ( !$this->fields->offsetExists($field) && is_object($value) ) {
+	elseif ( !key_exists($field, $this->fields) && is_object($value) ) {
 	    $this->fields[$field]= $value;
 	    $this->fields[$field]->setName($field);
 	}
-	elseif ( $this->fields->offsetExists($field) && is_object($value) ) {
+	elseif ( key_exists($field, $this->fields) && is_object($value) ) {
 	    Debug::consoleDump(array($field, $value), 'invalid setting on orm object');
 	    throw new Exception("column '$field' already exists");
 	}
@@ -184,7 +186,6 @@ class Orm {
     }
 
 
-
     public function sqlsync()
     {
 
@@ -198,11 +199,27 @@ class Orm {
 	    return $this->getDriver()->createTable($this);
 	    
 	}
-
-
-	
     }
+
+    /**
+     * @return array
+     */
+    public function getFields(){
+	return $this->fields;
+    }
+
+
+    /**
+     * validate fields definition
+     */
+    protected function validate() {
+	$errors= array();
+	foreach($this->getFields() as $field) {
+	    $errors= array_merge($errors, $field->validate());
+	}
+	if (count($errors)>0) {
+	    throw new Exception(implode("; ", $errors));
+	}
+    }
+    
 }
-
-
-

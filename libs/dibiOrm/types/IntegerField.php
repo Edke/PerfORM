@@ -12,8 +12,8 @@ class IntegerField extends Field {
     {
 	$options= parent::__construct(func_get_args());
 
-	foreach ( $options as $option){
-	    throw new Exception ("invalid option '$option'");
+	foreach ( $options as $option) {
+	    $this->addError("unknown option '$option'");
 	}
     }
 

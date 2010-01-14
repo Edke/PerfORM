@@ -4,9 +4,9 @@
 DROP TABLE {$table};
 {/if}
 
-CREATE TABLE {$table} (
-{foreach $columns as $column}
-    {$column->name} {$columnt->type} {$column->default} {$column->notnull}{if !$iterator->isLast()},{/if}
+CREATE TABLE {$table->getTableName()} (
+{foreach $fields as $field}
+    {$field->name} {$field->type} {$field->default} {$field->notnull}{if !$iterator->isLast()},{/if}
 {/foreach}
 )
 
