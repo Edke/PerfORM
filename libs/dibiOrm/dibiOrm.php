@@ -208,6 +208,15 @@ class Orm {
 	return $this->fields;
     }
 
+    /**
+     * @return Field
+     */
+    public function getField($name){
+	if ( !key_exists($name, $this->fields)) {
+	    throw new Exception("field '$name' does not exists");
+	}
+	return $this->fields[$name];
+    }
 
     /**
      * validate fields definition

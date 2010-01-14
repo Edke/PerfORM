@@ -44,6 +44,30 @@ class DibiOrmPostgreDriver {
 	}
     }
 
+    protected function translateDefault($field) {
+
+	if ( is_null($field->getDefaultValue())) {
+	    return '';
+	}
+
+	switch ($field->getType() )
+	{
+	    case Dibi::FIELD_TEXT:
+		return sprintf("DEFAULT '%s'", $field->getDefaultValue());
+
+	    case Dibi::FIELD_INTEGER:
+		return sprintf('DEFAULT (%d)', $field->getDefaultValue());
+
+	    case Dibi::FIELD_FLOAT:
+		return sprintf('DEFAULT (%d)::double precision', $field->getDefaultValue());
+
+	    default:
+		throw new Exception("default for class '$fieldClass' not recognized by translator");
+		
+	}
+    }
+
+
     /**
      *
      * @param Orm $orm
@@ -53,8 +77,6 @@ class DibiOrmPostgreDriver {
 	
 	$template= $this->getTemplate( dirname(__FILE__). '/'. self::DRIVER . '-create-table-dll.psql' );
 
-	
-
 
 	$fields= array();
 	foreach($orm->getFields() as $field) {
@@ -62,18 +84,21 @@ class DibiOrmPostgreDriver {
 	    $fields[]= (object) array(
 		'name' => $field->getRealName(),
 		'type' => $this->translateType($field),
-
+		'notnull' => ($field->isNotNull()) ? 'NULL' : 'NOT NULL',
+		'default' => $this->translateDefault($field),
 	    );
-
-
-	    
 	}
-	Debug::consoleDump($orm->getFields());
-	Debug::consoleDump($fields);
 
+	$keys= array();
+	if ( $pk = $orm->getPrimaryKey() ) {
+	    $keys[]= (object) array(
+		'name' => $orm->getTableName() .'_pkey',
+		'type' => sprintf('PRIMARY KEY (%s)', $pk)
+	    );
+	}
 
 	$template->fields= $fields;
-	$template->keys= array();
+	$template->keys= $keys;
 	$template->indexes= array();
 	$template->table= $orm;
 

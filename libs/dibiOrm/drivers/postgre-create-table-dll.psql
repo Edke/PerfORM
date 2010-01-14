@@ -1,22 +1,19 @@
 
-
 {if $addDropTable}
-DROP TABLE {$table};
+DROP TABLE {$table->getTableName()};
 {/if}
 
 CREATE TABLE {$table->getTableName()} (
 {foreach $fields as $field}
-    {$field->name} {$field->type} {$field->default} {$field->notnull}{if !$iterator->isLast()},{/if}
+    {$field->name} {$field->type} {!$field->default} {$field->notnull}{if !$iterator->isLast()},{/if}
 {/foreach}
 )
 
 {foreach $keys as $key}
-ALTER TABLE ONLY {$table}
+ALTER TABLE ONLY {$table->getTableName()}
     ADD CONSTRAINT {$key->name} {$key->type};
 {/foreach}
 
 {foreach $indexes as $index}
-CREATE INDEX {$index->name} ON {$table} USING {$index->type};
+CREATE INDEX {$index->name} ON {$table->getTableName()} USING {$index->type};
 {/foreach}
-
-
