@@ -10,6 +10,10 @@ class Default_DefaultPresenter extends Default_BasePresenter {
 	$edke = new Person;
 	$edke->name= 'Edke';
 
+	$edke->save();
+
+	$this->template->sql= dibi::$sql;
+
 	return $edke;
     }
 
