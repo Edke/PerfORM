@@ -4,24 +4,13 @@
  *
  * @author kraken
  */
-class DibiOrmPostgreDriver {
+class DibiOrmPostgreDriver extends DibiOrmDriver {
 
     CONST DRIVER = 'postgre';
 
-    /**
-     * @var boolean
-     */
-    protected $addDropTable= false;
-
-
-    protected function getTemplate($templateFile) {
-	$template= new Template();
-	$template->registerFilter('LatteFilter::invoke');
-	$template->setFile($templateFile);
-
-	return $template;
+    final protected function getDriver() {
+	return self::DRIVER;
     }
-
 
     protected function translateType($field){
 	$fieldClass= get_class($field);
@@ -67,7 +56,6 @@ class DibiOrmPostgreDriver {
 	}
     }
 
-
     /**
      *
      * @param Orm $orm
@@ -75,25 +63,16 @@ class DibiOrmPostgreDriver {
      */
     public function createTable($orm) {
 	
-	$template= $this->getTemplate( dirname(__FILE__). '/'. self::DRIVER . '-create-table.psql' );
+	$template= $this->getTemplate('create-table.psql' );
 
 	$fields= array();
 	foreach($orm->getFields() as $field) {
-
-	    $fields[]= (object) array(
-		'name' => $field->getRealName(),
-		'type' => $this->translateType($field),
-		'notnull' => ($field->isNotNull()) ? 'NULL' : 'NOT NULL',
-		'default' => $this->translateDefault($field),
-	    );
+	    $fields[]= $this->addField($field);
 	}
 
 	$keys= array();
 	if ( $pk = $orm->getPrimaryKey() ) {
-	    $keys[]= (object) array(
-		'name' => $orm->getTableName() .'_pkey',
-		'type' => sprintf('PRIMARY KEY (%s)', $pk)
-	    );
+	    $keys[]= $this->addPrimaryKey($orm, $pk);
 	}
 
 	$template->fields= $fields;
@@ -106,9 +85,48 @@ class DibiOrmPostgreDriver {
 	return ob_get_clean();
     }
 
+    protected function addField($field) {
+	return (object) array(
+		'name' => $field->getRealName(),
+		'type' => $this->translateType($field),
+		'notnull' => ($field->isNotNull()) ? 'NULL' : 'NOT NULL',
+		'default' => $this->translateDefault($field),
+	    );
+    }
+
+    protected function addPrimaryKey($orm, $pk) {
+	return (object) array(
+		'name' => $orm->getTableName() .'_pkey',
+		'type' => sprintf('PRIMARY KEY (%s)', $pk)
+	);
+    }
+
+
+    /**
+     * @param Orm $orm
+     */
+    public function syncTable($orm) {
+	$tableInfo= $orm->getConnection()->getDatabaseInfo()->getTable($orm->getTableName());
+
+	// checking model against db
+	foreach ($orm->getFields() as $name => $field) {
+
+	    // column exists
+	    if ( $column= $tableInfo->getColumn($field->getRealName()) ) {
+
+	    }
+	    else {
+		
+
+	    }
+	}
+
+	
+    }
+
 
     public function dropTable($orm) {
-	$template= $this->getTemplate( dirname(__FILE__). '/'. self::DRIVER . '-drop-table.psql' );
+	$template= $this->getTemplate('drop-table.psql' );
 	$template->table= $orm;
 
 	ob_start();

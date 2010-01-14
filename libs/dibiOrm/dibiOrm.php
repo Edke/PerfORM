@@ -67,7 +67,7 @@ class Orm {
     /**
      * @return DibiConnection
      */
-    protected function getConnection() {
+    public function getConnection() {
 	if ( !$this->connection) {
 	    $this->connection= dibi::getConnection();
 	}
