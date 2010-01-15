@@ -4,12 +4,7 @@
  *
  * @author kraken
  */
-class DibiOrm {
-
-    /**
-     * @var DibiConnection
-     */
-    protected $connection;
+class DibiOrm extends DibiOrmBase {
 
     /**
      * @var array
@@ -26,12 +21,6 @@ class DibiOrm {
      */
     protected $primaryKey= null;
 
-    /**
-     * @var DibiOrmPostgreDriver
-     */
-    protected $driver;
-
-
     public function  __construct()
     {
 	if ( is_null($this->getTableName())) {
@@ -47,31 +36,6 @@ class DibiOrm {
 	}
 
 	$this->validate();
-    }
-
-    /**
-     * @return DibiOrmPostgreDriver
-     */
-    protected function getDriver() {
-	if ( !$this->driver) {
-	    $driverName= $this->getConnection()->getConfig('driver');
-	    $driverClassName= 'DibiOrm'.ucwords($driverName).'Driver';
-	    if ( !class_exists($driverClassName)) {
-		throw new Exception("driver for '$driverName' not found");
-	    }
-	    $this->driver= new $driverClassName;
-	}
-	return $this->driver;
-    }
-
-    /**
-     * @return DibiConnection
-     */
-    public function getConnection() {
-	if ( !$this->connection) {
-	    $this->connection= dibi::getConnection();
-	}
-	return $this->connection;
     }
 
     public function  __set($field,  $value)
@@ -182,41 +146,6 @@ class DibiOrm {
 	}
 	else {
 	    throw new Exception('nothing to insert');
-	}
-    }
-
-
-    public function operationSyncdb()
-    {
-
-	if ( $this->getConnection()->getDatabaseInfo()->hasTable($this->getTableName()) ) {
-	    $sql= $this->getDriver()->syncTable($this);
-	    if ( !is_null($sql)) {
-		$this->getConnection()->query($sql);
-	    }
-	    return $sql;
-	}
-
-	else {
-	    $sql= $this->getDriver()->createTable($this);
-	    $this->getConnection()->query($sql);
-	    return $sql;
-	}
-    }
-
-
-    public function operationSqlall()
-    {
-	$sql= $this->getDriver()->createTable($this);
-	return $sql;
-    }
-
-    public function operationSqlclear()
-    {
-	if ( $this->getConnection()->getDatabaseInfo()->hasTable($this->getTableName()) ) {
-	    $sql= $this->getDriver()->dropTable($this);
-	    $this->getConnection()->query($sql);
-	    return $sql;
 	}
     }
 
