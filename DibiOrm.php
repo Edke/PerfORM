@@ -61,7 +61,7 @@ class DibiOrm extends DibiOrmBase {
 
     public function  __get($field)
     {
-	if ( $this->fields->offsetExists($field) && is_object($this->fields[$field])) {
+	if ( key_exists($field, $this->fields) && is_object($this->fields[$field])) {
 	    return $this->fields[$field]->getValue();
 	}
 	throw new Exception("invalid field name '$field'");
