@@ -236,5 +236,20 @@ class DibiOrm extends DibiOrmBase
 	    throw new Exception(implode("; ", $errors));
 	}
     }
-    
+
+    /**
+     *
+     * @param array $values
+     */
+    public function import($values)
+    {
+	if ( !is_array($values)){
+	    throw new Exception("invalid datatype of import values, array expected");
+	}
+
+	foreach($values as $field => $value)
+	{
+	    $this->{$field}= $value;
+	}
+    }
 }
