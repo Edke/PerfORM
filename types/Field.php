@@ -59,7 +59,7 @@ abstract class Field {
 		$this->setDbName( $matches[1]);
 		$options->remove($option);
 	    }
-	    elseif ( strtolower($option) == 'primary_key' ) {
+	    elseif ( strtolower($option) == 'primary_key=true' ) {
 		$this->setPrimaryKey();
 		$options->remove($option);
 	    }

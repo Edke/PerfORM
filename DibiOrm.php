@@ -30,9 +30,8 @@ class DibiOrm extends DibiOrmBase {
 	$this->setup();
 
 	if ( !$this->getPrimaryKey()) {
-	    $this->fields= array('id' => new AutoField()) + $this->fields; //unshift primary to beginning
+	    $this->fields= array('id' => new AutoField('primary_key=true')) + $this->fields; //unshift primary to beginning
 	    $this->fields['id']->setName('id');
-	    $this->setPrimaryKey('id');
 	}
 
 	$this->validate();
