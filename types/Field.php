@@ -50,12 +50,12 @@ abstract class Field {
 		$this->setNotNull();
 		$options->remove($option);
 	    }
-	    elseif ( preg_match('#default=(.+)#i', $option, $matches) ) {
+	    elseif ( preg_match('#^default=(.+)$#i', $option, $matches) ) {
 		$this->setDefault( $matches[1]);
 		$options->remove($option);
 	    }
 	    
-	    elseif ( preg_match('#db_column=(.+)#i', $option, $matches) ) {
+	    elseif ( preg_match('#^db_column=(.+)$#i', $option, $matches) ) {
 		$this->setDbName( $matches[1]);
 		$options->remove($option);
 	    }

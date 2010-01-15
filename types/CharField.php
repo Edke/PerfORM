@@ -15,7 +15,7 @@ final class CharField extends Field {
 	$options= parent::__construct(func_get_args());
 
 	foreach ( $options as $option){
-	    if ( preg_match('#max_length=([0-9]+)#i', $option, $matches) ) {
+	    if ( preg_match('#^max_length=([0-9]+)$#i', $option, $matches) ) {
 		$this->setSize( $matches[1]);
 		$options->remove($option);
 	    }
