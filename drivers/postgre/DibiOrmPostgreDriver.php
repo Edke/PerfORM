@@ -21,8 +21,8 @@ class DibiOrmPostgreDriver extends DibiOrmDriver {
 		return 'serial';
 
 	    case 'IntegerField':
+	    case 'ForeignKeyField':
 		return 'integer';
-
 
 	    case 'CharField':
 		return sprintf('character varying(%d)', $field->getSize());
@@ -74,6 +74,11 @@ class DibiOrmPostgreDriver extends DibiOrmDriver {
 	if ( $pk = $orm->getPrimaryKey() ) {
 	    $keys[]= $this->addPrimaryKey($orm, $pk);
 	}
+	foreach( $orm->getForeignKeys() as $foreignKey)
+	{
+	    Debug::consoleDump($foreignKey);
+	    $keys[]= $this->addForeignKey($orm, $foreignKey);
+	}
 
 	$template->fields= $fields;
 	$template->keys= $keys;
@@ -94,8 +99,17 @@ class DibiOrmPostgreDriver extends DibiOrmDriver {
 
     protected function addPrimaryKey($orm, $pk) {
 	return (object) array(
+		'type' => 'primary',
 		'name' => $orm->getTableName() .'_pkey',
-		'type' => sprintf('PRIMARY KEY (%s)', $pk)
+		'field' => $pk
+	);
+    }
+
+    protected function addForeignKey($orm, $key) {
+	return (object) array(
+		'type' => 'foreign',
+		'name' => $orm->getTableName() .'_fkey',
+		'typefull' => sprintf('PRIMARY KEY (%s)', $pk)
 	);
     }
 

@@ -120,6 +120,20 @@ class DibiOrm extends DibiOrmBase
 	}
     }
 
+    public function getForeignKeys()
+    {
+	$keys= array();
+
+	foreach($this->fields as $field)
+	{
+	    if ( get_class($field) == 'ForeignKeyField' )
+	    {
+		$keys[]= $field;
+	    }
+	}
+	return $keys;
+    }
+
     protected function setPrimaryKey($primaryKey)
     {
 	$this->primaryKey= $primaryKey;

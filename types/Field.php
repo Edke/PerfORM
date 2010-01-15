@@ -42,7 +42,9 @@ abstract class Field {
 	$options->import($_options);
 
 	foreach ( $options as $option){
-	    if ( strtolower($option) == 'null' ) {
+	    if (is_object($option)) {
+	    }
+	    elseif ( strtolower($option) == 'null' ) {
 		$this->setNull();
 		$options->remove($option);
 	    }
