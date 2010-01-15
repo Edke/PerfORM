@@ -4,7 +4,7 @@
  *
  * @author kraken
  */
-class Orm {
+class DibiOrm {
 
     /**
      * @var DibiConnection
