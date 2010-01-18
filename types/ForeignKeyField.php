@@ -7,8 +7,15 @@
 final class ForeignKeyField extends Field {
 
     protected $type = Dibi::FIELD_INTEGER;
-    
+
+    /**
+     * @var DibiOrm
+     */
     protected $reference;
+
+    protected $referenceKey;
+
+    protected $nameMask= '%foreignKeyName_%ownName';
 
     public function  __construct()
     {
@@ -32,8 +39,26 @@ final class ForeignKeyField extends Field {
     public function getReference() {
 	return $this->reference;
     }
-    
+
+    public function setName($name) {
+	parent::setName($name);
+
+	$this->referenceKey= $this->reference->getPrimaryKey();
+	$dbName=str_replace('%ownName', $name, $this->nameMask);
+	$dbName=str_replace('%foreignKeyName', $this->referenceKey, $dbName);
+	parent::setDbName($dbName);
+    }
+
+    protected function setDbName($dbName) {
+	$this->addError("forbidden to set db_column for foreign key, change mask instead");
+	return false;
+    }
+
+    public function getReferenceTableName(){
+	return $this->reference->getTableName();
+    }
+
+    public function getReferenceTableKey() {
+	return $this->referenceKey;
+    }
 }
-
-
-

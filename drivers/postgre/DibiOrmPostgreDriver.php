@@ -100,7 +100,7 @@ class DibiOrmPostgreDriver extends DibiOrmDriver {
     protected function addPrimaryKey($orm, $pk) {
 	return (object) array(
 		'type' => 'primary',
-		'name' => $orm->getTableName() .'_pkey',
+		'constraint_name' => $orm->getTableName() .'_pkey',
 		'field' => $pk
 	);
     }
@@ -108,8 +108,10 @@ class DibiOrmPostgreDriver extends DibiOrmDriver {
     protected function addForeignKey($orm, $key) {
 	return (object) array(
 		'type' => 'foreign',
-		'name' => $orm->getTableName() .'_fkey',
-		'typefull' => sprintf('PRIMARY KEY (%s)', $pk)
+		'constraint_name' => $orm->getTableName() .'_fkey',
+		'key_name' => $key->getRealName(),
+		'reference_table' => $key->getReferenceTableName(),
+		'reference_key_name' => $key->getReferenceTableKey(),
 	);
     }
 

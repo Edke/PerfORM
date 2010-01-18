@@ -6,7 +6,7 @@ CREATE TABLE {$table->getTableName()} (
 
 {foreach $keys as $key}
 ALTER TABLE ONLY {$table->getTableName()}
-{if $key->type == 'primary'}    ADD CONSTRAINT {$key->name} PRIMARY KEY ({$key->field});{/if}{if $key->type == 'foreign'}    ADD CONSTRAINT {$key->name} FOREIGN KEY ({$key->name}) REFERENCES {$key->reference}({$key->reference_pk});{/if}
+{if $key->type == 'primary'}    ADD CONSTRAINT {$key->constraint_name} PRIMARY KEY ({$key->field});{/if}{if $key->type == 'foreign'}    ADD CONSTRAINT {$key->constraint_name} FOREIGN KEY ({$key->key_name}) REFERENCES {$key->reference_table}({$key->reference_key_name});{/if}
 
 {/foreach}
 
