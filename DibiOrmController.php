@@ -56,15 +56,30 @@ class DibiOrmController
     public static function syncdb($confirm = false)
     {
 	$sql= null;
+	$syncModels= array();
+	$createModels= array();
 	foreach( self::getModels() as $model) {
-
 	    if ( $model->getConnection()->getDatabaseInfo()->hasTable($model->getTableName()) ) {
-		$sql .= $model->getDriver()->syncTable($model);
+		$syncModels[]= $model->getDriver()->syncTable($model);
+		$syncModels[]= $model->getDriver()->syncTable($model);
 	    }
 	    else {
-		$sql .= $model->getDriver()->createTable($model);
+		$createModels[]= $model;
 	    }
 	}
+
+	#TODO syncmodels
+
+	self::dependancySort($createModels);
+	foreach($createModels as $model){
+	    $sql .= $model->getDriver()->createTable($model);
+	}
+
+
+
+
+
+
 
 	if ( !is_null($sql) && $confirm ) {
 	    self::execute($sql);
