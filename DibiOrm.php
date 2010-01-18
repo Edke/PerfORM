@@ -4,7 +4,7 @@
  *
  * @author kraken
  */
-class DibiOrm extends DibiOrmBase
+abstract class DibiOrm extends DibiOrmBase
 {
 
     /**
@@ -22,7 +22,6 @@ class DibiOrm extends DibiOrmBase
      */
     protected $primaryKey= null;
 
-
     /**
      *
      * @param array $importValues
@@ -31,7 +30,7 @@ class DibiOrm extends DibiOrmBase
     {
 	if ( is_null($this->getTableName()))
 	{
-	    $this->tableName= get_class($this);
+	    $this->tableName= strtolower(get_class($this));
 	}
 
 	$this->setup();
@@ -48,6 +47,8 @@ class DibiOrm extends DibiOrmBase
 	    $this->import($importValues);
 	}
     }
+
+    abstract protected function setup();
 
     public function  __set($field,  $value)
     {
@@ -141,10 +142,6 @@ class DibiOrm extends DibiOrmBase
 
     public function getTableName()
     {
-	if ( is_string($this->tableName))
-	{
-	    return strtolower($this->tableName);
-	}
 	return $this->tableName;
     }
 
