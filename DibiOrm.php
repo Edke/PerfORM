@@ -23,6 +23,10 @@ abstract class DibiOrm
     protected $primaryKey= null;
 
     /**
+     * @var string
+     */
+    protected $defaultPrimaryKey= 'id';
+
      *
      * @param array $importValues
      */
@@ -37,8 +41,9 @@ abstract class DibiOrm
 
 	if ( !$this->getPrimaryKey())
 	{
-	    $this->fields= array('id' => new AutoField('primary_key=true')) + $this->fields; //unshift primary to beginning
-	    $this->fields['id']->setName('id');
+	    $this->fields= array($this->defaultPrimaryKey => new AutoField('primary_key=true')) + $this->fields; //unshift primary to beginning
+	    $this->fields[$this->defaultPrimaryKey]->setName($this->defaultPrimaryKey);
+	    $this->setPrimaryKey($this->defaultPrimaryKey);
 	}
 
 	$this->validate();
