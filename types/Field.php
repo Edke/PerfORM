@@ -152,6 +152,10 @@ abstract class Field {
 	return $this->primaryKey;
     }
 
+    public function isForeignKey() {
+	return false;
+    }
+
     public function isNotNull() {
 	return $this->isNull && false;
     }

@@ -33,7 +33,7 @@ final class ForeignKeyField extends Field {
     }
 
     final public function retyped($value) {
-	return (int) $this->reference;
+	return $value;
     }
 
     public function getReference() {
@@ -61,4 +61,18 @@ final class ForeignKeyField extends Field {
     public function getReferenceTableKey() {
 	return $this->referenceKey;
     }
+
+    public function isForeignKey() {
+	return true;
+    }
+
+    public function getValue()
+    {
+	$value= $this->value->getField($this->referenceKey)->getValue();
+	if ( !is_integer($value)) {
+	    $value= $this->value->save();
+	}
+	return $value;
+    }
+
 }

@@ -27,6 +27,12 @@ abstract class DibiOrm
      */
     protected $defaultPrimaryKey= 'id';
 
+    /**
+     * @var array
+     */
+    protected $depends= array();
+
+    /**
      *
      * @param array $importValues
      */
@@ -67,13 +73,22 @@ abstract class DibiOrm
 	{
 	    $this->fields[$field]= $value;
 	    $this->fields[$field]->setName($field);
+
+	    if (get_class($value) == 'ForeignKeyField'){
+		$this->depends[]= $value->getReference();
+	    }
+
 	}
 	elseif ( key_exists($field, $this->fields) && is_object($value) )
 	{
-	    Debug::consoleDump(array($field, $value), 'invalid setting on orm object');
-	    throw new Exception("column '$field' already exists");
+	    if ($this->fields[$field]->isForeignKey() && (get_class($value) == get_class($this->fields[$field]->getReference())) ) {
+		$this->fields[$field]->setValue($value);
+	    }
+	    else {
+		Debug::consoleDump(array($field, $value), 'invalid setting on orm object');
+		throw new Exception("column '$field' already exists");
+	    }
 	}
-
 	else
 	{
 	    Debug::consoleDump(array($field, $value), 'invalid setting on orm object');
@@ -170,8 +185,6 @@ abstract class DibiOrm
 
 	foreach($this->fields as $key => $field)
 	{
-
-	    Debug::consoleDump($field);
 	    $finalColumn= $field->getRealName().'%'.$field->getType();
 
 	    if ( !is_null($value = $field->getValue()) )

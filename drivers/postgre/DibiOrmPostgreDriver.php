@@ -76,7 +76,6 @@ class DibiOrmPostgreDriver extends DibiOrmDriver {
 	}
 	foreach( $orm->getForeignKeys() as $foreignKey)
 	{
-	    Debug::consoleDump($foreignKey);
 	    $keys[]= $this->addForeignKey($orm, $foreignKey);
 	}
 
