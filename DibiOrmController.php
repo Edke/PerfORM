@@ -4,21 +4,59 @@
  *
  * @author kraken
  */
-class DibiOrmController extends DibiOrmBase
+class DibiOrmController
 {
-    protected $models= array();
+    protected static $models;
 
-    public function  __construct()
+    /**
+     * @var DibiConnection
+     */
+    protected static $connection;
+
+    /**
+     * @var DibiOrmPostgreDriver
+     */
+    protected static $driver;
+    
+    public static function getModels()
     {
-	$robot = new DibiOrmModelLoader();
-	$robot->addDirectory(APP_DIR);
-	$this->models= $robot->getModels();
+	if ( is_null(self::$models)) {
+	    $robot = new DibiOrmModelLoader();
+	    $robot->addDirectory(APP_DIR);
+	    self::$models= $robot->getModels();
+	}
+	return self::$models;
     }
 
-    public function syncdb($confirm = false)
+    /**
+     * @return DibiOrmPostgreDriver
+     */
+    public static function getDriver() {
+	if ( !self::$driver) {
+	    $driverName= self::getConnection()->getConfig('driver');
+	    $driverClassName= 'DibiOrm'.ucwords($driverName).'Driver';
+	    if ( !class_exists($driverClassName)) {
+		throw new Exception("driver for '$driverName' not found");
+	    }
+	    self::$driver= new $driverClassName;
+	}
+	return self::$driver;
+    }
+
+    /**
+     * @return DibiConnection
+     */
+    public static function getConnection() {
+	if ( !self::$connection) {
+	    self::$connection= dibi::getConnection();
+	}
+	return self::$connection;
+    }
+
+    public static function syncdb($confirm = false)
     {
 	$sql= null;
-	foreach( $this->models as $model) {
+	foreach( self::getModels() as $model) {
 
 	    if ( $model->getConnection()->getDatabaseInfo()->hasTable($model->getTableName()) ) {
 		$sql .= $model->getDriver()->syncTable($model);
@@ -29,37 +67,67 @@ class DibiOrmController extends DibiOrmBase
 	}
 
 	if ( !is_null($sql) && $confirm ) {
-	    $this->execute($sql);
+	    self::execute($sql);
 	}
 	return $sql;
     }
 
-    public function sqlall()
+
+    public static function sqlall()
     {
 	$sql= null;
-	foreach( $this->models as $model) {
+	foreach( self::getModels() as $model) {
 	    $sql .= $model->getDriver()->createTable($model);
 	}
 	return $sql;
     }
     
-    public function sqlclear($confirm)
+    public static function sqlclear($confirm)
     {
 	$sql= null;
-	foreach( $this->models as $model) {
+	$models = array();
+
+	foreach( self::getModels() as $model) {
 	    if ( $model->getConnection()->getDatabaseInfo()->hasTable($model->getTableName()) ) {
-		$sql .= $model->getDriver()->dropTable($model);
+		$models[]= $model;
 	    }
 	}
+	self::dependancySort($models);
+	foreach($models as $model){
+	    $sql .= $model->getDriver()->dropTable($model);
+	}
+
 	if ( !is_null($sql) && $confirm ) {
-	    $this->execute($sql);
+	    self::execute($sql);
 	}
 	return $sql;
     }
 
-    protected function execute($sql) {
-	$this->getConnection()->begin();
-	$this->getConnection()->query($sql);
-	$this->getConnection()->commit();
+    protected static function execute($sql) {
+	self::getConnection()->begin();
+	self::getConnection()->query($sql);
+	self::getConnection()->commit();
     }
+
+    protected static function dependancySort( &$list)
+    {
+	$_list= $list;
+	foreach($_list as $item) {
+	    $min= null;
+	    foreach($item->getDependents() as $dependent) {
+		$min= ( is_null($min )) ? array_search($dependent, $_list) : min($min, array_search($dependent, $_list));
+	    }
+	    if (is_integer($min)) {
+		unset($list[array_search($item,$list)]);
+		$list= self::insertArrayIndex($list, $item, $min);
+	    }
+	}
+    }
+
+    static function insertArrayIndex($array, $new_element, $index) {
+	$start = array_slice($array, 0, $index);
+	$end = array_slice($array, $index);
+	$start[] = $new_element;
+	return array_merge($start, $end);
+     }
 }

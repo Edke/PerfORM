@@ -4,7 +4,7 @@
  *
  * @author kraken
  */
-abstract class DibiOrm extends DibiOrmBase
+abstract class DibiOrm
 {
 
     /**
@@ -263,4 +263,33 @@ abstract class DibiOrm extends DibiOrmBase
 	    $this->{$field}= $value;
 	}
     }
+
+    public function getDependents()
+    {
+	return $this->depends;
+    }
+
+
+    public function dependsOn($model)
+    {
+	foreach($this->depends as $dependent)
+	{
+	    if ( $model == $dependent ) {
+		return true;
+	    }
+	}
+	return false;
+    }
+
+     public function getConnection()
+     {
+	 return DibiOrmController::getConnection();
+     }
+
+
+    public function getDriver()
+     {
+	 return DibiOrmController::getDriver();
+     }
+
 }
