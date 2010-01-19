@@ -60,33 +60,27 @@ class DibiOrmController
 	$createModels= array();
 	foreach( self::getModels() as $model) {
 	    if ( $model->getConnection()->getDatabaseInfo()->hasTable($model->getTableName()) ) {
-		$syncModels[]= $model->getDriver()->syncTable($model);
-		$syncModels[]= $model->getDriver()->syncTable($model);
+		$syncModels[]= $model;
 	    }
 	    else {
 		$createModels[]= $model;
 	    }
 	}
-
-	#TODO syncmodels
-
-	self::dependancySort($createModels);
+	
+	# createModels
+	self::dependancySortReverse($createModels);
 	foreach($createModels as $model){
 	    $sql .= $model->getDriver()->createTable($model);
 	}
 
-
-
-
-
-
+	#TODO syncmodels
+	// $model->getDriver()->syncTable($model);
 
 	if ( !is_null($sql) && $confirm ) {
 	    self::execute($sql);
 	}
 	return $sql;
     }
-
 
     public static function sqlall()
     {
@@ -122,6 +116,12 @@ class DibiOrmController
 	self::getConnection()->begin();
 	self::getConnection()->query($sql);
 	self::getConnection()->commit();
+    }
+
+    protected static function dependancySortReverse( &$list)
+    {
+	self::dependancySort($list);
+	$list= array_reverse($list);
     }
 
     protected static function dependancySort( &$list)
