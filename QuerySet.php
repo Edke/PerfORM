@@ -75,10 +75,7 @@ class QuerySet
 		$this->addJoins($field->getReference());
 	    }
 	}
-
     }
-
-
 
     public function get()
     {
@@ -101,11 +98,12 @@ class QuerySet
 	    $primaryKeyValue
 	);
 
+	$this->dataSource->fetch();
+
+	DibiOrmController::addSql(dibi::$sql);
+
 	//Debug::consoleDump($this->dataSource->fetch(), 'fetch');
-	
     }
-
-
 
     public function all()
     {
