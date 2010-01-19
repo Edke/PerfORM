@@ -33,6 +33,11 @@ abstract class DibiOrm
     protected $depends= array();
 
     /**
+     * @var boolean
+     */
+    protected $modified= false;
+
+    /**
      *
      * @param array $importValues
      */
@@ -67,6 +72,7 @@ abstract class DibiOrm
 	if ( key_exists($field, $this->fields) && !is_object($value) )
 	{
 	    $this->fields[$field]->setValue($value);
+	    $this->modified= true;
 	}
 	// setting new field
 	elseif ( !key_exists($field, $this->fields) && is_object($value) )
@@ -83,6 +89,7 @@ abstract class DibiOrm
 	{
 	    if ($this->fields[$field]->isForeignKey() && (get_class($value) == get_class($this->fields[$field]->getReference())) ) {
 		$this->fields[$field]->setValue($value);
+		$this->modified= true;
 	    }
 	    else {
 		Debug::consoleDump(array($field, $value), 'invalid setting on orm object');
@@ -191,7 +198,7 @@ abstract class DibiOrm
 		$primaryKeyValue= $field->getValue();
 		$primaryKeyType= $field->getType();
 	    }
-	    elseif ( !is_null($value = $field->getValue()) )
+	    elseif ( !is_null($value = $field->getValue()) && $field->isModified() )
 	    {
 		$update[$finalColumn]= $value;
 	    }
@@ -205,6 +212,7 @@ abstract class DibiOrm
 	{
 	    Debug::consoleDump($update, 'update array');
 	    DibiOrmController::queryAndLog('update %n set', $this->getTableName(), $update, "where %n = %$primaryKeyType", $primaryKey, $primaryKeyValue);
+	    $this->setUnmodified();
 	    return $primaryKeyValue;
 	}
 	else
@@ -347,5 +355,24 @@ abstract class DibiOrm
      {
 	 return DibiOrmController::getDriver();
      }
+
+     /**
+      * @return boolean
+      */
+     public function isModified() {
+	 return $this->modified;
+     }
+
+
+
+     protected function setUnmodified()
+     {
+	 $this->modified= false;
+	 foreach( $this->getFields() as $field)
+	 {
+	     $field->setUnmodified();
+	 }
+     }
+
 
 }

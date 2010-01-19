@@ -24,6 +24,10 @@ abstract class Field {
      */
     protected $default = null;
 
+    /**
+     * @var boolean
+     */
+    protected $modified= false;
 
     /**
      * @var string
@@ -117,6 +121,7 @@ abstract class Field {
 
     public function setValue($value) {
 	$this->value= $this->retyped($value);
+	$this->modified= true;
     }
 
     abstract function retyped($value);
@@ -180,5 +185,18 @@ abstract class Field {
 	}
 	
     }
+
+     /**
+      * @return boolean
+      */
+     public function isModified() {
+	 return $this->modified;
+     }
+
+     public function setUnmodified()
+     {
+	 $this->modified= false;
+     }
+
 }
 
