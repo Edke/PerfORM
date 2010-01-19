@@ -133,8 +133,10 @@ class DibiOrmController
 		$min= ( is_null($min )) ? array_search($dependent, $_list) : min($min, array_search($dependent, $_list));
 	    }
 	    if (is_integer($min)) {
-		unset($list[array_search($item,$list)]);
-		$list= self::insertArrayIndex($list, $item, $min);
+		if ( array_search($item, $_list) > $min) {
+		    unset($list[array_search($item,$list)]);
+		    $list= self::insertArrayIndex($list, $item, $min);
+		}
 	    }
 	}
     }
