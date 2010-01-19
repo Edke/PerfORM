@@ -204,7 +204,8 @@ abstract class DibiOrm
 	if (count($insert)>0)
 	{
 	    //Debug::consoleDump($insert, 'insert array');
-	    $this->getConnection()->query('insert into %n', $this->getTableName(), $insert);
+
+	    DibiOrmController::queryAndLog('insert into %n', $this->getTableName(), $insert);
 	    $insertId= $this->getConnection()->insertId();
 	    $this->fields[$this->getPrimaryKey()]->setValue($insertId);
 	    return $insertId;

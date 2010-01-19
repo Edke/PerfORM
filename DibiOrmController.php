@@ -17,6 +17,8 @@ class DibiOrmController
      * @var DibiOrmPostgreDriver
      */
     protected static $driver;
+
+    protected static $sqlBuffer= array();
     
     public static function getModels()
     {
@@ -141,10 +143,32 @@ class DibiOrmController
 	}
     }
 
+    static function queryAndLog()
+    {
+	$args= func_get_args();
+	self::getConnection()->query($args);
+	self::addSql(dibi::$sql); //log sql 
+    }
+
     static function insertArrayIndex($array, $new_element, $index) {
 	$start = array_slice($array, 0, $index);
 	$end = array_slice($array, $index);
 	$start[] = $new_element;
 	return array_merge($start, $end);
      }
+
+     static public function addSql($sql) {
+	 self::$sqlBuffer[]= $sql;
+     }
+
+     /**
+      * @return array|boolean
+      */
+     static public function getSqlBufferAndClear()
+     {
+	 $buffer= self::$sqlBuffer;
+	 self::$sqlBuffer= array();
+	 return (empty($buffer)) ? false : $buffer;
+     }
+
 }
