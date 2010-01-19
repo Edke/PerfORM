@@ -375,5 +375,8 @@ abstract class DibiOrm
 	 }
      }
 
+     public function objects() {
+	 return new QuerySet($this);
+     }
 
 }
