@@ -217,7 +217,7 @@ abstract class DibiOrm
 	}
 	else
 	{
-	    throw new Exception('nothing to insert');
+	    trigger_error("The model '".get_class($this)."' has no unmodified data to update", E_USER_NOTICE);
 	}
     }
 
@@ -249,13 +249,14 @@ abstract class DibiOrm
 	    //Debug::consoleDump($insert, 'insert array');
 
 	    DibiOrmController::queryAndLog('insert into %n', $this->getTableName(), $insert);
+	    $this->setUnmodified();
 	    $insertId= $this->getConnection()->insertId();
 	    $this->fields[$this->getPrimaryKey()]->setValue($insertId);
 	    return $insertId;
 	}
 	else
 	{
-	    throw new Exception('nothing to insert');
+	    trigger_error("The model '".get_class($this)."' has no unmodified data to insert", E_USER_NOTICE);
 	}
     }
 
