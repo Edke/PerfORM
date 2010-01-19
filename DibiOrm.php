@@ -178,6 +178,41 @@ abstract class DibiOrm
 	}
     }
 
+    public function update()
+    {
+	$update= array();
+
+	foreach($this->fields as $key => $field)
+	{
+	    $finalColumn= $field->getRealName().'%'.$field->getType();
+
+	    if ($field->isPrimaryKey()) {
+		$primaryKey= $field->getRealName();
+		$primaryKeyValue= $field->getValue();
+		$primaryKeyType= $field->getType();
+	    }
+	    elseif ( !is_null($value = $field->getValue()) )
+	    {
+		$update[$finalColumn]= $value;
+	    }
+	    elseif( $field->isNotNull() )
+	    {
+		throw new Exception("field '$key' has no value set but not null");
+	    }
+	}
+
+	if (count($update)>0)
+	{
+	    Debug::consoleDump($update, 'update array');
+	    DibiOrmController::queryAndLog('update %n set', $this->getTableName(), $update, "where %n = %$primaryKeyType", $primaryKey, $primaryKeyValue);
+	    return $primaryKeyValue;
+	}
+	else
+	{
+	    throw new Exception('nothing to insert');
+	}
+    }
+
 
     public function insert()
     {
