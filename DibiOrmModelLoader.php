@@ -31,6 +31,9 @@ class DibiOrmModelLoader
     /** @var array */
     private $list = array();
 
+    /** @var array */
+    private $timestamps = array();
+
     /** @var string */
     private $acceptMask;
 
@@ -40,7 +43,10 @@ class DibiOrmModelLoader
     /**
      * @var array
      */
-    private $models= null;
+    private $models= array();
+
+    /** @var bool */
+    private $rebuilded = FALSE;
 
     /**
      */
@@ -60,23 +66,33 @@ class DibiOrmModelLoader
      */
     public function rebuild($force = TRUE)
     {
-#		$cache = $this->getCache();
-	#$key = $this->getKey();
+	$cache= DibiOrmController::getCache();
+	$key= $this->getKey();
 	$this->acceptMask = self::wildcards2re($this->acceptFiles);
 	$this->ignoreMask = self::wildcards2re($this->ignoreDirs);
-#		$this->timestamps = $cache[$key . 'ts'];
 
-	foreach (array_unique($this->scanDirs) as $dir)
+	if ($force || !$this->rebuilded)
 	{
-	    $this->scanDirectory($dir);
+	    foreach (array_unique($this->scanDirs) as $dir)
+	    {
+		$this->scanDirectory($dir);
+	    }
+
+	    foreach($this->list as $file => $path)
+	    {
+		$class= new $file;
+		if ( is_subclass_of($class, 'DibiOrm') )
+		{
+		    $this->models[]= $class;
+		}
+	    }
 	}
 
+	$cache[$key] = $this->list;
+	$cache[$key . 'ts'] = $this->timestamps;
+	$cache[$key . 'models'] = $this->models;
 	$this->rebuilded = TRUE;
-#		$cache[$key] = $this->list;
-#		$cache[$key . 'ts'] = $this->timestamps;
-	$this->timestamps = NULL;
     }
-
 
 
     /**
@@ -276,28 +292,46 @@ class DibiOrmModelLoader
 	}
 	return '#^(' . implode('|', $mask) . ')$#i';
     }
+    
+    /**
+     * @return Cache
+     */
+    protected function getCache()
+    {
+	return DibiOrmController::getCache();
+    }
 
+    /**
+     * @return string
+     */
+    protected function getKey()
+    {
+	return md5("$this->ignoreDirs|$this->acceptFiles|" . implode('|', $this->scanDirs));
+    }
 
     /**
      * @return array
      */
     public function getModels()
     {
-	if ( !is_array($this->models)) {
-	    $this->rebuild();
-
-	    $this->models= array();
-	    foreach($this->list as $file => $path)
-	    {
-		$class= new $file;
-		if ( is_subclass_of($class, 'DibiOrm') )
-		{
-		    $this->models[]= $class;
-		}
-	    }
-	    
-	}
-	//Debug::consoleDump($this->models);
 	return $this->models;
     }
+
+
+    public  function getModelMtime($modelName)
+    {
+	if (key_exists($modelName, $this->list))
+	{
+	    return $this->timestamps[$this->list[$modelName]];
+	}
+	throw new Exception("Model '$modelName' not found");
+    }
+    
+
+
+    public function getList()
+    {
+	return $this->list;
+    }
+
 }

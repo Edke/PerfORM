@@ -43,6 +43,14 @@ abstract class DibiOrm
      */
     public function  __construct($importValues = null)
     {
+	$cache= DibiOrmController::getCache();
+	$cacheKey= $this->getCacheKey();
+	if ( isset($cache[$cacheKey]))
+	{
+	    $this->loadProperties($cache[$cacheKey]->getProperties());
+	    return;
+	}
+
 	if ( is_null($this->getTableName()))
 	{
 	    $this->tableName= strtolower(get_class($this));
@@ -58,10 +66,15 @@ abstract class DibiOrm
 	}
 
 	$this->validate();
-	
-	if ( !is_null($importValues)){
+
+	if ( !is_null($importValues))
+	{
 	    $this->import($importValues);
 	}
+
+	$cache[$cacheKey]= $this;
+	#Debug::consoleDump($this, 'original model');
+	#Debug::consoleDump($cache[$cacheKey], 'model from memcache');
     }
 
     abstract protected function setup();
@@ -80,18 +93,21 @@ abstract class DibiOrm
 	    $this->fields[$field]= $value;
 	    $this->fields[$field]->setName($field);
 
-	    if (get_class($value) == 'ForeignKeyField'){
+	    if (get_class($value) == 'ForeignKeyField')
+	    {
 		$this->depends[]= $value->getReference();
 	    }
 
 	}
 	elseif ( key_exists($field, $this->fields) && is_object($value) )
 	{
-	    if ($this->fields[$field]->isForeignKey() && (get_class($value) == get_class($this->fields[$field]->getReference())) ) {
+	    if ($this->fields[$field]->isForeignKey() && (get_class($value) == get_class($this->fields[$field]->getReference())) )
+	    {
 		$this->fields[$field]->setValue($value);
 		$this->modified= true;
 	    }
-	    else {
+	    else
+	    {
 		Debug::consoleDump(array($field, $value), 'invalid setting on orm object');
 		throw new Exception("column '$field' already exists");
 	    }
@@ -193,7 +209,8 @@ abstract class DibiOrm
 	{
 	    $finalColumn= $field->getRealName().'%'.$field->getType();
 
-	    if ($field->isPrimaryKey()) {
+	    if ($field->isPrimaryKey())
+	    {
 		$primaryKey= $field->getRealName();
 		$primaryKeyValue= $field->getValue();
 		$primaryKeyType= $field->getType();
@@ -319,7 +336,8 @@ abstract class DibiOrm
      */
     public function import($values)
     {
-	if ( !is_array($values)){
+	if ( !is_array($values))
+	{
 	    throw new Exception("invalid datatype of import values, array expected");
 	}
 
@@ -339,44 +357,62 @@ abstract class DibiOrm
     {
 	foreach($this->depends as $dependent)
 	{
-	    if ( $model == $dependent ) {
+	    if ( $model == $dependent )
+	    {
 		return true;
 	    }
 	}
 	return false;
     }
 
-     public function getConnection()
-     {
-	 return DibiOrmController::getConnection();
-     }
+    public function getConnection()
+    {
+	return DibiOrmController::getConnection();
+    }
 
 
     public function getDriver()
-     {
-	 return DibiOrmController::getDriver();
-     }
+    {
+	return DibiOrmController::getDriver();
+    }
 
-     /**
-      * @return boolean
-      */
-     public function isModified() {
-	 return $this->modified;
-     }
+    /**
+     * @return boolean
+     */
+    public function isModified()
+    {
+	return $this->modified;
+    }
 
+    protected function setUnmodified()
+    {
+	$this->modified= false;
+	foreach( $this->getFields() as $field)
+	{
+	    $field->setUnmodified();
+	}
+    }
 
+    public function objects()
+    {
+	return new QuerySet($this);
+    }
 
-     protected function setUnmodified()
-     {
-	 $this->modified= false;
-	 foreach( $this->getFields() as $field)
-	 {
-	     $field->setUnmodified();
-	 }
-     }
+    protected function getCacheKey()
+    {
+	$mtime= DibiOrmController::getModelMtime($this);
+	return md5($mtime.'|'.get_class($this));
+    }
 
-     public function objects() {
-	 return new QuerySet($this);
-     }
+    public function getProperties(){
+	return get_object_vars($this);
+    }
 
+    protected function loadProperties($properties)
+    {
+	foreach( $properties as $property => $value)
+	{
+	    $this->{$property}= $value;
+	}
+    }
 }
