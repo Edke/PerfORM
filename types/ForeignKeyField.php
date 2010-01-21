@@ -68,6 +68,11 @@ final class ForeignKeyField extends Field {
 
     public function getValue()
     {
+	return $this->value;
+    }
+
+    public function getDbValue()
+    {
 	$value= $this->value->getField($this->referenceKey)->getValue();
 	if ( !is_integer($value)) {
 	    $value= $this->value->save();

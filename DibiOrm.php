@@ -356,7 +356,7 @@ abstract class DibiOrm
 	{
 	    $finalColumn= $field->getRealName().'%'.$field->getType();
 
-	    if ( !is_null($value = $field->getValue()) )
+	    if ( !is_null($value = $field->getDbValue()) )
 	    {
 		$insert[$finalColumn]= $value;
 	    }
@@ -507,7 +507,7 @@ abstract class DibiOrm
 	    if ($field->isPrimaryKey())
 	    {
 		$primaryKey= $field->getRealName();
-		$primaryKeyValue= $field->getValue();
+		$primaryKeyValue= $field->getDbValue();
 		$primaryKeyType= $field->getType();
 	    }
 	    elseif ( !is_null($value = $field->getValue()) && $field->isModified() )

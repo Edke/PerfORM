@@ -198,5 +198,10 @@ abstract class Field {
 	 $this->modified= false;
      }
 
+    public function getDbValue()
+    {
+	return $this->getValue();
+    }
+
 }
 

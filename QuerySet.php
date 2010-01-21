@@ -155,10 +155,41 @@ final class QuerySet
 	DibiOrmController::addSql(dibi::$sql);
     }
 
-    
+
+    /**
+     * Fill model with values from result
+     * @param DibiOrm $model
+     * @param array $values
+     * @result DibiOrm
+     */
+    protected function fill(& $model, $values)
+    {
+	foreach($model->getFields() as $field)
+	{
+	    $key= $model->getAlias().'__'.$field->getRealName();
+
+	    if ( get_class($field) == 'ForeignKeyField')
+	    {
+		$child= clone $field->getReference();
+		$this->fill($child, $values);
+		$field->setValue($child);
+	    }
+	    elseif ( key_exists($key, $values))
+	    {
+		$field->setValue($values[$key]);
+	    }
+	    else
+	    {
+		throw new Exception("The is no value in result for field '$key'");
+	    }
+	}
+   }
+
+
     /**
      * Get method to retreive results
-     * $param mixed
+     * @param mixed
+     * @return DibiResult
      */
     public function get()
     {
@@ -184,10 +215,25 @@ final class QuerySet
 	    $primaryKeyValue
 	);
 
-	$this->getDataSource()->fetch();
-	DibiOrmController::addSql(dibi::$sql);
+	$result= array();
+	foreach($this->getDataSource() as $values)
+	{
+	    $model= clone $this->model;
+	    $this->fill($model, $values);
+	    $result[]= $model;
+	}
+	if ( sizeof($result) == 1 )
+	{
+	    return $result[0];
+	}
+	elseif ( sizeof($result) > 1)
+	{
+	    return $result;
+	}
+	else {
+	    return false;
+	}
     }
-
 
 
     /**
