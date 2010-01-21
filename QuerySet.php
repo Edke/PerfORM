@@ -145,6 +145,16 @@ final class QuerySet
 	}
     }
 
+
+    /**
+     * Clears all model data
+     */
+    public function clear()
+    {
+	DibiOrmController::getConnection()->query("DELETE FROM %n", $this->model->getTableName());
+	DibiOrmController::addSql(dibi::$sql);
+    }
+
     
     /**
      * Get method to retreive results
