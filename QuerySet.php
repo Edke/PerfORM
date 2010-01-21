@@ -1,26 +1,64 @@
 <?php
+
 /**
- * queryset
+ * DibiOrm - Object-relational mapping based on David Grudl's dibi
  *
- * @author kraken
+ * @copyright  Copyright (c) 2010 Eduard 'edke' Kracmar
+ * @license    no license set at this point
+ * @link       http://dibiorm.local :-)
+ * @category   QuerySet
+ * @package    DibiOrm
  */
-class QuerySet
+
+
+/**
+ * QuerySets
+ *
+ * Querying class responsible for getting data from database with help of models definition
+ *
+ * @final
+ * @copyright Copyright (c) 2010 Eduard 'edke' Kracmar
+ * @package DibiOrm
+ */
+
+final class QuerySet
 {
-    /**
-     * @var DibiOrm
-     */
-    protected $orm;
+
 
     /**
-     *
+     * Instance of datasource created
      * @var DibiDataSource
      */
     protected $dataSource;
 
+
+    /**
+     * Array of fields created for datasource
+     * @var array
+     */
     protected $fields= array();
 
+
+    /**
+     * Array of joins created for datasource
+     * @var array
+     */
     protected $joins= array();
 
+
+    /**
+     * Instance of model
+     * @var DibiOrm
+     */
+    protected $orm;
+
+
+    /**
+     * Constructor
+     *
+     * Creates select and datasource from models definition
+     * @param DibiOrm $orm
+     */
     public function  __construct(DibiOrm $orm)
     {
 	$this->orm= $orm;
@@ -42,77 +80,89 @@ class QuerySet
 	//Debug::consoleDump(dibi::$sql, 'sql');
 	//Debug::consoleDump(count($this->dataSource));
 	//Debug::consoleDump($query, 'query');
-	
-	return $this;
     }
 
+
+    /**
+     * Adds fields from models definition
+     * @param DibiOrm $orm
+     */
     protected function addFields($orm)
     {
 	foreach( $orm->getFields() as $field )
 	{
 	    $this->fields[]= sprintf("\t%s.%s as %s__%s", $orm->getTableName(), $field->getRealName(), $orm->getTableName(), $field->getRealName() );
-	    if ( get_class($field) == 'ForeignKeyField') {
+	    if ( get_class($field) == 'ForeignKeyField')
+	    {
 		$this->addFields($field->getReference());
 	    }
 	}
     }
 
+
     /**
+     * Adds joins from models definition if relation to other models exists
      * @param DibiOrm $orm
      */
     protected function addJoins($orm)
     {
 	foreach( $orm->getFields() as $field )
 	{
-	    if ( get_class($field) == 'ForeignKeyField') {
+	    if ( get_class($field) == 'ForeignKeyField')
+	    {
 		$this->joins[]= sprintf("\tINNER JOIN %s ON %s.%s = %s.%s",
-		    $field->getReference()->getTableName(),
-		    $field->getReference()->getTableName(),
-		    $field->getReferenceTableKey(),
-		    $orm->getTableName(),
-		    $field->getRealName()
+		$field->getReference()->getTableName(),
+		$field->getReference()->getTableName(),
+		$field->getReferenceTableKey(),
+		$orm->getTableName(),
+		$field->getRealName()
 		);
 		$this->addJoins($field->getReference());
 	    }
 	}
     }
 
+
+    /**
+     * Method to get all results from model
+     * @todo write method :)
+     */
+    public function all()
+    {
+    }
+
+
+    /**
+     * Get method to retreive results
+     * $param mixed
+     */
     public function get()
     {
 	$options= new Set();
 	$options->import(func_get_args());
 
-	foreach ( $options as $option){
-	    if ( preg_match('#^(pk|id)=([0-9]+)$#i', $option, $matches) ) {
+	foreach ( $options as $option)
+	{
+	    if ( preg_match('#^(pk|id)=([0-9]+)$#i', $option, $matches) )
+	    {
 		$primaryKeyValue = $matches[2];
 	    }
-	    else{
+	    else
+	    {
 		throw new Exception("unknown option '$option'");
 	    }
 	}
 	$primaryField= $this->orm->getField($this->orm->getPrimaryKey());
 
 	$this->dataSource->where(
-	    '%n = %'.$primaryField->getType(),
-	    $this->orm->getTableName().'__'.$primaryField->getRealName(),
-	    $primaryKeyValue
+	'%n = %'.$primaryField->getType(),
+	$this->orm->getTableName().'__'.$primaryField->getRealName(),
+	$primaryKeyValue
 	);
 
 	$this->dataSource->fetch();
 
 	DibiOrmController::addSql(dibi::$sql);
-
-	//Debug::consoleDump($this->dataSource->fetch(), 'fetch');
+	#Debug::consoleDump($this->dataSource->fetch(), 'fetch');
     }
-
-    public function all()
-    {
-
-
-//	foreach()
-	
-	
-
-    }
-
 }
