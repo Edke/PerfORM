@@ -1,29 +1,29 @@
 <?php
+
 /**
- * my dibi orm attempt
+ * DibiOrm - Object-relational mapping based on David Grudl's dibi
  *
- * @author kraken
+ * @copyright  Copyright (c) 2010 Eduard 'edke' Kracmar
+ * @license    no license set at this point
+ * @link       http://dibiorm.local :-)
+ * @category   DibiOrm
+ * @package    DibiOrm
  */
+
+
+/**
+ * DibiOrm
+ *
+ * Base model's class responsible for model definition and interaction
+ *
+ * @abstract
+ * @copyright Copyright (c) 2010 Eduard 'edke' Kracmar
+ * @package DibiOrm
+ */
+
 abstract class DibiOrm
 {
 
-    /**
-     * Storage for model fields
-     * @var array
-     */
-    protected $fields= array();
-
-    /**
-     * Sql name of model and table
-     * @var string
-     */
-    protected $tableName= null;
-
-    /**
-     * Name of primary key field
-     * @var string
-     */
-    protected $primaryKey= null;
 
     /**
      * Default primary key field name used when autocreating
@@ -31,17 +31,41 @@ abstract class DibiOrm
      */
     protected $defaultPrimaryKey= 'id';
 
+
     /**
      * Array of models that this model depends on
      * @var array
      */
     protected $depends= array();
 
+
+    /**
+     * Storage for model fields
+     * @var array
+     */
+    protected $fields= array();
+
+
     /**
      * Switch for notifying if model (and which fields) was/were modified
      * @var boolean
      */
     protected $modified= false;
+
+
+    /**
+     * Name of primary key field
+     * @var string
+     */
+    protected $primaryKey= null;
+
+
+    /**
+     * Sql name of model and table
+     * @var string
+     */
+    protected $tableName= null;
+
 
     /**
      * Constructor
@@ -67,25 +91,6 @@ abstract class DibiOrm
 	}
     }
 
-    /**
-     * Load model definition from cache if exists; if not, build model
-     */
-    protected function loadDefinition()
-    {
-	$cache= DibiOrmController::getCache();
-	$cacheKey= $this->getCacheKey();
-	if ( isset($cache[$cacheKey]))
-	{
-	    foreach( $cache[$cacheKey]->getProperties() as $property => $value)
-	    {
-		$this->{$property}= $value;
-	    }
-	}
-	else
-	{
-	    $this->buildDefinition();
-	}
-    }
 
     /**
      * Build model definition from setup
@@ -109,79 +114,114 @@ abstract class DibiOrm
 	}
 
 	$this->validate();
-	
-	if (DibiOrmController::useModelCaching()) {
+
+	if (DibiOrmController::useModelCaching())
+	{
 	    $cache= DibiOrmController::getCache();
 	    $cache[$this->getCacheKey()]= $this;
 	}
     }
 
-    
-    /**
-     * Definition of model
-     * @abstract
-     */
-    abstract protected function setup();
-
 
     /**
-     * Magic method for creating fields and setting it's values
-     * @param string $field
-     * @param mixed $value
+     * Checks if $model depends on this model
+     * @param DibiOrm $model
+     * @return boolean
      */
-    public function __set($field,  $value)
+    public function dependsOn($model)
     {
-	// setting value for existing field
-	if ( key_exists($field, $this->fields) && !is_object($value) )
+	foreach($this->depends as $dependent)
 	{
-	    $this->fields[$field]->setValue($value);
-	    $this->modified= true;
-	}
-	// setting new field
-	elseif ( !key_exists($field, $this->fields) && is_object($value) )
-	{
-	    $this->fields[$field]= $value;
-	    $this->fields[$field]->setName($field);
-
-	    if (get_class($value) == 'ForeignKeyField')
+	    if ( $model == $dependent )
 	    {
-		$this->depends[]= $value->getReference();
-	    }
-
-	}
-	elseif ( key_exists($field, $this->fields) && is_object($value) )
-	{
-	    if ($this->fields[$field]->isForeignKey() && (get_class($value) == get_class($this->fields[$field]->getReference())) )
-	    {
-		$this->fields[$field]->setValue($value);
-		$this->modified= true;
-	    }
-	    else
-	    {
-		Debug::consoleDump(array($field, $value), 'invalid setting on orm object');
-		throw new Exception("column '$field' already exists");
+		return true;
 	    }
 	}
-	else
-	{
-	    Debug::consoleDump(array($field, $value), 'invalid setting on orm object');
-	    throw new Exception('invalid bigtime');
-	}
+	return false;
     }
-    
+
 
     /**
-     * Magic method for getting field's values
-     * @param string $field
-     * @return mixed
+     * Getter for model's cache key
+     * @return string
      */
-    public function  __get($field)
+    protected function getCacheKey()
     {
-	if ( key_exists($field, $this->fields) && is_object($this->fields[$field]))
+	$mtime= DibiOrmController::getModelMtime($this);
+	return md5($mtime.'|'.get_class($this));
+    }
+
+
+    /**
+     * Getter for DibiOrmController's connection
+     * @return DibiConnection
+     */
+    public function getConnection()
+    {
+	return DibiOrmController::getConnection();
+    }
+
+
+    /**
+     * Getter for all dependents of model
+     * @return array
+     */
+    public function getDependents()
+    {
+	return $this->depends;
+    }
+
+
+    /**
+     * Getter for field with name $name
+     * @return Field
+     */
+    public function getField($name)
+    {
+	if ( !key_exists($name, $this->fields))
 	{
-	    return $this->fields[$field]->getValue();
+	    throw new Exception("field '$name' does not exists");
 	}
-	throw new Exception("invalid field name '$field'");
+	return $this->fields[$name];
+    }
+
+
+    /**
+     * Getter for model's fields
+     * @return array
+     */
+    public function getFields()
+    {
+	return $this->fields;
+    }
+
+
+    /**
+     * Getter for foreign keys
+     * @return array
+     */
+    public function getForeignKeys()
+    {
+	$keys= array();
+
+	foreach($this->fields as $field)
+	{
+	    if ( get_class($field) == 'ForeignKeyField' )
+	    {
+		$keys[]= $field;
+	    }
+	}
+	return $keys;
+    }
+
+
+    /**
+     * Getter for DibiOrmController's driver
+     * @return DibiOrmDriver
+     */
+    public function getDriver()
+    {
+	return DibiOrmController::getDriver();
     }
 
 
@@ -228,30 +268,13 @@ abstract class DibiOrm
 
 
     /**
-     * Getter for foreign keys
-     * @return array
+     * Getter of all model's properties
+     *
+     * Required for loading of serialized object's properties from cache
      */
-    public function getForeignKeys()
+    public function getProperties()
     {
-	$keys= array();
-
-	foreach($this->fields as $field)
-	{
-	    if ( get_class($field) == 'ForeignKeyField' )
-	    {
-		$keys[]= $field;
-	    }
-	}
-	return $keys;
-    }
-
-    /**
-     * Setter for primary key field name
-     * @param string $primaryKey
-     */
-    protected function setPrimaryKey($primaryKey)
-    {
-	$this->primaryKey= $primaryKey;
+	return get_object_vars($this);
     }
 
 
@@ -262,6 +285,129 @@ abstract class DibiOrm
     public function getTableName()
     {
 	return $this->tableName;
+    }
+
+
+    /**
+     * Checks if model has field with name $name
+     * @return boolean
+     */
+    public function hasField($name)
+    {
+
+	foreach($this->getFields() as $field)
+	{
+	    if ( $field->getRealName() == $name )
+	    {
+		return true;
+	    }
+	}
+	return false;
+    }
+
+
+    /**
+     * Import (load) model with values
+     * @param array $values
+     */
+    public function import($values)
+    {
+	if ( !is_array($values))
+	{
+	    throw new Exception("invalid datatype of import values, array expected");
+	}
+
+	foreach($values as $field => $value)
+	{
+	    $this->{$field}= $value;
+	}
+    }
+
+
+    /**
+     * Add (insert) model to database
+     *
+     * Triggers NOTICE when no data to add
+     *
+     * @return mixed model's primary key value
+     */
+    public function insert()
+    {
+	$insert= array();
+
+	foreach($this->fields as $key => $field)
+	{
+	    $finalColumn= $field->getRealName().'%'.$field->getType();
+
+	    if ( !is_null($value = $field->getValue()) )
+	    {
+		$insert[$finalColumn]= $value;
+	    }
+	    elseif( !is_null($default = $field->getDefaultValue())  )
+	    {
+		$insert[$finalColumn]= $default;
+	    }
+	    elseif( $field->isNotNull() )
+	    {
+		throw new Exception("field '$key' has no value set or default value but not null");
+	    }
+	}
+
+	if (count($insert)>0)
+	{
+	    //Debug::consoleDump($insert, 'insert array');
+
+	    DibiOrmController::queryAndLog('insert into %n', $this->getTableName(), $insert);
+	    $this->setUnmodified();
+	    $insertId= $this->getConnection()->insertId();
+	    $this->fields[$this->getPrimaryKey()]->setValue($insertId);
+	    return $insertId;
+	}
+	else
+	{
+	    trigger_error("The model '".get_class($this)."' has no data to insert", E_USER_NOTICE);
+	}
+    }
+
+
+    /**
+     * Checks if model and it's fields are modified
+     * @return boolean
+     */
+    public function isModified()
+    {
+	return $this->modified;
+    }
+
+
+    /**
+     * Load model definition from cache if exists; if not, build model
+     */
+    protected function loadDefinition()
+    {
+	$cache= DibiOrmController::getCache();
+	$cacheKey= $this->getCacheKey();
+	if ( isset($cache[$cacheKey]))
+	{
+	    foreach( $cache[$cacheKey]->getProperties() as $property => $value)
+	    {
+		$this->{$property}= $value;
+	    }
+	}
+	else
+	{
+	    $this->buildDefinition();
+	}
+    }
+
+
+    /**
+     * Interface to QuerySet's
+     * @return QuerySet
+     */
+    public function objects()
+    {
+	return new QuerySet($this);
     }
 
 
@@ -281,6 +427,36 @@ abstract class DibiOrm
 	else
 	{
 	    return $this->insert();
+	}
+    }
+
+
+    /**
+     * Setter for primary key field name
+     * @param string $primaryKey
+     */
+    protected function setPrimaryKey($primaryKey)
+    {
+	$this->primaryKey= $primaryKey;
+    }
+
+
+    /**
+     * Definition of model
+     * @abstract
+     */
+    abstract protected function setup();
+
+
+    /**
+     * Set model and all it's fields to unmodified
+     */
+    protected function setUnmodified()
+    {
+	$this->modified= false;
+	foreach( $this->getFields() as $field)
+	{
+	    $field->setUnmodified();
 	}
     }
 
@@ -330,93 +506,6 @@ abstract class DibiOrm
 	}
     }
 
-    /**
-     * Add (insert) model to database
-     *
-     * Triggers NOTICE when no data to add
-     *
-     * @return mixed model's primary key value
-     */
-    public function insert()
-    {
-	$insert= array();
-
-	foreach($this->fields as $key => $field)
-	{
-	    $finalColumn= $field->getRealName().'%'.$field->getType();
-
-	    if ( !is_null($value = $field->getValue()) )
-	    {
-		$insert[$finalColumn]= $value;
-	    }
-	    elseif( !is_null($default = $field->getDefaultValue())  )
-	    {
-		$insert[$finalColumn]= $default;
-	    }
-	    elseif( $field->isNotNull() )
-	    {
-		throw new Exception("field '$key' has no value set or default value but not null");
-	    }
-	}
-
-	if (count($insert)>0)
-	{
-	    //Debug::consoleDump($insert, 'insert array');
-
-	    DibiOrmController::queryAndLog('insert into %n', $this->getTableName(), $insert);
-	    $this->setUnmodified();
-	    $insertId= $this->getConnection()->insertId();
-	    $this->fields[$this->getPrimaryKey()]->setValue($insertId);
-	    return $insertId;
-	}
-	else
-	{
-	    trigger_error("The model '".get_class($this)."' has no data to insert", E_USER_NOTICE);
-	}
-    }
-
-    
-    /**
-     * Getter for model's fields
-     * @return array
-     */
-    public function getFields()
-    {
-	return $this->fields;
-    }
-
-    
-    /**
-     * Getter for field with name $name
-     * @return Field
-     */
-    public function getField($name)
-    {
-	if ( !key_exists($name, $this->fields))
-	{
-	    throw new Exception("field '$name' does not exists");
-	}
-	return $this->fields[$name];
-    }
-
-    
-    /**
-     * Checks if model has field with name $name
-     * @return boolean
-     */
-    public function hasField($name)
-    {
-
-	foreach($this->getFields() as $field)
-	{
-	    if ( $field->getRealName() == $name )
-	    {
-		return true;
-	    }
-	}
-	return false;
-    }
-
 
     /**
      * Validate model's definition
@@ -436,124 +525,64 @@ abstract class DibiOrm
 	}
     }
 
-    
+
     /**
-     * Import (load) model with values
-     * @param array $values
+     * Magic method for creating fields and setting it's values
+     * @param string $field
+     * @param mixed $value
      */
-    public function import($values)
+    public function __set($field,  $value)
     {
-	if ( !is_array($values))
+	// setting value for existing field
+	if ( key_exists($field, $this->fields) && !is_object($value) )
 	{
-	    throw new Exception("invalid datatype of import values, array expected");
+	    $this->fields[$field]->setValue($value);
+	    $this->modified= true;
 	}
-
-	foreach($values as $field => $value)
+	// setting new field
+	elseif ( !key_exists($field, $this->fields) && is_object($value) )
 	{
-	    $this->{$field}= $value;
-	}
-    }
+	    $this->fields[$field]= $value;
+	    $this->fields[$field]->setName($field);
 
-
-    /**
-     * Getter for all dependents of model
-     * @return array
-     */
-    public function getDependents()
-    {
-	return $this->depends;
-    }
-
-
-    /**
-     * Checks if $model depends on this model
-     * @param DibiOrm $model
-     * @return boolean
-     */
-    public function dependsOn($model)
-    {
-	foreach($this->depends as $dependent)
-	{
-	    if ( $model == $dependent )
+	    if (get_class($value) == 'ForeignKeyField')
 	    {
-		return true;
+		$this->depends[]= $value->getReference();
+	    }
+
+	}
+	elseif ( key_exists($field, $this->fields) && is_object($value) )
+	{
+	    if ($this->fields[$field]->isForeignKey() && (get_class($value) == get_class($this->fields[$field]->getReference())) )
+	    {
+		$this->fields[$field]->setValue($value);
+		$this->modified= true;
+	    }
+	    else
+	    {
+		Debug::consoleDump(array($field, $value), 'invalid setting on orm object');
+		throw new Exception("column '$field' already exists");
 	    }
 	}
-	return false;
-    }
-
-
-    /**
-     * Getter for DibiOrmController's connection
-     * @return DibiConnection
-     */
-    public function getConnection()
-    {
-	return DibiOrmController::getConnection();
-    }
-
-
-    /**
-     * Getter for DibiOrmController's driver
-     * @return DibiOrmDriver
-     */
-    public function getDriver()
-    {
-	return DibiOrmController::getDriver();
-    }
-
-    
-    /**
-     * Checks if model and it's fields are modified
-     * @return boolean
-     */
-    public function isModified()
-    {
-	return $this->modified;
-    }
-
-    
-    /**
-     * Set model and all it's fields to unmodified
-     */
-    protected function setUnmodified()
-    {
-	$this->modified= false;
-	foreach( $this->getFields() as $field)
+	else
 	{
-	    $field->setUnmodified();
+	    Debug::consoleDump(array($field, $value), 'invalid setting on orm object');
+	    throw new Exception('invalid bigtime');
 	}
     }
 
 
     /**
-     * Interface to QuerySet's
-     * @return QuerySet
+     * Magic method for getting field's values
+     * @param string $field
+     * @return mixed
      */
-    public function objects()
+    public function  __get($field)
     {
-	return new QuerySet($this);
-    }
-
-
-    /**
-     * Getter for model's cache key
-     * @return string
-     */
-    protected function getCacheKey()
-    {
-	$mtime= DibiOrmController::getModelMtime($this);
-	return md5($mtime.'|'.get_class($this));
-    }
-
-
-    /**
-     * Getter of all model's properties
-     *
-     * Required for loading of serialized object's properties from cache
-     */
-    public function getProperties()
-    {
-	return get_object_vars($this);
+	if ( key_exists($field, $this->fields) && is_object($this->fields[$field]))
+	{
+	    return $this->fields[$field]->getValue();
+	}
+	throw new Exception("invalid field name '$field'");
     }
 }
