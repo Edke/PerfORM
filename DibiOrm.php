@@ -43,14 +43,48 @@ abstract class DibiOrm
      */
     public function  __construct($importValues = null)
     {
+	if ( DibiOrmController::useModelCaching() )
+	{
+	    $this->loadDefinition();
+	}
+	else
+	{
+	    $this->buildDefinition();
+	}
+
+	if ( !is_null($importValues))
+	{
+	    $this->import($importValues);
+	}
+    }
+
+    /**
+     * Load model definition from cache if exists; if not, build model
+     */
+    protected function loadDefinition()
+    {
 	$cache= DibiOrmController::getCache();
 	$cacheKey= $this->getCacheKey();
 	if ( isset($cache[$cacheKey]))
 	{
-	    $this->loadProperties($cache[$cacheKey]->getProperties());
-	    return;
+	    foreach( $cache[$cacheKey]->getProperties() as $property => $value)
+	    {
+		$this->{$property}= $value;
+	    }
 	}
+	else
+	{
+	    $this->buildDefinition();
+	}
+    }
 
+    /**
+     * Build model definition from setup
+     *
+     * Model will be cached if caching is enabled (DibiOrmController::useModelCaching())
+     */
+    protected function buildDefinition()
+    {
 	if ( is_null($this->getTableName()))
 	{
 	    $this->tableName= strtolower(get_class($this));
@@ -66,15 +100,11 @@ abstract class DibiOrm
 	}
 
 	$this->validate();
-
-	if ( !is_null($importValues))
-	{
-	    $this->import($importValues);
+	
+	if (DibiOrmController::useModelCaching()) {
+	    $cache= DibiOrmController::getCache();
+	    $cache[$this->getCacheKey()]= $this;
 	}
-
-	$cache[$cacheKey]= $this;
-	#Debug::consoleDump($this, 'original model');
-	#Debug::consoleDump($cache[$cacheKey], 'model from memcache');
     }
 
     abstract protected function setup();
@@ -404,15 +434,8 @@ abstract class DibiOrm
 	return md5($mtime.'|'.get_class($this));
     }
 
-    public function getProperties(){
-	return get_object_vars($this);
-    }
 
-    protected function loadProperties($properties)
     {
-	foreach( $properties as $property => $value)
-	{
-	    $this->{$property}= $value;
-	}
+	return get_object_vars($this);
     }
 }

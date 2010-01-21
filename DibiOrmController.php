@@ -23,6 +23,11 @@ class DibiOrmController
     protected static $robot;
 
     /**
+     * @var boolean
+     */
+    protected static $modelCaching= true;
+
+    /**
      * @var Cache
      */
     protected static $cache;
@@ -247,4 +252,24 @@ class DibiOrmController
 	self::$sqlBuffer= array();
 	return (empty($buffer)) ? false : $buffer;
     }
+
+
+    public static function enableModelCaching()
+    {
+	self::$modelCaching= true;
+    }
+
+
+    public static function disableModelCaching()
+    {
+	self::$modelCaching= false;
+    }
+
+    public static function useModelCaching()
+    {
+	return self::$modelCaching;
+    }
+
+    
+
 }
