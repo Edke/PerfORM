@@ -62,42 +62,15 @@ final class QuerySet
 
     /**
      * Constructor
-     *
-     * Creates select and datasource from models definition
      * @param DibiOrm $model
      */
     public function  __construct(DibiOrm $model)
     {
 	$this->model= clone $model;
-
-	# aliases for model
-	$tableName= $this->model->getTableName();
-	$this->aliases[$tableName]= 2;
-	$this->model->setAlias($tableName);
-	$this->buildAliases($this->model);
-
-	#Debug::consoleDump($this->model, 'aliased model');
-
-	# build query
-	$query= array();
-	$query[]= 'SELECT';
-	$this->addFields($this->model);
-	$query[]= implode(",\n",$this->fields);
-	$query[]= sprintf("FROM %s", $this->model->getTableName() );
-	$this->addJoins($this->model);
-	$query[]= implode("\n",$this->joins);
-	$sql= implode("\n", $query);
-	$this->dataSource= new DibiDataSource($sql, DibiOrmController::getConnection());
-
-	$result= $this->dataSource->fetch();
-	Debug::consoleDump($result, 'QuerySet result');
-	#Debug::consoleDump(count($this->dataSource));
-	#Debug::consoleDump($query, 'query');
     }
 
-
     /**
-     * Adds fields from models definition
+     * Adds fields recursively from model's definition
      * @param DibiOrm $model
      */
     protected function addFields($model)
@@ -114,7 +87,7 @@ final class QuerySet
 
 
     /**
-     * Adds joins from models definition if relation to other models exists
+     * Adds joins recursively from model's definition if relation to other models exists
      * @param DibiOrm $model
      */
     protected function addJoins($model)
@@ -195,14 +168,42 @@ final class QuerySet
 	}
 	$primaryField= $this->model->getField($this->model->getPrimaryKey());
 
-	$this->dataSource->where(
-	'%n = %'.$primaryField->getType(),
-	$this->model->getTableName().'__'.$primaryField->getRealName(),
-	$primaryKeyValue
+	$this->getDataSource()->where(
+	    '%n = %'.$primaryField->getType(),
+	    $this->model->getAlias().'__'.$primaryField->getRealName(),
+	    $primaryKeyValue
 	);
 
-	$this->dataSource->fetch();
-
+	$this->getDataSource()->fetch();
 	DibiOrmController::addSql(dibi::$sql);
+    }
+
+
+
+    /**
+     * Getter for datasource
+     * @return DibiDataSource
+     */
+    protected function getDataSource()
+    {
+	if (!$this->dataSource)
+	{
+	    # aliases for model
+	    $tableName= $this->model->getTableName();
+	    $this->aliases[$tableName]= 2;
+	    $this->model->setAlias($tableName);
+	    $this->buildAliases($this->model);
+
+	    # build query
+	    $query= array();
+	    $query[]= 'SELECT';
+	    $this->addFields($this->model);
+	    $query[]= implode(",\n",$this->fields);
+	    $query[]= sprintf("FROM %s", $this->model->getTableName() );
+	    $this->addJoins($this->model);
+	    $query[]= implode("\n",$this->joins);
+	    $this->dataSource= new DibiDataSource(implode("\n", $query), DibiOrmController::getConnection());
+	}
+	return $this->dataSource;
     }
 }
