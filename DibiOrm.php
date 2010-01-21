@@ -8,36 +8,45 @@ abstract class DibiOrm
 {
 
     /**
+     * Storage for model fields
      * @var array
      */
     protected $fields= array();
 
     /**
+     * Sql name of model and table
      * @var string
      */
     protected $tableName= null;
 
     /**
+     * Name of primary key field
      * @var string
      */
     protected $primaryKey= null;
 
     /**
+     * Default primary key field name used when autocreating
      * @var string
      */
     protected $defaultPrimaryKey= 'id';
 
     /**
+     * Array of models that this model depends on
      * @var array
      */
     protected $depends= array();
 
     /**
+     * Switch for notifying if model (and which fields) was/were modified
      * @var boolean
      */
     protected $modified= false;
 
     /**
+     * Constructor
+     *
+     * Define model (build or load from cache) and import values if set
      *
      * @param array $importValues
      */
@@ -107,9 +116,20 @@ abstract class DibiOrm
 	}
     }
 
+    
+    /**
+     * Definition of model
+     * @abstract
+     */
     abstract protected function setup();
 
-    public function  __set($field,  $value)
+
+    /**
+     * Magic method for creating fields and setting it's values
+     * @param string $field
+     * @param mixed $value
+     */
+    public function __set($field,  $value)
     {
 	// setting value for existing field
 	if ( key_exists($field, $this->fields) && !is_object($value) )
@@ -148,7 +168,13 @@ abstract class DibiOrm
 	    throw new Exception('invalid bigtime');
 	}
     }
+    
 
+    /**
+     * Magic method for getting field's values
+     * @param string $field
+     * @return mixed
+     */
     public function  __get($field)
     {
 	if ( key_exists($field, $this->fields) && is_object($this->fields[$field]))
@@ -158,6 +184,12 @@ abstract class DibiOrm
 	throw new Exception("invalid field name '$field'");
     }
 
+
+    /**
+     * Getter for primary key field name
+     * @return string
+     * @todo remove check for multiple primary keys on table, needed to check elsewhere
+     */
     public function getPrimaryKey()
     {
 
@@ -194,6 +226,11 @@ abstract class DibiOrm
 	}
     }
 
+
+    /**
+     * Getter for foreign keys
+     * @return array
+     */
     public function getForeignKeys()
     {
 	$keys= array();
@@ -208,16 +245,32 @@ abstract class DibiOrm
 	return $keys;
     }
 
+    /**
+     * Setter for primary key field name
+     * @param string $primaryKey
+     */
     protected function setPrimaryKey($primaryKey)
     {
 	$this->primaryKey= $primaryKey;
     }
 
+
+    /**
+     * Getter for sql table name
+     * @return string
+     */
     public function getTableName()
     {
 	return $this->tableName;
     }
 
+
+    /**
+     * Saving model
+     *
+     * When primary key is set, model will be updated otherwise inserted
+     * @return mixed model's primary key value
+     */
     public function save()
     {
 	$pk= $this->getPrimaryKey();
@@ -231,6 +284,15 @@ abstract class DibiOrm
 	}
     }
 
+
+    /**
+     * Save (update) model to database
+     *
+     * Only modified fields will be updated
+     * Triggers NOTICE when no need to update
+     *
+     * @return mixed model's primary key value
+     */
     public function update()
     {
 	$update= array();
@@ -268,7 +330,13 @@ abstract class DibiOrm
 	}
     }
 
-
+    /**
+     * Add (insert) model to database
+     *
+     * Triggers NOTICE when no data to add
+     *
+     * @return mixed model's primary key value
+     */
     public function insert()
     {
 	$insert= array();
@@ -303,11 +371,13 @@ abstract class DibiOrm
 	}
 	else
 	{
-	    trigger_error("The model '".get_class($this)."' has no unmodified data to insert", E_USER_NOTICE);
+	    trigger_error("The model '".get_class($this)."' has no data to insert", E_USER_NOTICE);
 	}
     }
 
+    
     /**
+     * Getter for model's fields
      * @return array
      */
     public function getFields()
@@ -315,7 +385,9 @@ abstract class DibiOrm
 	return $this->fields;
     }
 
+    
     /**
+     * Getter for field with name $name
      * @return Field
      */
     public function getField($name)
@@ -327,8 +399,10 @@ abstract class DibiOrm
 	return $this->fields[$name];
     }
 
+    
     /**
-     * @return Field
+     * Checks if model has field with name $name
+     * @return boolean
      */
     public function hasField($name)
     {
@@ -345,7 +419,9 @@ abstract class DibiOrm
 
 
     /**
-     * validate fields definition
+     * Validate model's definition
+     *
+     * Throws Exception with all validation errors
      */
     protected function validate()
     {
@@ -360,8 +436,9 @@ abstract class DibiOrm
 	}
     }
 
+    
     /**
-     *
+     * Import (load) model with values
      * @param array $values
      */
     public function import($values)
@@ -377,12 +454,22 @@ abstract class DibiOrm
 	}
     }
 
+
+    /**
+     * Getter for all dependents of model
+     * @return array
+     */
     public function getDependents()
     {
 	return $this->depends;
     }
 
 
+    /**
+     * Checks if $model depends on this model
+     * @param DibiOrm $model
+     * @return boolean
+     */
     public function dependsOn($model)
     {
 	foreach($this->depends as $dependent)
@@ -395,18 +482,29 @@ abstract class DibiOrm
 	return false;
     }
 
+
+    /**
+     * Getter for DibiOrmController's connection
+     * @return DibiConnection
+     */
     public function getConnection()
     {
 	return DibiOrmController::getConnection();
     }
 
 
+    /**
+     * Getter for DibiOrmController's driver
+     * @return DibiOrmDriver
+     */
     public function getDriver()
     {
 	return DibiOrmController::getDriver();
     }
 
+    
     /**
+     * Checks if model and it's fields are modified
      * @return boolean
      */
     public function isModified()
@@ -414,6 +512,10 @@ abstract class DibiOrm
 	return $this->modified;
     }
 
+    
+    /**
+     * Set model and all it's fields to unmodified
+     */
     protected function setUnmodified()
     {
 	$this->modified= false;
@@ -423,11 +525,21 @@ abstract class DibiOrm
 	}
     }
 
+
+    /**
+     * Interface to QuerySet's
+     * @return QuerySet
+     */
     public function objects()
     {
 	return new QuerySet($this);
     }
 
+
+    /**
+     * Getter for model's cache key
+     * @return string
+     */
     protected function getCacheKey()
     {
 	$mtime= DibiOrmController::getModelMtime($this);
@@ -435,6 +547,12 @@ abstract class DibiOrm
     }
 
 
+    /**
+     * Getter of all model's properties
+     *
+     * Required for loading of serialized object's properties from cache
+     */
+    public function getProperties()
     {
 	return get_object_vars($this);
     }
