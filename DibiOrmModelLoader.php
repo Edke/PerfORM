@@ -1,22 +1,32 @@
 <?php
+
 /**
- * Nette Framework
+ * DibiOrm - Object-relational mapping based on David Grudl's dibi
  *
  * @copyright  Copyright (c) 2004, 2010 David Grudl
+ * @copyright  Copyright (c) 2010 Eduard 'edke' Kracmar
  * @license    http://nettephp.com/license  Nette license
  * @link       http://nettephp.com
- * @category   Nette
- * @package    Nette\Loaders
+ * @category   DibiOrm
+ * @package    DibiOrm
  */
-
 
 
 /**
- * Nette auto loader is responsible for loading classes and interfaces.
+ * DibiOrmModelLoader
  *
- * @copyright  Copyright (c) 2004, 2010 David Grudl
- * @package    Nette\Loaders
+ * Loader heavilly extended from great David Grudl's RobotLoadet of Nette
+ *
+ * Loader searches for classes of app/ directory, it creates instance and
+ * finds if subclass of DibiOrm (ugly but working so far)
+ *
+ * Class is also helping find out mtimes of models class files for caching purposes
+ *
+ * @copyright Copyright (c) 2004, 2010 David Grudl
+ * @copyright Copyright (c) 2010 Eduard 'edke' Kracmar
+ * @package DibiOrm
  */
+
 class DibiOrmModelLoader
 {
     /** @var array */
@@ -40,9 +50,7 @@ class DibiOrmModelLoader
     /** @var string */
     private $ignoreMask;
 
-    /**
-     * @var array
-     */
+    /** @var array all models of application */
     private $models= array();
 
     /** @var bool */
@@ -115,7 +123,6 @@ class DibiOrmModelLoader
     }
 
 
-
     /**
      * Add class and file name to the list.
      * @param  string
@@ -127,7 +134,6 @@ class DibiOrmModelLoader
 	$class = strtolower($class);
 	$this->list[$class] = $file;
     }
-
 
 
     /**
@@ -183,7 +189,6 @@ class DibiOrmModelLoader
 
 	$iterator->close();
     }
-
 
 
     /**
@@ -274,7 +279,6 @@ class DibiOrmModelLoader
     }
 
 
-
     /**
      * Converts comma separated wildcards to regular expression.
      * @param  string
@@ -292,8 +296,10 @@ class DibiOrmModelLoader
 	}
 	return '#^(' . implode('|', $mask) . ')$#i';
     }
-    
+
+
     /**
+     * Getter for Cache
      * @return Cache
      */
     protected function getCache()
@@ -301,7 +307,9 @@ class DibiOrmModelLoader
 	return DibiOrmController::getCache();
     }
 
+
     /**
+     * Getter for cache key
      * @return string
      */
     protected function getKey()
@@ -309,7 +317,9 @@ class DibiOrmModelLoader
 	return md5("$this->ignoreDirs|$this->acceptFiles|" . implode('|', $this->scanDirs));
     }
 
+
     /**
+     * Getter for models found in application
      * @return array
      */
     public function getModels()
@@ -318,6 +328,11 @@ class DibiOrmModelLoader
     }
 
 
+    /**
+     * Getter for model's class file mtime
+     * @param string $modelName
+     * @return integer
+     */
     public  function getModelMtime($modelName)
     {
 	if (key_exists($modelName, $this->list))
@@ -326,12 +341,14 @@ class DibiOrmModelLoader
 	}
 	throw new Exception("Model '$modelName' not found");
     }
-    
 
 
+    /**
+     * Getter for array of all found model class files
+     * @return array
+     */
     public function getList()
     {
 	return $this->list;
     }
-
 }
