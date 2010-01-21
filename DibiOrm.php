@@ -404,7 +404,7 @@ abstract class DibiOrm
     {
 	$cache= DibiOrmController::getCache();
 	$cacheKey= $this->getCacheKey();
-	if ( isset($cache[$cacheKey]))
+	if ( isset($cache[$cacheKey]) and is_object($cache[$cacheKey]))
 	{
 	    foreach( $cache[$cacheKey]->getProperties() as $property => $value)
 	    {
