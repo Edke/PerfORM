@@ -50,48 +50,61 @@ final class QuerySet
      * Instance of model
      * @var DibiOrm
      */
-    protected $orm;
+    protected $model;
+
+
+    /**
+     * Helper to build aliases for model
+     * @param array
+     */
+    protected $aliases;
 
 
     /**
      * Constructor
      *
      * Creates select and datasource from models definition
-     * @param DibiOrm $orm
+     * @param DibiOrm $model
      */
-    public function  __construct(DibiOrm $orm)
+    public function  __construct(DibiOrm $model)
     {
-	$this->orm= $orm;
+	$this->model= clone $model;
 
+	# aliases for model
+	$tableName= $this->model->getTableName();
+	$this->aliases[$tableName]= 2;
+	$this->model->setAlias($tableName);
+	$this->buildAliases($this->model);
+
+	#Debug::consoleDump($this->model, 'aliased model');
+
+	# build query
 	$query= array();
-
 	$query[]= 'SELECT';
-	$this->addFields($orm);
+	$this->addFields($this->model);
 	$query[]= implode(",\n",$this->fields);
-	$query[]= sprintf("FROM %s", $orm->getTableName() );
-	$this->addJoins($orm);
-	$query[]= implode(",\n",$this->joins);
-
+	$query[]= sprintf("FROM %s", $this->model->getTableName() );
+	$this->addJoins($this->model);
+	$query[]= implode("\n",$this->joins);
 	$sql= implode("\n", $query);
-
 	$this->dataSource= new DibiDataSource($sql, DibiOrmController::getConnection());
 
-	$this->dataSource->fetch();
-	//Debug::consoleDump(dibi::$sql, 'sql');
-	//Debug::consoleDump(count($this->dataSource));
-	//Debug::consoleDump($query, 'query');
+	$result= $this->dataSource->fetch();
+	Debug::consoleDump($result, 'QuerySet result');
+	#Debug::consoleDump(count($this->dataSource));
+	#Debug::consoleDump($query, 'query');
     }
 
 
     /**
      * Adds fields from models definition
-     * @param DibiOrm $orm
+     * @param DibiOrm $model
      */
-    protected function addFields($orm)
+    protected function addFields($model)
     {
-	foreach( $orm->getFields() as $field )
+	foreach( $model->getFields() as $field )
 	{
-	    $this->fields[]= sprintf("\t%s.%s as %s__%s", $orm->getTableName(), $field->getRealName(), $orm->getTableName(), $field->getRealName() );
+	    $this->fields[]= sprintf("\t%s.%s as %s__%s", $model->getAlias(), $field->getRealName(), $model->getAlias(), $field->getRealName() );
 	    if ( get_class($field) == 'ForeignKeyField')
 	    {
 		$this->addFields($field->getReference());
@@ -102,19 +115,20 @@ final class QuerySet
 
     /**
      * Adds joins from models definition if relation to other models exists
-     * @param DibiOrm $orm
+     * @param DibiOrm $model
      */
-    protected function addJoins($orm)
+    protected function addJoins($model)
     {
-	foreach( $orm->getFields() as $field )
+	foreach( $model->getFields() as $field )
 	{
 	    if ( get_class($field) == 'ForeignKeyField')
 	    {
-		$this->joins[]= sprintf("\tINNER JOIN %s ON %s.%s = %s.%s",
+		$this->joins[]= sprintf("\tINNER JOIN %s AS %s ON %s.%s = %s.%s",
 		$field->getReference()->getTableName(),
-		$field->getReference()->getTableName(),
+		$field->getReference()->getAlias(),
+		$field->getReference()->getAlias(),
 		$field->getReferenceTableKey(),
-		$orm->getTableName(),
+		$model->getTableName(),
 		$field->getRealName()
 		);
 		$this->addJoins($field->getReference());
@@ -132,6 +146,33 @@ final class QuerySet
     }
 
 
+    /**
+     * Builds recursively aliases for $model
+     * @param DibiOrm $model
+     */
+    protected function buildAliases($model)
+    {
+	foreach($model->getFields() as $field)
+	{
+	    if ( get_class($field) == 'ForeignKeyField') {
+		$foreignKeyTableName= $field->getReference()->getTableName();
+
+		if ( key_exists($foreignKeyTableName, $this->aliases))
+		{
+		    $field->getReference()->setAlias($foreignKeyTableName.$this->aliases[$foreignKeyTableName]);
+		    $this->aliases[$foreignKeyTableName]++;
+		}
+		else
+		{
+		    $this->aliases[$foreignKeyTableName]= 2;
+		    $field->getReference()->setAlias($foreignKeyTableName);
+		}
+		$this->buildAliases($field->getReference());
+	    }
+	}
+    }
+
+    
     /**
      * Get method to retreive results
      * $param mixed
@@ -152,17 +193,16 @@ final class QuerySet
 		throw new Exception("unknown option '$option'");
 	    }
 	}
-	$primaryField= $this->orm->getField($this->orm->getPrimaryKey());
+	$primaryField= $this->model->getField($this->model->getPrimaryKey());
 
 	$this->dataSource->where(
 	'%n = %'.$primaryField->getType(),
-	$this->orm->getTableName().'__'.$primaryField->getRealName(),
+	$this->model->getTableName().'__'.$primaryField->getRealName(),
 	$primaryKeyValue
 	);
 
 	$this->dataSource->fetch();
 
 	DibiOrmController::addSql(dibi::$sql);
-	#Debug::consoleDump($this->dataSource->fetch(), 'fetch');
     }
 }

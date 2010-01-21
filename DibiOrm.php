@@ -68,6 +68,13 @@ abstract class DibiOrm
 
 
     /**
+     * Table alias needed by QuertySets
+     * @var string
+     */
+    protected $alias;
+
+    
+    /**
      * Constructor
      *
      * Define model (build or load from cache) and import values if set
@@ -138,6 +145,16 @@ abstract class DibiOrm
 	    }
 	}
 	return false;
+    }
+
+
+    /**
+     * Getter for alias
+     * @return string
+     */
+    public function getAlias()
+    {
+	return $this->alias;
     }
 
 
@@ -431,6 +448,16 @@ abstract class DibiOrm
     }
 
 
+    /**
+     * Setter for model alias
+     * @param string $alias
+     */
+    public function setAlias($alias)
+    {
+	$this->alias= $alias;
+    }
+
+    
     /**
      * Setter for primary key field name
      * @param string $primaryKey

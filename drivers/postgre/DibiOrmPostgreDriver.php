@@ -107,7 +107,7 @@ class DibiOrmPostgreDriver extends DibiOrmDriver {
     protected function addForeignKey($orm, $key) {
 	return (object) array(
 		'type' => 'foreign',
-		'constraint_name' => $orm->getTableName() .'_fkey',
+		'constraint_name' => $orm->getTableName() .'_'. $key->getRealName() .'_fkey',
 		'key_name' => $key->getRealName(),
 		'reference_table' => $key->getReferenceTableName(),
 		'reference_key_name' => $key->getReferenceTableKey(),
