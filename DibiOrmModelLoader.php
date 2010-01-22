@@ -74,7 +74,8 @@ class DibiOrmModelLoader
      */
     public function rebuild($force = TRUE)
     {
-	$cache= DibiOrmController::getCache();
+	$cache= Environment::getCache('DibiOrmModelLoader');
+	//DibiOrmController::getCache();
 	$key= $this->getKey();
 	$this->acceptMask = self::wildcards2re($this->acceptFiles);
 	$this->ignoreMask = self::wildcards2re($this->ignoreDirs);
