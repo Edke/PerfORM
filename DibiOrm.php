@@ -26,6 +26,13 @@ abstract class DibiOrm
 
 
     /**
+     * Table alias
+     * @var string
+     */
+    protected $alias;
+
+
+    /**
      * Default primary key field name used when autocreating
      * @var string
      */
@@ -66,13 +73,6 @@ abstract class DibiOrm
      */
     protected $tableName= null;
 
-
-    /**
-     * Table alias needed by QuertySets
-     * @var string
-     */
-    protected $alias;
-
     
     /**
      * Constructor
@@ -100,6 +100,33 @@ abstract class DibiOrm
 
 
     /**
+     * Builds recursively aliases for $model
+     * @param DibiOrm $model
+     */
+    protected function buildAliases($model, $aliases)
+    {
+	foreach($model->getFields() as $field)
+	{
+	    if ( get_class($field) == 'ForeignKeyField') {
+		$foreignKeyTableName= $field->getReference()->getTableName();
+
+		if ( key_exists($foreignKeyTableName, $aliases))
+		{
+		    $field->getReference()->setAlias($foreignKeyTableName.$aliases[$foreignKeyTableName]);
+		    $aliases[$foreignKeyTableName]++;
+		}
+		else
+		{
+		    $field->getReference()->setAlias($foreignKeyTableName);
+		    $aliases[$foreignKeyTableName]= 2;
+		}
+		$this->buildAliases($field->getReference(), $aliases);
+	    }
+	}
+    }
+
+
+    /**
      * Build model definition from setup
      *
      * Model will be cached if caching is enabled (DibiOrmController::useModelCaching())
@@ -121,6 +148,13 @@ abstract class DibiOrm
 	}
 
 	$this->validate();
+
+	# aliases for model
+	$tableName= $this->getTableName();
+	$aliases= array();
+	$aliases[$tableName]= 2;
+	$this->setAlias($tableName);
+	$this->buildAliases($this, $aliases);
 
 	if (DibiOrmController::useModelCaching())
 	{

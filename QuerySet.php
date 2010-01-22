@@ -54,21 +54,15 @@ final class QuerySet
 
 
     /**
-     * Helper to build aliases for model
-     * @param array
-     */
-    protected $aliases;
-
-
-    /**
      * Constructor
      * @param DibiOrm $model
      */
-    public function  __construct(DibiOrm $model)
+    public function  __construct(& $model)
     {
-	$this->model= clone $model;
+	$this->model= $model;
     }
 
+    
     /**
      * Adds fields recursively from model's definition
      * @param DibiOrm $model
@@ -120,33 +114,6 @@ final class QuerySet
 
 
     /**
-     * Builds recursively aliases for $model
-     * @param DibiOrm $model
-     */
-    protected function buildAliases($model)
-    {
-	foreach($model->getFields() as $field)
-	{
-	    if ( get_class($field) == 'ForeignKeyField') {
-		$foreignKeyTableName= $field->getReference()->getTableName();
-
-		if ( key_exists($foreignKeyTableName, $this->aliases))
-		{
-		    $field->getReference()->setAlias($foreignKeyTableName.$this->aliases[$foreignKeyTableName]);
-		    $this->aliases[$foreignKeyTableName]++;
-		}
-		else
-		{
-		    $this->aliases[$foreignKeyTableName]= 2;
-		    $field->getReference()->setAlias($foreignKeyTableName);
-		}
-		$this->buildAliases($field->getReference());
-	    }
-	}
-    }
-
-
-    /**
      * Clears all model data
      */
     public function clear()
@@ -162,7 +129,7 @@ final class QuerySet
      * @param array $values
      * @result DibiOrm
      */
-    protected function fill(& $model, $values)
+    protected function fill($model, $values)
     {
 	foreach($model->getFields() as $field)
 	{
@@ -215,11 +182,21 @@ final class QuerySet
 	    $primaryKeyValue
 	);
 
-	$result= array();
+	$result= $this->getDataSource()->fetch();
+	$this->fill($this->model, $result);
+    }
+
+
+    /**
+     * @todo actualy write method
+     * @return array
+     */
+    public function filter()
+    {
 	foreach($this->getDataSource() as $values)
 	{
 	    $model= clone $this->model;
-	    $this->fill($model, $values);
+
 	    $result[]= $model;
 	}
 	if ( sizeof($result) == 1 )
@@ -244,15 +221,9 @@ final class QuerySet
     {
 	if (!$this->dataSource)
 	{
-	    # aliases for model
-	    $tableName= $this->model->getTableName();
-	    $this->aliases[$tableName]= 2;
-	    $this->model->setAlias($tableName);
-	    $this->buildAliases($this->model);
-
 	    # build query
 	    $query= array();
-	    $query[]= 'SELECT';
+	    $query[]= "\nSELECT";
 	    $this->addFields($this->model);
 	    $query[]= implode(",\n",$this->fields);
 	    $query[]= sprintf("FROM %s", $this->model->getTableName() );
