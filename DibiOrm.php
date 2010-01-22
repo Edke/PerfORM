@@ -556,7 +556,7 @@ abstract class DibiOrm
 
 	if (count($update)>0)
 	{
-	    Debug::consoleDump($update, 'update array');
+	    #Debug::consoleDump($update, 'update array');
 	    DibiOrmController::queryAndLog('update %n set', $this->getTableName(), $update, "where %n = %$primaryKeyType", $primaryKey, $primaryKeyValue);
 	    $this->setUnmodified();
 	    return $primaryKeyValue;
