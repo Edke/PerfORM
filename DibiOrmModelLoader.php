@@ -107,8 +107,7 @@ class DibiOrmModelLoader
      */
     protected function getCache()
     {
-	//return DibiOrmController::getCache();
-	return Environment::getCache('DibiOrmModelLoader');
+	return DibiOrmController::getCache();
     }
 
 
@@ -119,31 +118,6 @@ class DibiOrmModelLoader
     protected function getKey()
     {
 	return md5("$this->ignoreDirs|$this->acceptFiles|" . implode('|', $this->scanDirs));
-    }
-
-
-    /**
-     * Getter for array of all found model class files
-     * @return array
-     */
-    public function getList()
-    {
-	return $this->list;
-    }
-
-
-    /**
-     * Getter for model's class file mtime
-     * @param string $modelName
-     * @return integer
-     */
-    public  function getModelMtime($modelName)
-    {
-	if (key_exists($modelName, $this->list))
-	{
-	    return $this->timestamps[$this->list[$modelName]];
-	}
-	throw new Exception("Model '$modelName' not found");
     }
 
 
@@ -162,10 +136,10 @@ class DibiOrmModelLoader
 	$cache= $this->getCache();
 	$key= $this->getKey();
 
-	if ( isset($cache[$key]) and isset($cache[$key . 'ts']) and isset($cache[$key . 'models']) )
+	if ( isset($cache[$key]) and isset($cache[$key . 'models']) )
 	{
 	    $this->list= $cache[$key];
-	    $this->timestamps= $cache[$key . 'ts'];
+	    #$this->timestamps= $cache[$key . 'ts'];
 	    $this->models= $cache[$key . 'models'];
 	}
 	else
@@ -200,13 +174,13 @@ class DibiOrmModelLoader
 		$class= new $file;
 		if ( is_subclass_of($class, 'DibiOrm') )
 		{
-		    $this->models[]= $class;
+		    $this->models[]= get_class($class);
 		}
 	    }
 	}
 
 	$cache[$key] = $this->list;
-	$cache[$key . 'ts'] = $this->timestamps;
+	#$cache[$key . 'ts'] = $this->timestamps;
 	$cache[$key . 'models'] = $this->models;
 	$this->rebuilded = TRUE;
     }

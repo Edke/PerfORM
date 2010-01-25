@@ -198,8 +198,7 @@ abstract class DibiOrm
      */
     protected function getCacheKey()
     {
-	$mtime= DibiOrmController::getModelMtime($this);
-	return md5($mtime.'|'.get_class($this));
+	return get_class($this);
     }
 
 

@@ -228,36 +228,6 @@ final class DibiOrmController
 
 
     /**
-     * Getter for DibiOrmModelLoader
-     *
-     * Creates instance if called for the first time and loader is rebuilded
-     * @return DibiOrmModelLoader
-     */
-    public static function getModelLoader()
-    {
-	if ( is_null(self::$robot))
-	{
-	    self::$robot= new DibiOrmModelLoader();
-	    self::$robot->addDirectory(APP_DIR);
-	    self::$robot->init();
-	}
-	return self::$robot;
-    }
-
-
-    /**
-     * Getter for model's definition class file mtime
-     * @param DibiOrm $model
-     * @return integer
-     */
-    public static function getModelMtime($model)
-    {
-	$key= strtolower(get_class($model));
-	return self::getModelLoader()->getModelMtime($key);
-    }
-
-
-    /**
      * Getter for all models in application
      * @return array
      */
@@ -265,7 +235,16 @@ final class DibiOrmController
     {
 	if ( is_null(self::$models))
 	{
-	    self::$models= self::getModelLoader()->getModels();
+	    self::$robot= new DibiOrmModelLoader();
+	    self::$robot->addDirectory(APP_DIR);
+	    if ( self::useModelCaching() )
+	    {
+		self::$robot->init();
+	    }
+	    else{
+		self::$robot->rebuild($force);
+	    }
+	    self::$models= self::$robot->getModels();
 	}
 	return self::$models;
     }
@@ -300,6 +279,21 @@ final class DibiOrmController
 
 
     /**
+     * Flushes cache and rebuilds model's cache
+     */
+    public static function rebuildCache()
+    {
+	$cache = self::getCache();
+	$cache->clean(array(Cache::ALL));
+
+	foreach(self::getModels() as $model)
+	{
+	    $new_model= new $model;
+	}
+    }
+
+
+    /**
      * Runs query and inserts it's sql code in buffer
      */
     public static function queryAndLog()
@@ -316,10 +310,11 @@ final class DibiOrmController
      */
     public static function sqlall()
     {
+	self::disableModelCaching();
 	$sql= null;
-	foreach( self::getModels() as $model)
+	foreach( self::getModels() as $modelName)
 	{
-	    $sql .= $model->getDriver()->createTable($model);
+	    $sql .= self::getDriver()->createTable(new $modelName);
 	}
 	return $sql;
     }
@@ -327,7 +322,7 @@ final class DibiOrmController
 
     /**
      * Models operation for clearing database structure for defined models
-     *
+     *self::disableModelCaching();
      * If confirm is set, sql code will be executed
      *
      * @param boolean> $confirm
@@ -335,20 +330,21 @@ final class DibiOrmController
      */
     public static function sqlclear($confirm)
     {
+	self::disableModelCaching();
 	$sql= null;
 	$models = array();
 
-	foreach( self::getModels() as $model)
+	foreach( self::getModels() as $modelName)
 	{
-	    if ( $model->getConnection()->getDatabaseInfo()->hasTable($model->getTableName()) )
+	    if ( self::getConnection()->getDatabaseInfo()->hasTable($modelName) )
 	    {
-		$models[]= $model;
+		$models[]= new $modelName;
 	    }
 	}
 	self::dependancySort($models);
 	foreach($models as $model)
 	{
-	    $sql .= $model->getDriver()->dropTable($model);
+	    $sql .= self::getDriver()->dropTable($model);
 	}
 
 	if ( !is_null($sql) && $confirm )
@@ -370,18 +366,19 @@ final class DibiOrmController
      */
     public static function syncdb($confirm = false)
     {
+	self::disableModelCaching();
 	$sql= null;
 	$syncModels= array();
 	$createModels= array();
-	foreach( self::getModels() as $model)
+	foreach( self::getModels() as $modelName)
 	{
-	    if ( $model->getConnection()->getDatabaseInfo()->hasTable($model->getTableName()) )
+	    if ( self::getConnection()->getDatabaseInfo()->hasTable($modelName) )
 	    {
-		$syncModels[]= $model;
+		$syncModels[]= new $modelName;
 	    }
 	    else
 	    {
-		$createModels[]= $model;
+		$createModels[]= new $modelName;
 	    }
 	}
 
@@ -389,11 +386,14 @@ final class DibiOrmController
 	self::dependancySortReverse($createModels);
 	foreach($createModels as $model)
 	{
-	    $sql .= $model->getDriver()->createTable($model);
+	    $sql .= self::getDriver()->createTable($model);
 	}
 
-	#TODO syncmodels
-	// $model->getDriver()->syncTable($model);
+	# syncModels
+	foreach($syncModels as $model)
+	{
+	    $sql .= self::getDriver()->syncTable($model);
+	}
 
 	if ( !is_null($sql) && $confirm )
 	{

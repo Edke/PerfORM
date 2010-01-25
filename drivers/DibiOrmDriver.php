@@ -11,7 +11,7 @@ abstract class DibiOrmDriver {
 
     protected function getTemplate($templateFile) {
 	$template= new Template();
-	$template->registerFilter('LatteFilter::invoke');
+	$template->registerFilter(new LatteFilter);
 	$template->setFile( dirname(__FILE__). '/'. $this->getDriver() . '/templates/'. $templateFile);
 
 	return $template;
