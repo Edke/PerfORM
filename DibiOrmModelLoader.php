@@ -56,6 +56,7 @@ class DibiOrmModelLoader
     /** @var bool */
     private $rebuilded = FALSE;
 
+
     /**
      */
     public function __construct()
@@ -68,39 +69,15 @@ class DibiOrmModelLoader
 
 
     /**
-     * Rebuilds class list cache.
-     * @param  bool
+     * Add class and file name to the list.
+     * @param  string
+     * @param  string
      * @return void
      */
-    public function rebuild($force = TRUE)
+    public function addClass($class, $file)
     {
-	$cache= Environment::getCache('DibiOrmModelLoader');
-	//DibiOrmController::getCache();
-	$key= $this->getKey();
-	$this->acceptMask = self::wildcards2re($this->acceptFiles);
-	$this->ignoreMask = self::wildcards2re($this->ignoreDirs);
-
-	if ($force || !$this->rebuilded)
-	{
-	    foreach (array_unique($this->scanDirs) as $dir)
-	    {
-		$this->scanDirectory($dir);
-	    }
-
-	    foreach($this->list as $file => $path)
-	    {
-		$class= new $file;
-		if ( is_subclass_of($class, 'DibiOrm') )
-		{
-		    $this->models[]= $class;
-		}
-	    }
-	}
-
-	$cache[$key] = $this->list;
-	$cache[$key . 'ts'] = $this->timestamps;
-	$cache[$key . 'models'] = $this->models;
-	$this->rebuilded = TRUE;
+	$class = strtolower($class);
+	$this->list[$class] = $file;
     }
 
 
@@ -125,15 +102,95 @@ class DibiOrmModelLoader
 
 
     /**
-     * Add class and file name to the list.
-     * @param  string
-     * @param  string
+     * Getter for Cache
+     * @return Cache
+     */
+    protected function getCache()
+    {
+	return DibiOrmController::getCache();
+    }
+
+
+    /**
+     * Getter for cache key
+     * @return string
+     */
+    protected function getKey()
+    {
+	return md5("$this->ignoreDirs|$this->acceptFiles|" . implode('|', $this->scanDirs));
+    }
+
+
+    /**
+     * Getter for array of all found model class files
+     * @return array
+     */
+    public function getList()
+    {
+	return $this->list;
+    }
+
+
+    /**
+     * Getter for model's class file mtime
+     * @param string $modelName
+     * @return integer
+     */
+    public  function getModelMtime($modelName)
+    {
+	if (key_exists($modelName, $this->list))
+	{
+	    return $this->timestamps[$this->list[$modelName]];
+	}
+	throw new Exception("Model '$modelName' not found");
+    }
+
+
+    /**
+     * Getter for models found in application
+     * @return array
+     */
+    public function getModels()
+    {
+	return $this->models;
+    }
+
+
+    /**
+     * Rebuilds class list cache.
+     * @param  bool
      * @return void
      */
-    public function addClass($class, $file)
+    public function rebuild($force = TRUE)
     {
-	$class = strtolower($class);
-	$this->list[$class] = $file;
+	$cache= Environment::getCache('DibiOrmModelLoader');
+	//DibiOrmController::getCache();
+	$key= $this->getKey();
+
+	$this->acceptMask = self::wildcards2re($this->acceptFiles);
+	$this->ignoreMask = self::wildcards2re($this->ignoreDirs);
+
+	if ($force || !$this->rebuilded)
+	{
+	    foreach (array_unique($this->scanDirs) as $dir)
+	    {
+		$this->scanDirectory($dir);
+	    }
+
+	    foreach($this->list as $file => $path)
+	    {
+		$class= new $file;
+		if ( is_subclass_of($class, 'DibiOrm') )
+		{
+		    $this->models[]= $class;
+		}
+	    }
+	}
+
+	$cache[$key] = $this->list;
+	$cache[$key . 'ts'] = $this->timestamps;
+	$cache[$key . 'models'] = $this->models;
+	$this->rebuilded = TRUE;
     }
 
 
@@ -278,7 +335,7 @@ class DibiOrmModelLoader
 	    }
 	}
     }
-
+    
 
     /**
      * Converts comma separated wildcards to regular expression.
@@ -296,60 +353,5 @@ class DibiOrmModelLoader
 	    $mask[] = $wildcard;
 	}
 	return '#^(' . implode('|', $mask) . ')$#i';
-    }
-
-
-    /**
-     * Getter for Cache
-     * @return Cache
-     */
-    protected function getCache()
-    {
-	return DibiOrmController::getCache();
-    }
-
-
-    /**
-     * Getter for cache key
-     * @return string
-     */
-    protected function getKey()
-    {
-	return md5("$this->ignoreDirs|$this->acceptFiles|" . implode('|', $this->scanDirs));
-    }
-
-
-    /**
-     * Getter for models found in application
-     * @return array
-     */
-    public function getModels()
-    {
-	return $this->models;
-    }
-
-
-    /**
-     * Getter for model's class file mtime
-     * @param string $modelName
-     * @return integer
-     */
-    public  function getModelMtime($modelName)
-    {
-	if (key_exists($modelName, $this->list))
-	{
-	    return $this->timestamps[$this->list[$modelName]];
-	}
-	throw new Exception("Model '$modelName' not found");
-    }
-
-
-    /**
-     * Getter for array of all found model class files
-     * @return array
-     */
-    public function getList()
-    {
-	return $this->list;
     }
 }
