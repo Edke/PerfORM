@@ -239,7 +239,7 @@ final class DibiOrmController
 	{
 	    self::$robot= new DibiOrmModelLoader();
 	    self::$robot->addDirectory(APP_DIR);
-	    self::$robot->rebuild();
+	    self::$robot->init();
 	}
 	return self::$robot;
     }

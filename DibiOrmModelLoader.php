@@ -107,7 +107,8 @@ class DibiOrmModelLoader
      */
     protected function getCache()
     {
-	return DibiOrmController::getCache();
+	//return DibiOrmController::getCache();
+	return Environment::getCache('DibiOrmModelLoader');
     }
 
 
@@ -156,6 +157,24 @@ class DibiOrmModelLoader
     }
 
 
+    public function init()
+    {
+	$cache= $this->getCache();
+	$key= $this->getKey();
+
+	if ( isset($cache[$key]) and isset($cache[$key . 'ts']) and isset($cache[$key . 'models']) )
+	{
+	    $this->list= $cache[$key];
+	    $this->timestamps= $cache[$key . 'ts'];
+	    $this->models= $cache[$key . 'models'];
+	}
+	else
+	{
+	    $this->rebuild();
+	}
+    }
+
+
     /**
      * Rebuilds class list cache.
      * @param  bool
@@ -163,8 +182,7 @@ class DibiOrmModelLoader
      */
     public function rebuild($force = TRUE)
     {
-	$cache= Environment::getCache('DibiOrmModelLoader');
-	//DibiOrmController::getCache();
+	$cache= $this->getCache();
 	$key= $this->getKey();
 
 	$this->acceptMask = self::wildcards2re($this->acceptFiles);
@@ -335,7 +353,7 @@ class DibiOrmModelLoader
 	    }
 	}
     }
-    
+
 
     /**
      * Converts comma separated wildcards to regular expression.
