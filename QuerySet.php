@@ -57,12 +57,12 @@ final class QuerySet
      * Constructor
      * @param DibiOrm $model
      */
-    public function  __construct(& $model)
+    public function  __construct($model)
     {
 	$this->model= $model;
     }
 
-    
+
     /**
      * Adds fields recursively from model's definition
      * @param DibiOrm $model
@@ -106,10 +106,11 @@ final class QuerySet
 
     /**
      * Method to get all results from model
-     * @todo write method :)
+     * @return array|false
      */
     public function all()
     {
+	return $this->prepareResult();
     }
 
 
@@ -150,7 +151,7 @@ final class QuerySet
 		throw new Exception("The is no value in result for field '$key'");
 	    }
 	}
-   }
+    }
 
 
     /**
@@ -177,9 +178,9 @@ final class QuerySet
 	$primaryField= $this->model->getField($this->model->getPrimaryKey());
 
 	$this->getDataSource()->where(
-	    '%n = %'.$primaryField->getType(),
-	    $this->model->getAlias().'__'.$primaryField->getRealName(),
-	    $primaryKeyValue
+	'%n = %'.$primaryField->getType(),
+	$this->model->getAlias().'__'.$primaryField->getRealName(),
+	$primaryKeyValue
 	);
 
 	$result= $this->getDataSource()->fetch();
@@ -193,23 +194,7 @@ final class QuerySet
      */
     public function filter()
     {
-	foreach($this->getDataSource() as $values)
-	{
-	    $model= clone $this->model;
-
-	    $result[]= $model;
-	}
-	if ( sizeof($result) == 1 )
-	{
-	    return $result[0];
-	}
-	elseif ( sizeof($result) > 1)
-	{
-	    return $result;
-	}
-	else {
-	    return false;
-	}
+	return $this->prepareResult();
     }
 
 
@@ -232,5 +217,31 @@ final class QuerySet
 	    $this->dataSource= new DibiDataSource(implode("\n", $query), DibiOrmController::getConnection());
 	}
 	return $this->dataSource;
+    }
+    
+
+    /**
+     * Fetch current DataSource, fill array of models with values
+     * @return array|false
+     */
+    protected function prepareResult()
+    {
+	$result= array();
+	$modelName= get_class($this->model);
+	foreach($this->getDataSource() as $values)
+	{
+	    $model= new $modelName;
+	    $this->fill($model, $values);
+	    $result[]= $model;
+	}
+
+	if ( sizeof($result) > 1)
+	{
+	    return $result;
+	}
+	else
+	{
+	    return false;
+	}
     }
 }
