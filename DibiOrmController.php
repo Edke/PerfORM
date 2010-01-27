@@ -301,7 +301,7 @@ final class DibiOrmController
 
     /**
      * Models operation for clearing database structure for defined models
-     *self::disableModelCaching();
+     *
      * If confirm is set, sql code will be executed
      *
      * @param boolean> $confirm
@@ -309,15 +309,19 @@ final class DibiOrmController
      */
     public static function sqlclear($confirm)
     {
-	self::disableModelCaching();
+	$storage= new DibiOrmStorageMapper();
+	$storage->begin();
+	
 	$sql= null;
 	$models = array();
 
-	foreach( self::getModels() as $modelName)
+	foreach( self::getModels() as $modelInfo)
 	{
+	    $modelName= $modelInfo->model;
 	    if ( self::getConnection()->getDatabaseInfo()->hasTable($modelName) )
 	    {
 		$models[]= new $modelName;
+		$storage->dropTable($modelName);
 	    }
 	}
 	self::dependancySort($models);
@@ -330,6 +334,8 @@ final class DibiOrmController
 	{
 	    self::execute($sql);
 	}
+
+	$confirm ? $storage->commit() : $storage->rollback();
 	return $sql;
     }
 
@@ -345,6 +351,9 @@ final class DibiOrmController
      */
     public static function syncdb($confirm = false)
     {
+	$storage= new DibiOrmStorageMapper();
+	$storage->begin();
+
 	#self::disableModelCaching();
 	$sql= null;
 	$syncModels= array();
@@ -359,6 +368,7 @@ final class DibiOrmController
 	    else
 	    {
 		$createModels[]= new $modelName;
+		$storage->insertTable($modelInfo);
 	    }
 	}
 
@@ -379,6 +389,8 @@ final class DibiOrmController
 	{
 	    self::execute($sql);
 	}
+
+	$confirm ? $storage->commit() : $storage->rollback();
 	return $sql;
     }
 
