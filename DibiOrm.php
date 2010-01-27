@@ -198,7 +198,7 @@ abstract class DibiOrm
      */
     protected function getCacheKey()
     {
-	return get_class($this);
+	return md5($this->getLastModification() .'|' .get_class($this));
     }
 
 
@@ -263,6 +263,13 @@ abstract class DibiOrm
 	}
 	return $keys;
     }
+
+
+    /**
+     * Returns last modification of model
+     * @return integer
+     */
+    abstract protected function getLastModification();
 
 
     /**

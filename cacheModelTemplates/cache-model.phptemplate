@@ -1,0 +1,32 @@
+<?php
+
+
+/**
+ * %modelName%
+ *
+ * @final
+ * @filesource %source%
+ * 
+%properties%
+ */
+final class %modelName% extends %modelBase% {
+
+
+    /**
+     * Overloaded setup of BaseModel
+     */
+    protected function setup()
+    {
+%setup%
+    }
+
+
+    /**
+     * Returns last modification of model
+     * @return integer
+     */
+    protected function getLastModification()
+    {
+	return '%lastModification%';
+    }
+}

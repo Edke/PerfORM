@@ -62,10 +62,10 @@ final class DibiOrmController
 
 
     /**
-     * Instance of DibiOrmModelLoader
-     * @var DibiOrmModelLoader
+     * Instance of DibiOrmModelCacheBuilder
+     * @var DibiOrmModelCacheBuilder
      */
-    protected static $robot;
+    protected static $cacheBuilder;
 
 
     /**
@@ -235,16 +235,10 @@ final class DibiOrmController
     {
 	if ( is_null(self::$models))
 	{
-	    self::$robot= new DibiOrmModelLoader();
-	    self::$robot->addDirectory(APP_DIR);
-	    if ( self::useModelCaching() )
-	    {
-		self::$robot->init();
-	    }
-	    else{
-		self::$robot->rebuild($force);
-	    }
-	    self::$models= self::$robot->getModels();
+	    self::$cacheBuilder= new DibiOrmModelCacheBuilder();
+	    self::$cacheBuilder->addDirectory(APP_DIR);
+	    self::$cacheBuilder->rebuild();
+	    self::$models= self::$cacheBuilder->getModels();
 	}
 	return self::$models;
     }
@@ -366,12 +360,13 @@ final class DibiOrmController
      */
     public static function syncdb($confirm = false)
     {
-	self::disableModelCaching();
+	#self::disableModelCaching();
 	$sql= null;
 	$syncModels= array();
 	$createModels= array();
-	foreach( self::getModels() as $modelName)
+	foreach( self::getModels() as $modelInfo)
 	{
+	    $modelName= $modelInfo->model;
 	    if ( self::getConnection()->getDatabaseInfo()->hasTable($modelName) )
 	    {
 		$syncModels[]= new $modelName;
