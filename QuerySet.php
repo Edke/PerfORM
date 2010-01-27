@@ -132,6 +132,8 @@ final class QuerySet
      */
     protected function fill($model, $values)
     {
+	if ($values === false) return;
+
 	foreach($model->getFields() as $field)
 	{
 	    $key= $model->getAlias().'__'.$field->getRealName();
@@ -185,6 +187,7 @@ final class QuerySet
 
 	$result= $this->getDataSource()->fetch();
 	$this->fill($this->model, $result);
+	return $result ? true : false;
     }
 
 
