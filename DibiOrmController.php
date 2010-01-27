@@ -273,21 +273,6 @@ final class DibiOrmController
 
 
     /**
-     * Flushes cache and rebuilds model's cache
-     */
-    public static function rebuildCache()
-    {
-	$cache = self::getCache();
-	$cache->clean(array(Cache::ALL));
-
-	foreach(self::getModels() as $model)
-	{
-	    $new_model= new $model;
-	}
-    }
-
-
-    /**
      * Runs query and inserts it's sql code in buffer
      */
     public static function queryAndLog()
