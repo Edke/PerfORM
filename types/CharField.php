@@ -49,5 +49,11 @@ final class CharField extends Field {
 	}
 	return parent::validate();
     }
+
+
+    public function getPhpDocProperty()
+    {
+	return 'string';
+    }
 }
 

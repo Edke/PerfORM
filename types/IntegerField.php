@@ -21,6 +21,11 @@ class IntegerField extends Field {
 	return (int) $value;
     }
 
+    
+    public function getPhpDocProperty()
+    {
+	return 'integer';
+    }
 }
 
 

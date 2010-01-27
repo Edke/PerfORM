@@ -80,4 +80,10 @@ final class ForeignKeyField extends Field {
 	return $value;
     }
 
+    
+    public function getPhpDocProperty()
+    {
+	return 'integer';
+    }
+
 }
