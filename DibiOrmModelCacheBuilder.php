@@ -257,6 +257,7 @@ class DibiOrmModelCacheBuilder
 		    'mtime' => filemtime($file),
 		    'extends' => $class[1][$key],
 		    'model' => $class[2][$key],
+		    'table' => strtolower($class[2][$key]),
 		    'setup' => $class[3][$key],
 		    'fields' => $_fields,
 		    'hash' => md5(implode('|',$_fields_hashes)),

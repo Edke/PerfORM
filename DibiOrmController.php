@@ -309,7 +309,7 @@ final class DibiOrmController
      */
     public static function sqlclear($confirm)
     {
-	$storage= new DibiOrmStorageMapper();
+	$storage= new DibiOrmStorage();
 	$storage->begin();
 	
 	$sql= null;
@@ -317,11 +317,10 @@ final class DibiOrmController
 
 	foreach( self::getModels() as $modelInfo)
 	{
-	    $modelName= $modelInfo->model;
-	    if ( self::getConnection()->getDatabaseInfo()->hasTable($modelName) )
+	    if ( self::getConnection()->getDatabaseInfo()->hasTable($modelInfo->table) )
 	    {
-		$models[]= new $modelName;
-		$storage->dropTable($modelName);
+		$models[]= new $modelInfo->table;
+		$storage->dropTable($modelInfo->table);
 	    }
 	}
 	self::dependancySort($models);
@@ -351,7 +350,7 @@ final class DibiOrmController
      */
     public static function syncdb($confirm = false)
     {
-	$storage= new DibiOrmStorageMapper();
+	$storage= new DibiOrmStorage();
 	$storage->begin();
 
 	#self::disableModelCaching();
