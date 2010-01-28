@@ -43,6 +43,10 @@ class DibiOrmModelCacheBuilder
     /** @var array all models of application */
     private $models= array();
 
+    /**
+     * @var array
+     */
+    private $modelInfo= array();
 
     /**
      * Add class and file name to the list.
@@ -50,9 +54,9 @@ class DibiOrmModelCacheBuilder
      * @param  string
      * @return void
      */
-    public function addModel($modelInfo)
+    public function addModelInfo($modelInfo)
     {
-	$this->models[]= $modelInfo;
+	$this->modelInfo[]= $modelInfo;
     }
 
 
@@ -82,6 +86,35 @@ class DibiOrmModelCacheBuilder
      */
     public function getModels()
     {
+	if ( count($this->models) == 0)
+	{
+	    $modelCacheDir= realpath(Environment::getConfig('dibiorm')->modelCache);
+
+	    // require all new models
+	    foreach($this->modelInfo as $modelInfo)
+	    {
+		if ( !class_exists($modelInfo->model, false))
+		{
+		    require_once $modelCacheDir . DIRECTORY_SEPARATOR . $modelInfo->model .'.php';
+		}
+	    }
+
+	    // create instances if models
+	    foreach($this->modelInfo as $modelInfo)
+	    {
+		#Debug::consoleDump($modelInfo);
+		$model= new $modelInfo->model;
+		$model->setHash($modelInfo->hash);
+		foreach($model->getFields() as $key => $field)
+		{
+		    #Debug::consoleDump($key);
+		    //Debug::consoleDump($modelInfo->fields[$key]->hash, $field->getName().'-'.$key);
+		    //$field->setHash($modelInfo->fields[$key]->hash);
+		    $model->getField($field->getName())->setHash($modelInfo->fields[$key]->hash);
+		}
+		$this->models[]= $model;
+	    }
+	}
 	return $this->models;
     }
 
@@ -132,7 +165,7 @@ class DibiOrmModelCacheBuilder
 	$iterator->close();
 
 	$_template= file_get_contents(dirname(__FILE__).'/cacheModelTemplates/cache-model.phptemplate');
-	foreach($this->models as $modelInfo)
+	foreach($this->modelInfo as $modelInfo)
 	{
 	    $template= $_template;
 	    $template= str_replace('%lastModification%', time(), $template);
@@ -140,9 +173,6 @@ class DibiOrmModelCacheBuilder
 	    $template= str_replace('%modelBase%', $modelInfo->extends, $template);
 	    $template= str_replace('%setup%', $modelInfo->setup, $template);
 	    $template= str_replace('%source%', $modelInfo->path, $template);
-
-
-//	    Debug::consoleDump($modelInfo);
 
 	    $properties= null;
 	    foreach( $modelInfo->fields as $field)
@@ -153,13 +183,6 @@ class DibiOrmModelCacheBuilder
 	    $template= str_replace('%properties%', $properties, $template);
 	    file_put_contents($modelCacheDir . DIRECTORY_SEPARATOR . $modelInfo->model.'.php', $template);
 	}
-
-
-
-	
-	global $robot;
-	//Debug::consoleDump($robot);
-	//$robot->rebuild(true);
     }
 
 
@@ -242,17 +265,18 @@ class DibiOrmModelCacheBuilder
 			$hash= md5(strtolower(trim($field[2][$field_key]) .'|'. implode(',', $options)));
 			$_fields_hashes[]= md5(strtolower($field[1][$field_key]).'|'.$hash);
 
-			$_fields[]= (object) array(
+			$_fields[$field[1][$field_key]]= (object) array(
 			    'name' => $field[1][$field_key],
 			    'type' => $field[2][$field_key],
 			    'options' => $options,
-			    'hash' => $hash
+			    'hash' => $hash,
+			    'table' => strtolower($class[2][$key])
 			);
 		    }
 		    //Debug::consoleDump($field);
 		}
 		sort($_fields_hashes);
-		$this->addModel( (object) array(
+		$this->addModelInfo( (object) array(
 		    'path' => $file,
 		    'mtime' => filemtime($file),
 		    'extends' => $class[1][$key],

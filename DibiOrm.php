@@ -73,6 +73,13 @@ abstract class DibiOrm
      */
     protected $tableName= null;
 
+
+    /**
+     * Hash of model for structure checking
+     * @var string
+     */
+    protected $hash;
+
     
     /**
      * Constructor
@@ -262,6 +269,16 @@ abstract class DibiOrm
 	    }
 	}
 	return $keys;
+    }
+
+
+    /**
+     * Getter for model's hash
+     * @return string
+     */
+    public function getHash()
+    {
+	return $this->hash;
     }
 
 
@@ -497,7 +514,17 @@ abstract class DibiOrm
 	$this->alias= $alias;
     }
 
-    
+
+    /**
+     * Setter for model's hash
+     * @param string $hash
+     */
+    public function setHash($hash)
+    {
+	$this->hash= $hash;
+    }
+
+
     /**
      * Setter for primary key field name
      * @param string $primaryKey

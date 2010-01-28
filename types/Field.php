@@ -34,6 +34,14 @@ abstract class Field {
      */
     protected $dbName= null;
 
+
+    /**
+     * Hash of field for structure checking
+     * @var string
+     */
+    protected $hash;
+
+
     protected $type;
 
     protected $value= null;
@@ -115,6 +123,17 @@ abstract class Field {
 	$this->dbName= $dbName;
     }
 
+
+    /**
+     * Setter for field's hash
+     * @param string $hash
+     */
+    public function setHash($hash)
+    {
+	$this->hash= $hash;
+    }
+
+
     public function setName($name) {
 	$this->name= $name;
     }
@@ -152,6 +171,17 @@ abstract class Field {
     public  function getDefaultValue() {
 	return $this->default;
     }
+
+
+    /**
+     * Getter for field's hash
+     * @return string
+     */
+    public function getHash()
+    {
+	return $this->hash;
+    }
+
 
     public function isPrimaryKey() {
 	return $this->primaryKey;
