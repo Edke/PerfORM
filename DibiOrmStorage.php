@@ -51,7 +51,7 @@ final class DibiOrmStorage extends DibiConnection
      * Cleares info about table from storage
      * @param string $tableName
      */
-    public function dropTable($tableName)
+    public function dropModel($tableName)
     {
 	$this->query('delete from [tables] where [name] = %s', $tableName);
 	$this->query('delete from [fields] where [table] = %s', $tableName);
@@ -62,7 +62,7 @@ final class DibiOrmStorage extends DibiConnection
      * Inserts info about model into storage
      * @param string $tableName
      */
-    public function insertTable($modelInfo)
+    public function insertModel($modelInfo)
     {
 	$this->query('insert into [tables] values( null, %s, %s)', $modelInfo->table, $modelInfo->hash );
 
@@ -70,19 +70,30 @@ final class DibiOrmStorage extends DibiConnection
 	{
 	    $this->query('insert into [fields] values( null, %s, %s, %s, %s)',
 	    strtolower($field->name),
-	    $modelInfo->table,
+	    $field->table,
 	    $field->hash,
 	    $field->type);
 	}
     }
 
 
+    public function hasModel($modelInfo)
+    {
+	return $this->fetch('select [id] from [tables] where [name] = %s', $modelInfo->table) === false ? false : true;
+    }
+
+
+    public function modelHasField($field)
+    {
+	return $this->fetch('select [id] from [fields] where [table] = %s and [name] = %s', $field->table, $fields->name) === false ? false : true;
+    }
+
     /**
      * Checks if model in sync
      * @param stdClass $modelInfo
      */
-    public function tableInSync($modelInfo)
+    public function modelHasSync($modelInfo)
     {
-
+	return $this->fetch('select [id] from [tables] where [name] = %s and [hash] = %s', $modelInfo->table, $modelInfo->hash) === false ? false : true;
     }
 }
