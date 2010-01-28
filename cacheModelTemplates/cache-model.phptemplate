@@ -6,8 +6,7 @@
  *
  * @final
  * @filesource %source%
- * 
-%properties%
+ * %properties%
  */
 final class %modelName% extends %modelBase% {
 

@@ -148,7 +148,7 @@ class DibiOrmModelCacheBuilder
 	    foreach( $modelInfo->fields as $field)
 	    {
 		$fieldType= new $field->type;
-		$properties .= sprintf(" * @property-write %s \$%s\n", $fieldType->getPhpDocProperty(), $field->name);
+		$properties .= sprintf("\n * @property-write %s \$%s", $fieldType->getPhpDocProperty(), $field->name);
 	    }
 	    $template= str_replace('%properties%', $properties, $template);
 	    file_put_contents($modelCacheDir . DIRECTORY_SEPARATOR . $modelInfo->model.'.php', $template);
