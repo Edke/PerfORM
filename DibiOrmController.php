@@ -357,18 +357,57 @@ final class DibiOrmController
 	$sql= null;
 	$syncModels= array();
 	$createModels= array();
-	foreach( self::getModels() as $modelInfo)
+	$addFields= array();
+	$dropFields= array();
+	$changeFieldsType= array();
+
+	/*
+	 * 1) create table or table exists
+	 */
+
+
+	Debug::consoleDump(self::getModels());
+
+	foreach( self::getModels() as $model)
 	{
-	    $modelName= $modelInfo->model;
-	    if ( self::getConnection()->getDatabaseInfo()->hasTable($modelName) )
+
+//	    Debug::consoleDump($storage->tableInSync($modelInfo));
+
+	    // model exists
+/*	    if ( $storage->hasModel($modelInfo) )
 	    {
-		$syncModels[]= new $modelName;
+		if ( !$storage->modelHasSync($modelInfo))
+		{
+		    //compare fields in modelInfo against storage
+		    foreach( $modelInfo->fields as $field)
+		    {
+			if ( $storage->modelHasField($field))
+			{
+			    
+			}
+			else {
+			    $addFields[]= $field;
+			}
+
+
+
+			
+			
+		    }
+		    
+		    
+
+		}
 	    }
+	    // model does not exists, create
 	    else
 	    {
-		$createModels[]= new $modelName;
-		$storage->insertTable($modelInfo);
-	    }
+		$createModels[]= new $modelInfo->model;
+		$storage->insertModel($modelInfo);
+	    }*/
+
+	    //$syncModels[]= new $modelName;
+	    
 	}
 
 	# createModels
