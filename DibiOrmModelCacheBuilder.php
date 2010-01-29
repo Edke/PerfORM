@@ -126,37 +126,32 @@ class DibiOrmModelCacheBuilder
      */
     public function rebuild()
     {
-	$this->acceptMask = self::wildcards2re($this->acceptFiles);
-	$this->ignoreMask = self::wildcards2re($this->ignoreDirs);
-
-	$modelCacheDir= Environment::getConfig('dibiorm')->modelCache;
-
+	/* check if modelCacheDir valid */
+	$modelCacheDir= realpath(Environment::getConfig('dibiorm')->modelCache);
 	if ( !file_exists($modelCacheDir))
 	{
 	    throw new Exception("Model cache directory '$modelCacheDir' does not exists");
 	}
-
 	if ( !is_writable($modelCacheDir) )
 	{
 	    throw new Exception("Model cache directory '$modelCacheDir' is not writable.");
 	}
 
-
+	/* scan for model bases */
+	$this->acceptMask = self::wildcards2re($this->acceptFiles);
+	$this->ignoreMask = self::wildcards2re($this->ignoreDirs);
 	foreach (array_unique($this->scanDirs) as $dir)
 	{
 	    $this->scanDirectory($dir);
 	}
 
-	#clean model cache
-	
+	/* clean previous models */
 	$iterator = dir($modelCacheDir);
-//	if (!$iterator) return;
 	while (FALSE !== ($entry = $iterator->read()))
 	{
 	    if ($entry == '.' || $entry == '..') continue;
 
 	    $path = $modelCacheDir . DIRECTORY_SEPARATOR . $entry;
-
 	    if (is_file($path) && preg_match($this->acceptMask, $entry))
 	    {
 		unlink($path);
@@ -164,7 +159,8 @@ class DibiOrmModelCacheBuilder
 	}
 	$iterator->close();
 
-	$_template= file_get_contents(dirname(__FILE__).'/cacheModelTemplates/cache-model.phptemplate');
+	/* build new models */
+	$_template= file_get_contents(dirname(__FILE__).'/ModelCache.phptemplate');
 	foreach($this->modelInfo as $modelInfo)
 	{
 	    $template= $_template;
@@ -182,6 +178,23 @@ class DibiOrmModelCacheBuilder
 	    }
 	    $template= str_replace('%properties%', $properties, $template);
 	    file_put_contents($modelCacheDir . DIRECTORY_SEPARATOR . $modelInfo->model.'.php', $template);
+	}
+
+	/* first run, make models callable */
+	
+	foreach($this->modelInfo as $modelInfo)
+	{
+	    if ( !class_exists($modelInfo->model, false))
+	    {
+		require_once $modelCacheDir . DIRECTORY_SEPARATOR . $modelInfo->model .'.php';
+	    }
+	}
+
+	/* second run, create new model instances and collection of models */
+	foreach($this->modelInfo as $modelInfo)
+	{
+	    $model= new $modelInfo->model;
+	    $this->models[$model->getTableName()]= $model;
 	}
     }
 
@@ -253,38 +266,23 @@ class DibiOrmModelCacheBuilder
 		//Debug::consoleDump(array($class[1][$key],$class[2][$key],$class[3][$key]));
 
 		$_fields= array();
-		$_fields_hashes= array();
 		if ( preg_match_all('#\$this\-\>([^= ]+)\s*=\s*new\s*([a-z]+)\s*\((.+)\)#i', $class[3][$key], $field))
 		{
 		    foreach($field[0] as $field_key => $field_value)
 		    {
-			$options= preg_split('#,\s*#', $field[3][$field_key]);
-			//Debug::consoleDump($options);
-			array_walk($options, array($this, 'removeSpaces'));
-			sort($options);
-			$hash= md5(strtolower(trim($field[2][$field_key]) .'|'. implode(',', $options)));
-			$_fields_hashes[]= md5(strtolower($field[1][$field_key]).'|'.$hash);
-
 			$_fields[$field[1][$field_key]]= (object) array(
 			    'name' => $field[1][$field_key],
 			    'type' => $field[2][$field_key],
-			    'options' => $options,
-			    'hash' => $hash,
-			    'table' => strtolower($class[2][$key])
 			);
 		    }
-		    //Debug::consoleDump($field);
 		}
-		sort($_fields_hashes);
 		$this->addModelInfo( (object) array(
 		    'path' => $file,
-		    'mtime' => filemtime($file),
 		    'extends' => $class[1][$key],
 		    'model' => $class[2][$key],
 		    'table' => strtolower($class[2][$key]),
 		    'setup' => $class[3][$key],
 		    'fields' => $_fields,
-		    'hash' => md5(implode('|',$_fields_hashes)),
 		    ));
 	    }
 	}

@@ -1,2 +1,2 @@
-DROP TABLE {$table->getTableName()};
+DROP TABLE {$tableName};
 

@@ -71,6 +71,16 @@ final class ForeignKeyField extends Field {
 	return $this->value;
     }
 
+    
+    public function getHash()
+    {
+	if ( !$this->hash )
+	{
+	    $this->hash= md5($this->isForeignKey().'|'.parent::getHash());
+	}
+	return $this->hash;
+    }
+
     public function getDbValue()
     {
 	$value= $this->value->getField($this->referenceKey)->getValue();

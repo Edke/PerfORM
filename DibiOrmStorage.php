@@ -49,51 +49,75 @@ final class DibiOrmStorage extends DibiConnection
 
     /**
      * Cleares info about table from storage
-     * @param string $tableName
+     * @param DibiOrm|string $model
+     * @return void
      */
-    public function dropModel($tableName)
+    public function dropModel($model)
     {
-	$this->query('delete from [tables] where [name] = %s', $tableName);
-	$this->query('delete from [fields] where [table] = %s', $tableName);
+	$modelName= is_object($model) ? $model->getTableName() : $model;
+	$this->query('delete from [tables] where [name] = %s', $modelName );
+	$this->query('delete from [fields] where [table] = %s', $modelName );
     }
 
 
     /**
-     * Inserts info about model into storage
-     * @param string $tableName
+     * Get all models from storage
+     * @return DibiResult
      */
-    public function insertModel($modelInfo)
+    public function getModels()
     {
-	$this->query('insert into [tables] values( null, %s, %s)', $modelInfo->table, $modelInfo->hash );
+	return $this->query('select [name] from [tables]');
+    }
 
-	foreach($modelInfo->fields as $field )
+    
+    /**
+     * Checks if model exists
+     * @param DibiOrm $model
+     * @return boolean
+     */
+    public function hasModel($model)
+    {
+	return $this->fetch('select [id] from [tables] where [name] = %s', $model->getTableName()) === false ? false : true;
+    }
+
+
+    /**
+     * Inserts model's name and hash into storage
+     * @param DibiOrm $model
+     */
+    public function insertModel($model)
+    {
+	$this->query('insert into [tables] values( null, %s, %s)', $model->getTableName(), $model->getHash() );
+
+	foreach($model->getFields() as $field )
 	{
 	    $this->query('insert into [fields] values( null, %s, %s, %s, %s)',
-	    strtolower($field->name),
-	    $field->table,
-	    $field->hash,
-	    $field->type);
+	    strtolower($field->getName()),
+	    $model->getTableName(),
+	    $field->getHash(),
+	    get_class($field));
 	}
     }
+    
 
-
-    public function hasModel($modelInfo)
-    {
-	return $this->fetch('select [id] from [tables] where [name] = %s', $modelInfo->table) === false ? false : true;
-    }
-
-
+    /**
+     * Checks if model has field
+     * @param Field $field
+     * @return boolean
+     */
     public function modelHasField($field)
     {
 	return $this->fetch('select [id] from [fields] where [table] = %s and [name] = %s', $field->table, $fields->name) === false ? false : true;
     }
 
+
     /**
      * Checks if model in sync
-     * @param stdClass $modelInfo
+     * @param DibiOrm $model
+     * @return boolean
      */
-    public function modelHasSync($modelInfo)
+    public function modelHasSync($model)
     {
-	return $this->fetch('select [id] from [tables] where [name] = %s and [hash] = %s', $modelInfo->table, $modelInfo->hash) === false ? false : true;
+	return $this->fetch('select [id] from [tables] where [name] = %s and [hash] = %s', $model->getTableName(), $model->getHash()) === false ? false : true;
     }
 }

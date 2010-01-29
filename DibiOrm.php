@@ -163,6 +163,17 @@ abstract class DibiOrm
 	$this->setAlias($tableName);
 	$this->buildAliases($this, $aliases);
 
+
+	# model hashing
+	$field_hashes= array();
+	foreach( $this->getFields() as $field)
+	{
+	    $field_hashes[]= md5($field->getName().'|'.$field->getHash());
+	}
+	sort($field_hashes);
+	$this->hash= md5(implode('|', $field_hashes));
+	
+
 	if (DibiOrmController::useModelCaching())
 	{
 	    $cache= DibiOrmController::getCache();
@@ -512,16 +523,6 @@ abstract class DibiOrm
     public function setAlias($alias)
     {
 	$this->alias= $alias;
-    }
-
-
-    /**
-     * Setter for model's hash
-     * @param string $hash
-     */
-    public function setHash($hash)
-    {
-	$this->hash= $hash;
     }
 
 

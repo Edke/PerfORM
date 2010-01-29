@@ -124,16 +124,6 @@ abstract class Field {
     }
 
 
-    /**
-     * Setter for field's hash
-     * @param string $hash
-     */
-    public function setHash($hash)
-    {
-	$this->hash= $hash;
-    }
-
-
     public function setName($name) {
 	$this->name= $name;
     }
@@ -179,6 +169,17 @@ abstract class Field {
      */
     public function getHash()
     {
+	if ( !$this->hash )
+	{
+	    $array= array(
+		$this->isPrimaryKey(),
+		$this->isNotNull(),
+		$this->dbName,
+		$this->getDefaultValue(),
+		$this->getType()
+	    );
+	    $this->hash= md5(implode('|', $array));
+	}
 	return $this->hash;
     }
 

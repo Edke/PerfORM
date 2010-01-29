@@ -39,6 +39,16 @@ final class CharField extends Field {
     }
 
 
+    public function getHash()
+    {
+	if ( !$this->hash )
+	{
+	    $this->hash= md5($this->getSize().'|'.parent::getHash());
+	}
+	return $this->hash;
+    }
+
+
     final public function retyped($value) {
 	return (string) $value;
     }

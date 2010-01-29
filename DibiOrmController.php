@@ -315,13 +315,13 @@ final class DibiOrmController
 	$sql= null;
 	$models = array();
 
-	foreach( self::getModels() as $modelInfo)
+	foreach( self::getModels() as $model)
 	{
-	    if ( self::getConnection()->getDatabaseInfo()->hasTable($modelInfo->table) )
-	    {
-		$models[]= new $modelInfo->table;
-		$storage->dropTable($modelInfo->table);
-	    }
+	    /*if ( self::getConnection()->getDatabaseInfo()->hasTable($modelInfo->table) )
+	    {*/
+		$models[]= $model;
+		$storage->dropModel($model);
+	    //}
 	}
 	self::dependancySort($models);
 	foreach($models as $model)
@@ -357,17 +357,48 @@ final class DibiOrmController
 	$sql= null;
 	$syncModels= array();
 	$createModels= array();
-	foreach( self::getModels() as $modelInfo)
+	$dropModels= array();
+	$addFields= array();
+	$dropFields= array();
+	$changeFieldsType= array();
+
+	/* first run: check models against storage, finds models to create and models to alter */
+	#Debug::consoleDump(self::getModels());
+	foreach( self::getModels() as $model)
 	{
-	    $modelName= $modelInfo->model;
-	    if ( self::getConnection()->getDatabaseInfo()->hasTable($modelName) )
+	    // model exists
+	    if ( $storage->hasModel($model) )
 	    {
-		$syncModels[]= new $modelName;
+		if ( !$storage->modelHasSync($model))
+		{
+		    //compare fields in modelInfo against storage
+		    foreach( $model->getFields() as $field)
+		    {
+			if ( $storage->modelHasField($field))
+			{
+			    
+			}
+			else {
+			    //$addFields[]= $field;
+			}
+		    }
+		}
 	    }
+	    // model does not exists, create
 	    else
 	    {
-		$createModels[]= new $modelName;
-		$storage->insertTable($modelInfo);
+		$createModels[]= $model;
+		$storage->insertModel($model);
+	    }
+	    //$syncModels[]= new $modelName;
+	}
+
+	/* second run: check storage against models, finds models to drop */
+	foreach( $storage->getModels() as $storageModel)
+	{
+	    if ( !key_exists($storageModel->name, self::getModels()))
+	    {
+		$dropModels[]= $storageModel->name;
 	    }
 	}
 
@@ -381,7 +412,14 @@ final class DibiOrmController
 	# syncModels
 	foreach($syncModels as $model)
 	{
-	    $sql .= self::getDriver()->syncTable($model);
+	    //$sql .= self::getDriver()->syncTable($model);
+	}
+	
+	# dropModels
+	foreach($dropModels as $modelName)
+	{
+	    $sql .= self::getDriver()->dropTable($modelName);
+	    $storage->dropModel($modelName);
 	}
 
 	if ( !is_null($sql) && $confirm )
