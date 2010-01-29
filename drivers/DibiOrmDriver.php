@@ -7,12 +7,63 @@
 abstract class DibiOrmDriver {
 
 
+    protected $createTables= array();
+
+    protected $dropTables= array();
+
+    protected $dropModelTables= array();
+
+    protected $addFields= array();
+
+    protected $dropFields= array();
+
+    protected $addKeys= array();
+
+    protected $createIndexes= array();
+    
+
+
+
+    /**
+     * @param Field $field
+     */
+    public function appendFieldToAdd($field, $model)
+    {
+	$this->addFields[]= (object) array( 'field'=>$field, 'model'=>$model);
+    }
+
+
+
+    /**
+     * @param DibiOrm $model
+     */
+    public function appendTableToCreate($model)
+    {
+	$this->createTables[]= $model;
+    }
+
+
+    /**
+     * @param DibiOrm|string $model
+     */
+    public function appendTableToDrop($model)
+    {
+	if ( is_object($model))
+	{
+	    $this->dropModelTables[]= $model;
+	}
+	else {
+	    $this->dropTables[]= $model;
+	}
+    }
+
+
     abstract protected function getDriver();
 
-    protected function getTemplate($templateFile) {
+    protected function getTemplate() {
 	$template= new Template();
 	$template->registerFilter(new LatteFilter);
-	$template->setFile( dirname(__FILE__). '/'. $this->getDriver() . '/templates/'. $templateFile);
+	$template->setFile( dirname(__FILE__). '/'. $this->getDriver() . '/DibiOrmPostgreTemplate.psql');
 
 	return $template;
     }
@@ -23,123 +74,98 @@ abstract class DibiOrmDriver {
 	return ob_get_clean();
     }
 
-    protected function createFromMigrator() {
 
-	$dll= ( $this->addDropTable ) ? "\nDROP TABLE [$table];\n" : "\n";
-
-
-		
-		$dll .= "CREATE TABLE [$table] (\n";
-		$rows= array();
-		$keys= array();
-
-
-		// columns
-		$result= dibi::query("show full columns from $table");
-		foreach( $result as $row) {
-
-			// primary key -> serial
-			if ( $row->Key == 'PRI' and $row->Extra == 'auto_increment' and $this->types[$row->Type]['create'] == 'INTEGER'  ) {
-				$rows[]= sprintf("\t[%s] SERIAL", $row->Field);
-				$keys[]= sprintf("\tCONSTRAINT [%s_pkey] PRIMARY KEY([%s])", $table, $row->Field);
-			}
-			// other rows
-			else {
-				// default values
-				$default= null;
-				if ( $row->Default ) {
-					$default= " DEFAULT \"". $row->Default ."\"";
-				}
-
-				//default values override
-				if ( ($this->types[$row->Type]['create'] == 'TIMESTAMP'  and is_string($default)) or
-						($this->types[$row->Type]['create'] == 'DATE' and is_string($default)) ) {
-					$default= null;
-				}
-
-				//default values override for enum->boolean
-				if ( $this->types[$row->Type]['create'] == 'BOOLEAN'  and is_string($default)) {
-
-					if ( !preg_match('#[ya1n0]{1}#', $default )) throw new Exception("invalid default value for boolean: '$default'");
-					$default= ( preg_match('#[ya1]{1}#', $default ) )? ' DEFAULT true' : ' DEFAULT false';
-				}
-
-				$rows[]= sprintf("\t[%s] %s%s%s",
-					$row->Field,
-					$this->types[$row->Type]['create'],
-					( $row->Null == 'YES' )? ' NULL': ' NOT NULL',
-					$default
-					);
-			}
+    /**
+     * Models with dependancy defined are moved before its dependents
+     * @param array $list
+     */
+    protected function dependancySort( &$list)
+    {
+	$_list= $list;
+	foreach($_list as $item)
+	{
+	    $min= null;
+	    foreach($item->getDependents() as $dependent)
+	    {
+		$min= ( is_null($min )) ? array_search($dependent, $_list) : min($min, array_search($dependent, $_list));
+	    }
+	    if (is_integer($min))
+	    {
+		if ( array_search($item, $_list) > $min)
+		{
+		    unset($list[array_search($item,$list)]);
+		    $list= $this->insertArrayIndex($list, $item, $min);
 		}
+	    }
+	}
+    }
+    
 
-		$_indexes= array();
-
-		// indexes
-		$result= dibi::query("show index from $table");
-		foreach( $result->fetchAssoc('Key_name,Seq_in_index,@') as $key => $row ) {
-
-			// skip primary
-			if ( $key != 'PRIMARY'  ) {
-				foreach( $row as $index ){
-
-					//var_dump( $key );
-					//var_dump( $index );
-
-					// skip FULLTEXT
-					if ( $index->Index_type == 'BTREE' ) {
-						$_indexes[$table.'_'. $key .'_idx']['fields'][]= $index->Column_name;
-						$_indexes[$table.'_'. $key .'_idx']['unique']= ($index->Non_unique)? false : true;
-					}
+    /**
+     * Reversed sort of dependancySort method
+     * @param array $list
+     */
+    protected function dependancySortReverse( &$list)
+    {
+	$this->dependancySort($list);
+	$list= array_reverse($list);
+    }
 
 
-				}
-			}
+    /**
+     * Inserts element at $index of $array
+     * @param array $array
+     * @param mixed $new_element
+     * @param integer $index
+     * @return array
+     */
+    protected function insertArrayIndex($array, $new_element, $index)
+    {
+	$start = array_slice($array, 0, $index);
+	$end = array_slice($array, $index);
+	$start[] = $new_element;
+	return array_merge($start, $end);
+    }
 
-		}
-		$indexes= array();
-		foreach( $_indexes as $indexName =>  $index ){
 
-			// unique constraint
-			if ( $index['unique'] and sizeof( $index['fields']) == 1 ) {
-				$keys[]= sprintf("\tCONSTRAINT [%s] UNIQUE([%s])", $indexName, implode( "],[", $index['fields'] ));
-			}
+    abstract function getCreateTable($model);
+    
 
-			// index
-			else {
-				$indexes[]= sprintf("CREATE %sINDEX [%s] ON [%s]\n\tUSING btree ([%s]);",
-					( $index['unique'] ) ? 'UNIQUE ': '',
-					$indexName,
-					$table,
-					implode( "],[", $index['fields'] ));
+    public function buildSql()
+    {
+	$template= $this->getTemplate();
 
-			}
-		}
+	# create table ..
+	self::dependancySortReverse($this->createTables);
+	foreach($this->createTables as $model)
+	{
+	    $template->createTables[]= $this->getCreateTable($model);
+	}
 
-		$dll .= implode( ",\n",  array_merge($rows, $keys) ) . "\n";
-		$dll .= ") WITH OIDS;\n\n";
+	$template->addKeys= $this->addKeys;
+	
+	$template->createIndexes= $this->createIndexes;
 
-		if ( sizeof($indexes)>0) {
-			$dll .= "\n\n" . implode( "\n\n", $indexes );
-
-		}
-
-		// handle actions
-		$formated_sql= dibi::getConnection('postgre')->sql($dll);
-		if ( $this->isAction('print') or $this->isVerbose() ) {
-			echo $formated_sql;
-		}
-		elseif ( $this->isAction('dump')) {
-			$this->write($formated_sql);
-		}
-		elseif ( $this->isAction('insert')) {
-			dibi::getConnection('postgre')->query($dll);
-		}
+	
+	# alter table add column ..
+	foreach( $this->addFields as $item)
+	{
+	    $template->addFields[]= $this->getField($item->field, $item->model);
 	}
 
 
+	# drop table ..
+	self::dependancySort($this->dropModelTables);
+	foreach($this->dropModelTables as $model)
+	{
+	    $template->dropTables[]= $model->getTableName();
+	}
+	foreach($this->dropTables as $table)
+	{
+	    $template->dropTables[]= $table;
+	}
 
-
-
+	return trim($this->renderTemplate($template));
+    }
 }
 

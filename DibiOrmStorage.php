@@ -46,6 +46,15 @@ final class DibiOrmStorage extends DibiConnection
 	}
     }
 
+    public function addFieldToModel($field, $model)
+    {
+	$this->query('insert into [fields] values( null, %s, %s, %s, %s)',
+	    strtolower($field->getName()),
+	    $model->getTableName(),
+	    $field->getHash(),
+	    get_class($field));
+    }
+
 
     /**
      * Cleares info about table from storage
@@ -102,12 +111,13 @@ final class DibiOrmStorage extends DibiConnection
 
     /**
      * Checks if model has field
+     * @param DibiOrm $model
      * @param Field $field
      * @return boolean
      */
-    public function modelHasField($field)
+    public function modelHasField($model, $field)
     {
-	return $this->fetch('select [id] from [fields] where [table] = %s and [name] = %s', $field->table, $fields->name) === false ? false : true;
+	return $this->fetch('select [id] from [fields] where [table] = %s and [name] = %s', $model->getTableName(), $field->getName()) === false ? false : true;
     }
 
 

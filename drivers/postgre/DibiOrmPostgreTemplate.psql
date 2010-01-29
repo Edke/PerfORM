@@ -1,0 +1,66 @@
+{if $createTables}
+{foreach $createTables as $table}
+
+CREATE TABLE {$table->table} (
+{foreach $table->fields as $field}
+    {$field->name} {$field->type} {!$field->default} {$field->notnull}{if !$iterator->isLast()},{/if}
+{/foreach}
+);
+
+{/foreach}
+{/if}
+
+
+
+{if $addKeys}
+{foreach $addKeys as $key}
+ALTER TABLE ONLY {$key->table}
+{if $key->type == 'primary'}    ADD CONSTRAINT {$key->constraint_name} PRIMARY KEY ({$key->field});{/if}{if $key->type == 'foreign'}    ADD CONSTRAINT {$key->constraint_name} FOREIGN KEY ({$key->key_name}) REFERENCES {$key->reference_table}({$key->reference_key_name});{/if}
+
+{/foreach}
+{/if}
+
+
+
+
+{if $createIndexes}
+{foreach $createIndexes as $index}
+
+CREATE INDEX {$index->name} ON {$index->table} USING {$index->type};
+
+{/foreach}
+{/if}
+
+
+
+{if $addFields}
+{foreach $addFields as $field}
+
+ALTER TABLE {$field->table}
+    ADD COLUMN {$field->name} {$field->type} {!$field->default} {$field->notnull};
+
+{/foreach}
+{/if}
+
+
+
+{if $dropFields}
+{foreach $dropFields as $field}
+
+ALTER TABLE {$field->table}
+    DROP COLUMN {$field};
+
+{/foreach}
+{/if}
+
+
+
+{if $dropTables}
+{foreach $dropTables as $table}
+
+DROP TABLE {$table};
+
+{/foreach}
+{/if}
+
+

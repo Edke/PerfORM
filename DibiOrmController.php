@@ -92,41 +92,6 @@ final class DibiOrmController
     }
 
 
-    /**
-     * Models with dependancy defined are moved before its dependents
-     * @param array $list
-     */
-    protected static function dependancySort( &$list)
-    {
-	$_list= $list;
-	foreach($_list as $item)
-	{
-	    $min= null;
-	    foreach($item->getDependents() as $dependent)
-	    {
-		$min= ( is_null($min )) ? array_search($dependent, $_list) : min($min, array_search($dependent, $_list));
-	    }
-	    if (is_integer($min))
-	    {
-		if ( array_search($item, $_list) > $min)
-		{
-		    unset($list[array_search($item,$list)]);
-		    $list= self::insertArrayIndex($list, $item, $min);
-		}
-	    }
-	}
-    }
-
-
-    /**
-     * Reversed sort of dependancySort method
-     * @param array $list
-     */
-    protected static function dependancySortReverse( &$list)
-    {
-	self::dependancySort($list);
-	$list= array_reverse($list);
-    }
 
 
     /**
@@ -257,22 +222,6 @@ final class DibiOrmController
 
 
     /**
-     * Inserts element at $index of $array
-     * @param array $array
-     * @param mixed $new_element
-     * @param integer $index
-     * @return array
-     */
-    protected static function insertArrayIndex($array, $new_element, $index)
-    {
-	$start = array_slice($array, 0, $index);
-	$end = array_slice($array, $index);
-	$start[] = $new_element;
-	return array_merge($start, $end);
-    }
-
-
-    /**
      * Runs query and inserts it's sql code in buffer
      */
     public static function queryAndLog()
@@ -289,13 +238,11 @@ final class DibiOrmController
      */
     public static function sqlall()
     {
-	self::disableModelCaching();
-	$sql= null;
-	foreach( self::getModels() as $modelName)
+	foreach( self::getModels() as $model)
 	{
-	    $sql .= self::getDriver()->createTable(new $modelName);
+	    self::getDriver()->appendTableToCreate($model);
 	}
-	return $sql;
+	return self::getDriver()->buildSql();
     }
 
 
@@ -312,22 +259,16 @@ final class DibiOrmController
 	$storage= new DibiOrmStorage();
 	$storage->begin();
 	
-	$sql= null;
-	$models = array();
-
 	foreach( self::getModels() as $model)
 	{
-	    /*if ( self::getConnection()->getDatabaseInfo()->hasTable($modelInfo->table) )
-	    {*/
-		$models[]= $model;
+	    if ( $storage->hasModel($model) )	    
+	    {
+		self::getDriver()->appendTableToDrop($model);
 		$storage->dropModel($model);
-	    //}
+	    }
 	}
-	self::dependancySort($models);
-	foreach($models as $model)
-	{
-	    $sql .= self::getDriver()->dropTable($model);
-	}
+
+	$sql= self::getDriver()->buildSql();
 
 	if ( !is_null($sql) && $confirm )
 	{
@@ -353,44 +294,37 @@ final class DibiOrmController
 	$storage= new DibiOrmStorage();
 	$storage->begin();
 
-	#self::disableModelCaching();
-	$sql= null;
-	$syncModels= array();
-	$createModels= array();
-	$dropModels= array();
-	$addFields= array();
-	$dropFields= array();
-	$changeFieldsType= array();
-
 	/* first run: check models against storage, finds models to create and models to alter */
-	#Debug::consoleDump(self::getModels());
+	# Debug::consoleDump(self::getModels());
 	foreach( self::getModels() as $model)
 	{
-	    // model exists
+	    # model exists
 	    if ( $storage->hasModel($model) )
 	    {
+		# model out of sync
 		if ( !$storage->modelHasSync($model))
 		{
-		    //compare fields in modelInfo against storage
+		    # checking fields in model
 		    foreach( $model->getFields() as $field)
 		    {
-			if ( $storage->modelHasField($field))
+			# field exists
+			if ( $storage->modelHasField($model, $field))
 			{
 			    
 			}
 			else {
-			    //$addFields[]= $field;
+			    self::getDriver()->appendFieldToAdd($field, $model);
+			    $storage->addFieldToModel($field, $model);
 			}
 		    }
 		}
 	    }
-	    // model does not exists, create
+	    # model does not exists, create
 	    else
 	    {
-		$createModels[]= $model;
+		self::getDriver()->appendTableToCreate($model);
 		$storage->insertModel($model);
 	    }
-	    //$syncModels[]= new $modelName;
 	}
 
 	/* second run: check storage against models, finds models to drop */
@@ -398,29 +332,11 @@ final class DibiOrmController
 	{
 	    if ( !key_exists($storageModel->name, self::getModels()))
 	    {
-		$dropModels[]= $storageModel->name;
+		self::getDriver()->appendTableToDrop($storageModel->name);
 	    }
 	}
 
-	# createModels
-	self::dependancySortReverse($createModels);
-	foreach($createModels as $model)
-	{
-	    $sql .= self::getDriver()->createTable($model);
-	}
-
-	# syncModels
-	foreach($syncModels as $model)
-	{
-	    //$sql .= self::getDriver()->syncTable($model);
-	}
-	
-	# dropModels
-	foreach($dropModels as $modelName)
-	{
-	    $sql .= self::getDriver()->dropTable($modelName);
-	    $storage->dropModel($modelName);
-	}
+	$sql= self::getDriver()->buildSql();
 
 	if ( !is_null($sql) && $confirm )
 	{

@@ -62,42 +62,36 @@ class DibiOrmPostgreDriver extends DibiOrmDriver
     }
 
     /**
-     *
-     * @param Orm $orm
-     * @return string
+     * @param DibiOrm $model
+     * @return stdClass
      */
-    public function createTable($orm)
+    public function getCreateTable($model)
     {
-
-	$template= $this->getTemplate('create-table.psql' );
-
 	$fields= array();
-	foreach($orm->getFields() as $field)
+	foreach($model->getFields() as $field)
 	{
-	    $fields[]= $this->addField($field);
+	    $fields[]= $this->getField($field, $model);
 	}
 
-	$keys= array();
-	if ( $pk = $orm->getPrimaryKey() )
+	if ( $pk = $model->getPrimaryKey() )
 	{
-	    $keys[]= $this->addPrimaryKey($orm, $pk);
+	    $this->addKeys[]= $this->getPrimaryKey($model, $pk);
 	}
-	foreach( $orm->getForeignKeys() as $foreignKey)
+	foreach( $model->getForeignKeys() as $foreignKey)
 	{
-	    $keys[]= $this->addForeignKey($orm, $foreignKey);
+	    $this->addKeys[]= $this->getForeignKey($model, $foreignKey);
 	}
 
-	$template->fields= $fields;
-	$template->keys= $keys;
-	$template->indexes= array();
-	$template->table= $orm;
-
-	return $this->renderTemplate($template);
+	return (object) array(
+	    'table' => $model->getTableName(),
+	    'fields' => $fields,
+	);
     }
 
-    protected function addField($field)
+    protected function getField($field, $model)
     {
 	return (object) array(
+	'table' => $model->getTableName(),
 	'name' => $field->getRealName(),
 	'type' => $this->translateType($field),
 	'notnull' => ($field->isNotNull()) ? 'NULL' : 'NOT NULL',
@@ -105,20 +99,22 @@ class DibiOrmPostgreDriver extends DibiOrmDriver
 	);
     }
 
-    protected function addPrimaryKey($orm, $pk)
+    protected function getPrimaryKey($model, $pk)
     {
 	return (object) array(
+	'table' => $model->getTableName(),
 	'type' => 'primary',
-	'constraint_name' => $orm->getTableName() .'_pkey',
+	'constraint_name' => $model->getTableName() .'_pkey',
 	'field' => $pk
 	);
     }
 
-    protected function addForeignKey($orm, $key)
+    protected function getForeignKey($model, $key)
     {
 	return (object) array(
+	'table' => $model->getTableName(),
 	'type' => 'foreign',
-	'constraint_name' => $orm->getTableName() .'_'. $key->getRealName() .'_fkey',
+	'constraint_name' => $model->getTableName() .'_'. $key->getRealName() .'_fkey',
 	'key_name' => $key->getRealName(),
 	'reference_table' => $key->getReferenceTableName(),
 	'reference_key_name' => $key->getReferenceTableKey(),
@@ -169,155 +165,4 @@ class DibiOrmPostgreDriver extends DibiOrmDriver
 
 	return $sql;
     }
-
-
-    /**
-     * Returns sql for DROP TABLE
-     * @param DibiOrm|string $table
-     * @return string
-     */
-    public function dropTable($table)
-    {
-	$template= $this->getTemplate('drop-table.psql' );
-	$template->tableName= is_object($table) ? $table->getTableName() : $table;
-	return $this->renderTemplate($template);
-    }
-
-    protected function createFromMigrator()
-    {
-
-	$dll= ( $this->addDropTable ) ? "\nDROP TABLE [$table];\n" : "\n";
-
-
-
-	$dll .= "CREATE TABLE [$table] (\n";
-	$rows= array();
-	$keys= array();
-
-
-	// columns
-	$result= dibi::query("show full columns from $table");
-	foreach( $result as $row)
-	{
-
-	    // primary key -> serial
-	    if ( $row->Key == 'PRI' and $row->Extra == 'auto_increment' and $this->types[$row->Type]['create'] == 'INTEGER'  )
-	    {
-		$rows[]= sprintf("\t[%s] SERIAL", $row->Field);
-		$keys[]= sprintf("\tCONSTRAINT [%s_pkey] PRIMARY KEY([%s])", $table, $row->Field);
-	    }
-	    // other rows
-	    else
-	    {
-		// default values
-		$default= null;
-		if ( $row->Default )
-		{
-		    $default= " DEFAULT \"". $row->Default ."\"";
-		}
-
-		//default values override
-		if ( ($this->types[$row->Type]['create'] == 'TIMESTAMP'  and is_string($default)) or
-		($this->types[$row->Type]['create'] == 'DATE' and is_string($default)) )
-		{
-		    $default= null;
-		}
-
-		//default values override for enum->boolean
-		if ( $this->types[$row->Type]['create'] == 'BOOLEAN'  and is_string($default))
-		{
-
-		    if ( !preg_match('#[ya1n0]{1}#', $default )) throw new Exception("invalid default value for boolean: '$default'");
-		    $default= ( preg_match('#[ya1]{1}#', $default ) )? ' DEFAULT true' : ' DEFAULT false';
-		}
-
-		$rows[]= sprintf("\t[%s] %s%s%s",
-		$row->Field,
-		$this->types[$row->Type]['create'],
-		( $row->Null == 'YES' )? ' NULL': ' NOT NULL',
-		$default
-		);
-	    }
-	}
-
-	$_indexes= array();
-
-	// indexes
-	$result= dibi::query("show index from $table");
-	foreach( $result->fetchAssoc('Key_name,Seq_in_index,@') as $key => $row )
-	{
-
-	    // skip primary
-	    if ( $key != 'PRIMARY'  )
-	    {
-		foreach( $row as $index )
-		{
-
-		    //var_dump( $key );
-		    //var_dump( $index );
-
-		    // skip FULLTEXT
-		    if ( $index->Index_type == 'BTREE' )
-		    {
-			$_indexes[$table.'_'. $key .'_idx']['fields'][]= $index->Column_name;
-			$_indexes[$table.'_'. $key .'_idx']['unique']= ($index->Non_unique)? false : true;
-		    }
-
-
-		}
-	    }
-
-	}
-	$indexes= array();
-	foreach( $_indexes as $indexName =>  $index )
-	{
-
-	    // unique constraint
-	    if ( $index['unique'] and sizeof( $index['fields']) == 1 )
-	    {
-		$keys[]= sprintf("\tCONSTRAINT [%s] UNIQUE([%s])", $indexName, implode( "],[", $index['fields'] ));
-	    }
-
-	    // index
-	    else
-	    {
-		$indexes[]= sprintf("CREATE %sINDEX [%s] ON [%s]\n\tUSING btree ([%s]);",
-		( $index['unique'] ) ? 'UNIQUE ': '',
-		$indexName,
-		$table,
-		implode( "],[", $index['fields'] ));
-
-	    }
-	}
-
-	$dll .= implode( ",\n",  array_merge($rows, $keys) ) . "\n";
-	$dll .= ") WITH OIDS;\n\n";
-
-	if ( sizeof($indexes)>0)
-	{
-	    $dll .= "\n\n" . implode( "\n\n", $indexes );
-
-	}
-
-	// handle actions
-	$formated_sql= dibi::getConnection('postgre')->sql($dll);
-	if ( $this->isAction('print') or $this->isVerbose() )
-	{
-	    echo $formated_sql;
-	}
-	elseif ( $this->isAction('dump'))
-	{
-	    $this->write($formated_sql);
-	}
-	elseif ( $this->isAction('insert'))
-	{
-	    dibi::getConnection('postgre')->query($dll);
-	}
-    }
-
-
-
-
-
 }
-
