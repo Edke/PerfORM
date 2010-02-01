@@ -99,6 +99,15 @@ class DibiOrmPostgreDriver extends DibiOrmDriver
 	);
     }
 
+    protected function getDropField($field, $model)
+    {
+	return (object) array(
+	'table' => $model->getTableName(),
+	'name' => $field,
+	);
+    }
+
+
     protected function getPrimaryKey($model, $pk)
     {
 	return (object) array(

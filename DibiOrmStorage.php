@@ -46,13 +46,30 @@ final class DibiOrmStorage extends DibiConnection
 	}
     }
 
+
+    /**
+     * @param Field $field
+     * @param DibiOrm $model
+     */
     public function addFieldToModel($field, $model)
     {
 	$this->query('insert into [fields] values( null, %s, %s, %s, %s)',
-	    strtolower($field->getName()),
+	    $field->getName(),
 	    $model->getTableName(),
 	    $field->getHash(),
 	    get_class($field));
+    }
+
+
+    /**
+     * @param string $fieldName
+     * @param DibiOrm $model
+     */
+    public function dropFieldFromModel($fieldName, $model)
+    {
+	$this->query('delete from [fields] where [name] = %s and [table] = %s',
+	    $fieldName,
+	    $model->getTableName());
     }
 
 
@@ -76,6 +93,16 @@ final class DibiOrmStorage extends DibiConnection
     public function getModels()
     {
 	return $this->query('select [name] from [tables]');
+    }
+
+    /**
+     * Get all fields of model from storage
+     * @param DibiOrm $model
+     * @return DibiResult
+     */
+    public function getModelFields($model)
+    {
+	return $this->query('select [name] from [fields] where [table] = %s', $model->getTableName() );
     }
 
     

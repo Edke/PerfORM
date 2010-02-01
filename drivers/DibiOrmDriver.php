@@ -20,18 +20,26 @@ abstract class DibiOrmDriver {
     protected $addKeys= array();
 
     protected $createIndexes= array();
-    
-
 
 
     /**
      * @param Field $field
+     * @param DibiOrm $model
      */
     public function appendFieldToAdd($field, $model)
     {
 	$this->addFields[]= (object) array( 'field'=>$field, 'model'=>$model);
     }
 
+    
+    /**
+     * @param Field $field
+     * @param DibiOrm $model
+     */
+    public function appendFieldToDrop($fieldName, $model)
+    {
+	$this->dropFields[]= (object) array( 'field'=>$fieldName, 'model'=>$model);
+    }
 
 
     /**
@@ -64,6 +72,11 @@ abstract class DibiOrmDriver {
 	$template= new Template();
 	$template->registerFilter(new LatteFilter);
 	$template->setFile( dirname(__FILE__). '/'. $this->getDriver() . '/DibiOrmPostgreTemplate.psql');
+
+	$template->createTables= array();
+	$template->dropTables= array();
+	$template->addFields=  array();
+	$template->dropFields= array();
 
 	return $template;
     }
@@ -151,6 +164,13 @@ abstract class DibiOrmDriver {
 	foreach( $this->addFields as $item)
 	{
 	    $template->addFields[]= $this->getField($item->field, $item->model);
+	}
+
+
+	# alter table drop column ..
+	foreach( $this->dropFields as $item)
+	{
+	    $template->dropFields[]= $this->getDropField($item->field, $item->model);
 	}
 
 

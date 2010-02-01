@@ -304,7 +304,7 @@ final class DibiOrmController
 		# model out of sync
 		if ( !$storage->modelHasSync($model))
 		{
-		    # checking fields in model
+		    # checking fields in model against storage
 		    foreach( $model->getFields() as $field)
 		    {
 			# field exists
@@ -315,6 +315,16 @@ final class DibiOrmController
 			else {
 			    self::getDriver()->appendFieldToAdd($field, $model);
 			    $storage->addFieldToModel($field, $model);
+			}
+		    }
+
+		    # checking storage against model
+		    foreach( $storage->getModelFields($model) as $storageField)
+		    {
+			if ( !key_exists($storageField->name, $model->getFields() ))
+			{
+			    self::getDriver()->appendFieldToDrop($storageField->name, $model);
+			    $storage->dropFieldFromModel($storageField->name, $model);
 			}
 		    }
 		}

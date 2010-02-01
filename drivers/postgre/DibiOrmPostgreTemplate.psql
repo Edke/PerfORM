@@ -48,7 +48,7 @@ ALTER TABLE {$field->table}
 {foreach $dropFields as $field}
 
 ALTER TABLE {$field->table}
-    DROP COLUMN {$field};
+    DROP COLUMN {$field->name};
 
 {/foreach}
 {/if}
