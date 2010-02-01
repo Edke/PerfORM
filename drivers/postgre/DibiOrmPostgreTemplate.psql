@@ -54,6 +54,15 @@ ALTER TABLE {$field->table}
 {/if}
 
 
+{if $renameFields}
+{foreach $renameFields as $field}
+
+ALTER TABLE {$field->table}
+    RENAME COLUMN {$field->from} TO {$field->name};
+
+{/foreach}
+{/if}
+
 
 {if $dropTables}
 {foreach $dropTables as $table}

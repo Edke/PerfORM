@@ -82,6 +82,9 @@ final class DibiOrmController
     protected static $modelCaching= true;
 
 
+
+
+
     /**
      * Adds sql query to buffer
      * @param string $sql
@@ -263,12 +266,11 @@ final class DibiOrmController
 	{
 	    if ( $storage->hasModel($model) )	    
 	    {
-		self::getDriver()->appendTableToDrop($model);
 		$storage->dropModel($model);
 	    }
 	}
 
-	$sql= self::getDriver()->buildSql();
+	$sql= $storage->process();
 
 	if ( !is_null($sql) && $confirm )
 	{
@@ -310,10 +312,9 @@ final class DibiOrmController
 			# field exists
 			if ( $storage->modelHasField($model, $field))
 			{
-			    
+			    # TODO checking it's param changes
 			}
 			else {
-			    self::getDriver()->appendFieldToAdd($field, $model);
 			    $storage->addFieldToModel($field, $model);
 			}
 		    }
@@ -323,7 +324,6 @@ final class DibiOrmController
 		    {
 			if ( !key_exists($storageField->name, $model->getFields() ))
 			{
-			    self::getDriver()->appendFieldToDrop($storageField->name, $model);
 			    $storage->dropFieldFromModel($storageField->name, $model);
 			}
 		    }
@@ -332,7 +332,6 @@ final class DibiOrmController
 	    # model does not exists, create
 	    else
 	    {
-		self::getDriver()->appendTableToCreate($model);
 		$storage->insertModel($model);
 	    }
 	}
@@ -342,11 +341,11 @@ final class DibiOrmController
 	{
 	    if ( !key_exists($storageModel->name, self::getModels()))
 	    {
-		self::getDriver()->appendTableToDrop($storageModel->name);
+		$storage->dropModel($model);
 	    }
 	}
 
-	$sql= self::getDriver()->buildSql();
+	$sql= $storage->process();
 
 	if ( !is_null($sql) && $confirm )
 	{

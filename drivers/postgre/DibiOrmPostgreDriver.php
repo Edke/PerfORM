@@ -88,7 +88,7 @@ class DibiOrmPostgreDriver extends DibiOrmDriver
 	);
     }
 
-    protected function getField($field, $model)
+    protected function getField($field, $model, $renameFrom = null)
     {
 	return (object) array(
 	'table' => $model->getTableName(),
@@ -96,6 +96,7 @@ class DibiOrmPostgreDriver extends DibiOrmDriver
 	'type' => $this->translateType($field),
 	'notnull' => ($field->isNotNull()) ? 'NULL' : 'NOT NULL',
 	'default' => $this->translateDefault($field),
+	'from' => $renameFrom
 	);
     }
 

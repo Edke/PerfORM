@@ -15,20 +15,31 @@ abstract class DibiOrmDriver {
 
     protected $addFields= array();
 
+    protected $renameFields= array();
+
     protected $dropFields= array();
 
     protected $addKeys= array();
 
     protected $createIndexes= array();
 
-
+    
     /**
      * @param Field $field
      * @param DibiOrm $model
      */
     public function appendFieldToAdd($field, $model)
     {
-	$this->addFields[]= (object) array( 'field'=>$field, 'model'=>$model);
+	$this->addFields[]= $this->getField($field, $model);
+    }
+
+    /**
+     * @param Field $field
+     * @param DibiOrm $model
+     */
+    public function appendFieldToRename($field, $from, $model)
+    {
+	$this->renameFields[]= $this->getField($field, $model, $from);
     }
 
     
@@ -38,7 +49,7 @@ abstract class DibiOrmDriver {
      */
     public function appendFieldToDrop($fieldName, $model)
     {
-	$this->dropFields[]= (object) array( 'field'=>$fieldName, 'model'=>$model);
+	$this->dropFields[]= $this->getDropField($fieldName, $model);
     }
 
 
@@ -75,8 +86,10 @@ abstract class DibiOrmDriver {
 
 	$template->createTables= array();
 	$template->dropTables= array();
-	$template->addFields=  array();
-	$template->dropFields= array();
+
+	$template->addFields= $this->addFields;
+	$template->dropFields= $this->dropFields;
+	$template->renameFields= $this->renameFields;
 
 	return $template;
     }
@@ -156,23 +169,7 @@ abstract class DibiOrmDriver {
 	}
 
 	$template->addKeys= $this->addKeys;
-	
 	$template->createIndexes= $this->createIndexes;
-
-	
-	# alter table add column ..
-	foreach( $this->addFields as $item)
-	{
-	    $template->addFields[]= $this->getField($item->field, $item->model);
-	}
-
-
-	# alter table drop column ..
-	foreach( $this->dropFields as $item)
-	{
-	    $template->dropFields[]= $this->getDropField($item->field, $item->model);
-	}
-
 
 	# drop table ..
 	self::dependancySort($this->dropModelTables);
