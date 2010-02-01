@@ -87,6 +87,32 @@ class DibiOrmPostgreDriver extends DibiOrmDriver
 	    'fields' => $fields,
 	);
     }
+    
+
+    /**
+     * @param DibiOrm $model
+     * @param string $from
+     * @return stdClass
+     */
+    public function getRenameTable($model, $from)
+    {
+
+/*	if ( $pk = $model->getPrimaryKey() )
+	{
+	    $this->addKeys[]= $this->getPrimaryKey($model, $pk);
+	}
+	foreach( $model->getForeignKeys() as $foreignKey)
+	{
+	    $this->addKeys[]= $this->getForeignKey($model, $foreignKey);
+	}*/
+
+	return (object) array(
+	    'table' => $model->getTableName(),
+	    'from' => $from,
+	);
+    }
+
+
 
     protected function getField($field, $model, $renameFrom = null)
     {

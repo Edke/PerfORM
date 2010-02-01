@@ -341,7 +341,7 @@ final class DibiOrmController
 	{
 	    if ( !key_exists($storageModel->name, self::getModels()))
 	    {
-		$storage->dropModel($model);
+		$storage->dropModel($storageModel->name);
 	    }
 	}
 

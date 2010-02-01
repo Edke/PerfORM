@@ -73,3 +73,11 @@ DROP TABLE {$table};
 {/if}
 
 
+{if $renameTables}
+{foreach $renameTables as $table}
+
+ALTER TABLE {$table->from}
+    RENAME TO {$table->table};
+
+{/foreach}
+{/if}

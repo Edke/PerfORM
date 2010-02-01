@@ -17,6 +17,8 @@ abstract class DibiOrmDriver {
 
     protected $renameFields= array();
 
+    protected $renameTables= array();
+
     protected $dropFields= array();
 
     protected $addKeys= array();
@@ -43,6 +45,15 @@ abstract class DibiOrmDriver {
     }
 
     
+    /**
+     * @param DibiOrm $model
+     */
+    public function appendTableToRename($model, $from)
+    {
+	$this->renameTables[]= $this->getRenameTable($model, $from);
+    }
+
+
     /**
      * @param Field $field
      * @param DibiOrm $model
@@ -90,6 +101,7 @@ abstract class DibiOrmDriver {
 	$template->addFields= $this->addFields;
 	$template->dropFields= $this->dropFields;
 	$template->renameFields= $this->renameFields;
+	$template->renameTables= $this->renameTables;
 
 	return $template;
     }

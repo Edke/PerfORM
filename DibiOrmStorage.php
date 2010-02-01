@@ -108,56 +108,7 @@ final class DibiOrmStorage extends DibiConnection
     }
 
 
-    public function process()
-    {
-	Debug::consoleDump($this->renamedFields,'renamed fields');
-	Debug::consoleDump($this->queue,'queue');
 
-	# renamed first, remove adds and drops
-	foreach( $this->renamedFields as $key => $array)
-	{
-	    if ( $array->counter == 2 and isset($array->from) and isset($array->to) and isset($array->modelName))
-	    {
-		$model= $this->queue[DibiOrmStorage::FIELD_ADD][$array->to.'|'.$array->modelName]->values['model'];
-		$field= $this->queue[DibiOrmStorage::FIELD_ADD][$array->to.'|'.$array->modelName]->values['field'];
-		unset($this->queue[DibiOrmStorage::FIELD_ADD][$array->to.'|'.$array->modelName]);
-		unset($this->queue[DibiOrmStorage::FIELD_DROP][$array->from.'|'.$array->modelName]);
-
-		$this->query('update [fields] set [name] = %s where [name] = %s and [table] = %s',
-		    $array->to,
-		    $array->from,
-		    $array->modelName);
-
-		DibiOrmController::getDriver()->appendFieldToRename($field, $array->from, $model);
-	    }
-	}
-
-	foreach( $this->queue as $operation => $actions)
-	{
-	    foreach($actions as $key => $action)
-	    {
-		list($field, $table)= explode('|', $key);
-
-		switch($operation)
-		{
-		    case DibiOrmStorage::FIELD_ADD:
-			//Debug::consoleDump($action);
-			DibiOrmController::getDriver()->appendFieldToAdd($action->values['field'], $action->values['model']);
-			break;
-
-		    case DibiOrmStorage::FIELD_DROP:
-			//Debug::consoleDump($action);
-			DibiOrmController::getDriver()->appendFieldToDrop($action->values['fieldName'], $action->values['model']);
-			break;
-
-		    default:
-			$this->query($action->sql);
-		}
-	    }
-	}
-
-	return DibiOrmController::getDriver()->buildSql();
-    }
 
 
     /**
@@ -211,9 +162,33 @@ final class DibiOrmStorage extends DibiConnection
     public function dropModel($model)
     {
 	$modelName= is_object($model) ? $model->getTableName() : $model;
-	$this->query('delete from [tables] where [name] = %s', $modelName );
-	$this->query('delete from [fields] where [table] = %s', $modelName );
-	DibiOrmController::getDriver()->appendTableToDrop($model);
+	$hash= $this->fetchSingle('select hash from [tables] where [name] = %s ',
+	    $modelName);
+	$sql = $this->sql('delete from [tables] where [name] = %s;', $modelName );
+	$sql .= $this->sql('delete from [fields] where [table] = %s;', $modelName );
+
+	$this->queue(
+	    DibiOrmStorage::TABLE_DROP,
+	    $modelName,
+	    $sql,
+	    array(
+		'model' => $model)
+	    );
+
+
+	$key= $hash;
+	if ( key_exists($key, $this->renamedModels))
+	{
+	    $array= $this->renamedModels[$key];
+	    $array->counter++;
+	    $array->from= $modelName;
+	}
+	else{
+	    $this->renamedModels[$key]= (object) array(
+		'counter' => 1,
+		'from' => $modelName,
+	    );
+	}
     }
 
 
@@ -254,17 +229,117 @@ final class DibiOrmStorage extends DibiConnection
      */
     public function insertModel($model)
     {
-	$this->query('insert into [tables] values( null, %s, %s)', $model->getTableName(), $model->getHash() );
-
+	$modelName= is_object($model) ? $model->getTableName() : $model;
+	$sql = $this->sql('insert into [tables] values( null, %s, %s);', $model->getTableName(), $model->getHash() );
 	foreach($model->getFields() as $field )
 	{
-	    $this->query('insert into [fields] values( null, %s, %s, %s, %s)',
+	    $sql .= $this->sql('insert into [fields] values( null, %s, %s, %s, %s);',
 	    strtolower($field->getName()),
 	    $model->getTableName(),
 	    $field->getHash(),
 	    get_class($field));
 	}
-	DibiOrmController::getDriver()->appendTableToCreate($model);
+	$this->queue(
+	    DibiOrmStorage::TABLE_ADD,
+	    $modelName,
+	    $sql,
+	    array(
+		'model' => $model)
+	    );
+	
+	$key= $model->getHash();
+	if ( key_exists($key, $this->renamedModels))
+	{
+	    $array= $this->renamedModels[$key];
+	    $array->counter++;
+	    $array->to= $modelName;
+	}
+	else{
+	    $this->renamedModels[$key]= (object) array(
+		'counter' => 1,
+		'to' => $modelName,
+	    );
+	}
+    }
+
+
+    /**
+     * Storage processing
+     * @return string
+     */
+    public function process()
+    {
+	//Debug::consoleDump($this->renamedFields,'renamed fields');
+	Debug::consoleDump($this->renamedModels,'renamed models');
+	Debug::consoleDump($this->queue,'queue');
+
+	# renamed fields, remove adds and drops
+	foreach( $this->renamedFields as $key => $array)
+	{
+	    if ( $array->counter == 2 and isset($array->from) and isset($array->to) and isset($array->modelName))
+	    {
+		$model= $this->queue[DibiOrmStorage::FIELD_ADD][$array->to.'|'.$array->modelName]->values['model'];
+		$field= $this->queue[DibiOrmStorage::FIELD_ADD][$array->to.'|'.$array->modelName]->values['field'];
+		unset($this->queue[DibiOrmStorage::FIELD_ADD][$array->to.'|'.$array->modelName]);
+		unset($this->queue[DibiOrmStorage::FIELD_DROP][$array->from.'|'.$array->modelName]);
+
+		$this->query('update [fields] set [name] = %s where [name] = %s and [table] = %s',
+		    $array->to,
+		    $array->from,
+		    $array->modelName);
+
+		DibiOrmController::getDriver()->appendFieldToRename($field, $array->from, $model);
+	    }
+	}
+
+
+	# renamed tables, remove adds and drops
+	foreach( $this->renamedModels as $key => $array)
+	{
+	    if ( $array->counter == 2 and isset($array->from) and isset($array->to))
+	    {
+		$model= $this->queue[DibiOrmStorage::TABLE_ADD][$array->to]->values['model'];
+		unset($this->queue[DibiOrmStorage::TABLE_ADD][$array->to]);
+		unset($this->queue[DibiOrmStorage::TABLE_DROP][$array->from]);
+
+		$this->query('update [tables] set [name] = %s where [name] = %s',
+		    $array->to,
+		    $array->from);
+
+		DibiOrmController::getDriver()->appendTableToRename($model, $array->from);
+	    }
+	}
+
+
+	foreach( $this->queue as $operation => $actions)
+	{
+	    foreach($actions as $key => $action)
+	    {
+		list($field, $table)= explode('|', $key);
+
+		switch($operation)
+		{
+		    case DibiOrmStorage::FIELD_ADD:
+			DibiOrmController::getDriver()->appendFieldToAdd($action->values['field'], $action->values['model']);
+			break;
+
+		    case DibiOrmStorage::FIELD_DROP:
+			DibiOrmController::getDriver()->appendFieldToDrop($action->values['fieldName'], $action->values['model']);
+			break;
+
+		    case DibiOrmStorage::TABLE_ADD:
+			DibiOrmController::getDriver()->appendTableToCreate($action->values['model']);
+			break;
+
+		    case DibiOrmStorage::TABLE_DROP:
+			DibiOrmController::getDriver()->appendTableToDrop($action->values['model']);
+			break;
+		}
+		$this->query($action->sql);
+	    }
+	}
+
+	return DibiOrmController::getDriver()->buildSql();
     }
 
 
