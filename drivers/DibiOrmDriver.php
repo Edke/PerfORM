@@ -19,7 +19,13 @@ abstract class DibiOrmDriver {
 
     protected $renameTables= array();
 
+    protected $renameIndexes= array();
+
+    protected $renameSequences= array();
+
     protected $dropFields= array();
+
+    protected $dropKeys= array();
 
     protected $addKeys= array();
 
@@ -102,6 +108,8 @@ abstract class DibiOrmDriver {
 	$template->dropFields= $this->dropFields;
 	$template->renameFields= $this->renameFields;
 	$template->renameTables= $this->renameTables;
+	$template->renameSequences= $this->renameSequences;
+	$template->renameIndexes= $this->renameIndexes;
 
 	return $template;
     }
@@ -181,6 +189,7 @@ abstract class DibiOrmDriver {
 	}
 
 	$template->addKeys= $this->addKeys;
+	$template->dropKeys= $this->dropKeys;
 	$template->createIndexes= $this->createIndexes;
 
 	# drop table ..

@@ -97,14 +97,29 @@ class DibiOrmPostgreDriver extends DibiOrmDriver
     public function getRenameTable($model, $from)
     {
 
-/*	if ( $pk = $model->getPrimaryKey() )
+	if ( $pk = $model->getPrimaryKey() )
 	{
-	    $this->addKeys[]= $this->getPrimaryKey($model, $pk);
+	    $this->renameIndexes[]= $this->getPrimaryKey($model, $pk, $from);
+
+	    if (get_class($model->getField($pk)) == 'AutoField')
+	    {
+		$this->renameSequences[]= (object) array(
+		    'from' => $from.'_'.$pk.'_seq',
+		    'to' => $model->getTableName().'_'.$pk.'_seq',
+		);
+	    }
 	}
+
+	foreach( $model->getForeignKeys() as $foreignKey)
+	{
+	    $this->dropKeys[]= $this->getForeignKey($model, $foreignKey, $from);
+	}
+
+
 	foreach( $model->getForeignKeys() as $foreignKey)
 	{
 	    $this->addKeys[]= $this->getForeignKey($model, $foreignKey);
-	}*/
+	}
 
 	return (object) array(
 	    'table' => $model->getTableName(),
@@ -135,17 +150,18 @@ class DibiOrmPostgreDriver extends DibiOrmDriver
     }
 
 
-    protected function getPrimaryKey($model, $pk)
+    protected function getPrimaryKey($model, $pk, $from = null)
     {
 	return (object) array(
 	'table' => $model->getTableName(),
 	'type' => 'primary',
 	'constraint_name' => $model->getTableName() .'_pkey',
-	'field' => $pk
+	'field' => $pk,
+	'from_constraint_name' => $from .'_pkey',
 	);
     }
 
-    protected function getForeignKey($model, $key)
+    protected function getForeignKey($model, $key, $from)
     {
 	return (object) array(
 	'table' => $model->getTableName(),
@@ -154,6 +170,8 @@ class DibiOrmPostgreDriver extends DibiOrmDriver
 	'key_name' => $key->getRealName(),
 	'reference_table' => $key->getReferenceTableName(),
 	'reference_key_name' => $key->getReferenceTableKey(),
+	'from_table' => $from,
+	'from_constraint_name' => $from .'_'. $key->getRealName() .'_fkey',
 	);
     }
 
