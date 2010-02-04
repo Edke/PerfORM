@@ -164,8 +164,9 @@ final class DibiOrmStorage extends DibiConnection
 	$modelName= is_object($model) ? $model->getTableName() : $model;
 	$hash= $this->fetchSingle('select hash from [tables] where [name] = %s ',
 	    $modelName);
-	$sql = $this->sql('delete from [tables] where [name] = %s;', $modelName );
-	$sql .= $this->sql('delete from [fields] where [table] = %s;', $modelName );
+	$sql= array();
+	$sql[] = $this->sql('delete from [tables] where [name] = %s;', $modelName );
+	$sql[] = $this->sql('delete from [fields] where [table] = %s;', $modelName );
 
 	$this->queue(
 	    DibiOrmStorage::TABLE_DROP,
@@ -230,14 +231,15 @@ final class DibiOrmStorage extends DibiConnection
     public function insertModel($model)
     {
 	$modelName= is_object($model) ? $model->getTableName() : $model;
-	$sql = $this->sql('insert into [tables] values( null, %s, %s);', $model->getTableName(), $model->getHash() );
+	$sql=array();
+	$sql[] = $this->sql('insert into [tables] values (null, %s, %s);', $model->getTableName(), $model->getHash() );
 	foreach($model->getFields() as $field )
 	{
-	    $sql .= $this->sql('insert into [fields] values( null, %s, %s, %s, %s);',
-	    strtolower($field->getName()),
-	    $model->getTableName(),
-	    $field->getHash(),
-	    get_class($field));
+	    $sql[] = $this->sql('insert into [fields] values (null, %s, %s, %s, %s);',
+		strtolower($field->getName()),
+		$model->getTableName(),
+		$field->getHash(),
+		get_class($field));
 	}
 	$this->queue(
 	    DibiOrmStorage::TABLE_ADD,
@@ -269,9 +271,9 @@ final class DibiOrmStorage extends DibiConnection
      */
     public function process()
     {
-	//Debug::consoleDump($this->renamedFields,'renamed fields');
-	Debug::consoleDump($this->renamedModels,'renamed models');
-	Debug::consoleDump($this->queue,'queue');
+	#Debug::consoleDump($this->renamedFields,'renamed fields');
+	#Debug::consoleDump($this->renamedModels,'renamed models');
+	#Debug::consoleDump($this->queue,'queue');
 
 	# renamed fields, remove adds and drops
 	foreach( $this->renamedFields as $key => $array)
@@ -286,6 +288,10 @@ final class DibiOrmStorage extends DibiConnection
 		$this->query('update [fields] set [name] = %s where [name] = %s and [table] = %s',
 		    $array->to,
 		    $array->from,
+		    $array->modelName);
+
+		$this->query('update [tables] set [hash] = %s where [name] = %s',
+		    $model->getHash(),
 		    $array->modelName);
 
 		DibiOrmController::getDriver()->appendFieldToRename($field, $array->from, $model);
@@ -306,6 +312,10 @@ final class DibiOrmStorage extends DibiConnection
 		    $array->to,
 		    $array->from);
 
+		$this->query('update [fields] set [table] = %s where [table] = %s',
+		    $array->to,
+		    $array->from);
+
 		DibiOrmController::getDriver()->appendTableToRename($model, $array->from);
 	    }
 	}
@@ -315,7 +325,7 @@ final class DibiOrmStorage extends DibiConnection
 	{
 	    foreach($actions as $key => $action)
 	    {
-		list($field, $table)= explode('|', $key);
+		//list($field, $table)= explode('|', $key);
 
 		switch($operation)
 		{
@@ -335,7 +345,14 @@ final class DibiOrmStorage extends DibiConnection
 			DibiOrmController::getDriver()->appendTableToDrop($action->values['model']);
 			break;
 		}
-		$this->query($action->sql);
+
+		if ( is_array($action->sql))
+		{
+		    array_walk($action->sql, array($this, 'query'));
+		}
+		else {
+		    $this->query($action->sql);
+		}
 	    }
 	}
 
