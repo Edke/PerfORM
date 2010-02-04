@@ -203,7 +203,7 @@ abstract class DibiOrmDriver {
 	    $template->dropTables[]= $table;
 	}
 
-	return trim($this->renderTemplate($template));
+	return trim(preg_replace('#(;([\s\n\r]+))#ms', ";\n\n", $this->renderTemplate($template)));
     }
 }
 
