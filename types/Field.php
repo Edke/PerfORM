@@ -24,6 +24,14 @@ abstract class Field {
      */
     protected $default = null;
 
+
+    /**
+     * Callback for setting default value
+     * @var array
+     */
+    protected $defaultCallback = null;
+
+
     /**
      * @var boolean
      */
@@ -77,7 +85,10 @@ abstract class Field {
 		$this->setDefault( $matches[1]);
 		$options->remove($option);
 	    }
-	    
+	    elseif ( preg_match('#^default_callback=(.+)$#i', $option, $matches) ) {
+		$this->setDefaultCallback( $matches[1]);
+		$options->remove($option);
+	    }
 	    elseif ( preg_match('#^db_column=(.+)$#i', $option, $matches) ) {
 		$this->setDbName( $matches[1]);
 		$options->remove($option);
@@ -123,6 +134,17 @@ abstract class Field {
 
 	$this->default= $retypedDefault;
     }
+
+
+    final public function setDefaultCallback($callback) {
+	if( !is_callable(array($this->getParent(), $callback)) )
+	{
+	    $this->addError("callback '$callback' not callable on field's model");
+	    return false;
+	}
+	$this->defaultCallback= array($this->getParent(), $callback);
+    }
+    
 
     protected function setDbName($dbName) {
 	if( !is_null($this->dbName) ) {
@@ -190,6 +212,12 @@ abstract class Field {
     public  function getDefaultValue() {
 	return $this->default;
     }
+
+
+    public  function getDefaultCallback() {
+	return $this->defaultCallback;
+    }
+
 
 
     /**

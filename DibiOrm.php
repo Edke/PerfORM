@@ -435,6 +435,10 @@ abstract class DibiOrm
 	    {
 		$insert[$finalColumn]= $default;
 	    }
+	    elseif( $field->getDefaultCallback() )
+	    {
+		$insert[$finalColumn]= call_user_func($field->getDefaultCallback());
+	    }
 	    elseif( !$field->isNullable() )
 	    {
 		throw new Exception("field '$key' has no value set or default value but not null");
@@ -585,10 +589,6 @@ abstract class DibiOrm
 	    {
 		$update[$finalColumn]= $value;
 	    }
-/*	    elseif( !$field->isNullable() )
-	    {
-		throw new Exception("field '$key' has no value set but not null");
-	    }*/
 	}
 
 	if (count($update)>0)

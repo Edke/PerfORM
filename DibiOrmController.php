@@ -295,6 +295,7 @@ final class DibiOrmController
     {
 	$storage= new DibiOrmStorage();
 	$storage->begin();
+	self::getConnection()->begin();
 
 	/* first run: check models against storage, finds models to create and models to alter */
 	# Debug::consoleDump(self::getModels());
@@ -376,10 +377,14 @@ final class DibiOrmController
 
 	if ( !is_null($sql) && $confirm )
 	{
+	    self::getConnection()->commit();
 	    self::execute($sql);
+	    $storage->commit();
 	}
-
-	$confirm ? $storage->commit() : $storage->rollback();
+	else {
+	    self::getConnection()->rollback();
+	    $storage->rollback();
+	}
 	return $sql;
     }
 

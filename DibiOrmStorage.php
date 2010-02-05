@@ -379,8 +379,41 @@ final class DibiOrmStorage extends DibiConnection
 	$this->updateFieldSync($field, $model);
     }
 
+    /**
+     * @param Field $field
+     * @param DibiOrm $model
+     */
     public function changeFieldToNotNullable($field, $model)
     {
+	$result= DibiOrmController::getConnection()->query('select * from %n where %n is null',
+	    $field->getParent()->getTableName(),
+	    $field->getName()
+	);
+
+
+	$pk= $field->getParent()->getPrimaryKey();
+
+
+	foreach($result as $row )
+	{
+	    if ( $value= $field->getDefaultValue() ) {
+	    }
+	    elseif ($value= call_user_func($field->getDefaultCallback(), $row))
+	    {
+	    }
+	    else {
+		throw new Exception($value. "Unable to set default value for field '".$field->getName()."'");
+	    }
+
+	    DibiOrmController::getConnection()->query('update %n set %n = %'.$field->getType().' where %n = %i',
+		$field->getParent()->getTableName(),
+		$field->getName(),
+		$value,
+		$pk,
+		$row->{$pk}
+	    );
+	}
+
 	DibiOrmController::getDriver()->appendFieldToNotNullable($field, $model);
 	$this->updateFieldSync($field, $model);
     }
