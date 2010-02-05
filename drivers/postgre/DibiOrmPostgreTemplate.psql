@@ -98,3 +98,23 @@ ALTER TABLE ONLY {$key->table}
 
 {/foreach}
 {/if}
+
+
+
+
+{if $changeFieldsToNullable}
+{foreach $changeFieldsToNullable as $field}
+ALTER TABLE {$field->table}
+    ALTER COLUMN {$field->name} DROP NOT NULL;
+{/foreach}
+{/if}
+
+
+{if $changeFieldsToNotNullable}
+{foreach $changeFieldsToNotNullable as $field}
+ALTER TABLE {$field->table}
+    ALTER COLUMN {$field->name} SET NOT NULL;
+{/foreach}
+{/if}
+
+

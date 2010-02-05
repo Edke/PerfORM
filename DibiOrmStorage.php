@@ -372,6 +372,33 @@ final class DibiOrmStorage extends DibiConnection
     }
 
 
+
+    public function changeFieldToNullable($field, $model)
+    {
+	DibiOrmController::getDriver()->appendFieldToNullable($field, $model);
+	$this->updateFieldSync($field, $model);
+    }
+
+    public function changeFieldToNotNullable($field, $model)
+    {
+	DibiOrmController::getDriver()->appendFieldToNotNullable($field, $model);
+	$this->updateFieldSync($field, $model);
+    }
+
+    public function updateFieldSync($field, $model)
+    {
+	$this->query('update [fields] set [hash] = %s where [name] = %s and [table] = %s',
+	    $field->getHash(),
+	    $field->getName(),
+	    $model->GetTableName()
+	);
+
+	$this->query('update [tables] set [hash] = %s where [name] = %s',
+	    $model->getHash(),
+	    $model->GetTableName()
+	);
+    }
+
     /**
      * Checks if model in sync
      * @param DibiOrm $model
@@ -380,5 +407,21 @@ final class DibiOrmStorage extends DibiConnection
     public function modelHasSync($model)
     {
 	return $this->fetch('select [id] from [tables] where [name] = %s and [hash] = %s', $model->getTableName(), $model->getHash()) === false ? false : true;
+    }
+    
+    
+    /**
+     * Checks if field in sync
+     * @param DibiOrm $model
+     * @param Field $field
+     * @return boolean
+     */
+    public function fieldHasSync($model, $field)
+    {
+	
+	return $this->fetch('select [id] from [fields] where [name] = %s and [table] = %s and [hash] = %s',
+	    $field->getName(),
+	    $model->getTableName(),
+	    $field->getHash()) === false ? false : true;
     }
 }

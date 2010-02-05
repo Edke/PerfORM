@@ -312,6 +312,33 @@ final class DibiOrmController
 			# field exists
 			if ( $storage->modelHasField($model, $field))
 			{
+
+			    if ( !$storage->fieldHasSync($model, $field))
+			    {
+				$ident= $model->getTableName().'-'.$field->getName().'-'.$field->getHash();
+				$columnInfo= self::getConnection()->getDatabaseInfo()->getTable($model->getTableName())->getColumn($field->getName());
+
+				# changing null to not null
+				if ( !$field->isNullable() and $columnInfo->isNullable() )
+				{
+				    $storage->changeFieldToNotNullable($field, $model);
+				}
+
+				# changing not null to null
+				if ( $field->isNullable() and !$columnInfo->isNullable() )
+				{
+				    $storage->changeFieldToNullable($field, $model);
+				}
+
+
+				//Debug::consoleDump($columnInfo->getType(), $ident . ' type');
+				//Debug::consoleDump($field->getType(), $ident . ' orm type');
+				//Debug::consoleDump($columnInfo->getSize(), $ident . ' orm type');
+				//Debug::consoleDump($columnInfo->isNullable(), $ident . ' db nullable');
+				//Debug::consoleDump($field->isNullable(), $ident . ' orm nullable');
+				//Debug::consoleDump($columnInfo);
+			    }
+
 			    # TODO checking it's param changes
 			}
 			else {

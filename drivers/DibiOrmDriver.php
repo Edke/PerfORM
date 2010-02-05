@@ -31,6 +31,9 @@ abstract class DibiOrmDriver {
 
     protected $createIndexes= array();
 
+    protected $changeFieldsToNullable= array();
+
+    protected $changeFieldsToNotNullable= array();
     
     /**
      * @param Field $field
@@ -94,22 +97,29 @@ abstract class DibiOrmDriver {
     }
 
 
+
+    public function appendFieldToNullable($field, $model)
+    {
+	$this->changeFieldsToNullable[]= $this->getField($field, $model);
+    }
+
+    
+    public function appendFieldToNotNullable($field, $model)
+    {
+	$this->changeFieldsToNotNullable[]= $this->getField($field, $model);
+    }
+
+
     abstract protected function getDriver();
+
+    abstract protected function getField($field, $model, $renameFrom);
 
     protected function getTemplate() {
 	$template= new Template();
 	$template->registerFilter(new LatteFilter);
 	$template->setFile( dirname(__FILE__). '/'. $this->getDriver() . '/DibiOrmPostgreTemplate.psql');
 
-	$template->createTables= array();
-	$template->dropTables= array();
 
-	$template->addFields= $this->addFields;
-	$template->dropFields= $this->dropFields;
-	$template->renameFields= $this->renameFields;
-	$template->renameTables= $this->renameTables;
-	$template->renameSequences= $this->renameSequences;
-	$template->renameIndexes= $this->renameIndexes;
 
 	return $template;
     }
@@ -180,6 +190,18 @@ abstract class DibiOrmDriver {
     public function buildSql()
     {
 	$template= $this->getTemplate();
+
+	$template->createTables= array();
+	$template->dropTables= array();
+
+	$template->addFields= $this->addFields;
+	$template->dropFields= $this->dropFields;
+	$template->renameFields= $this->renameFields;
+	$template->renameTables= $this->renameTables;
+	$template->renameSequences= $this->renameSequences;
+	$template->renameIndexes= $this->renameIndexes;
+	$template->changeFieldsToNullable= $this->changeFieldsToNullable;
+	$template->changeFieldsToNotNullable= $this->changeFieldsToNotNullable;
 
 	# create table ..
 	self::dependancySortReverse($this->createTables);

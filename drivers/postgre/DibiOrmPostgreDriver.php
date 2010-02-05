@@ -161,7 +161,7 @@ class DibiOrmPostgreDriver extends DibiOrmDriver
 	);
     }
 
-    protected function getForeignKey($model, $key, $from)
+    protected function getForeignKey($model, $key, $from = null)
     {
 	return (object) array(
 	'table' => $model->getTableName(),
