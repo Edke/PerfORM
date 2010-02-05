@@ -152,9 +152,9 @@ abstract class Field {
 
     public function getRealName()
     {
-	if ( $this->dbName ) {
+	/*if ( $this->dbName ) {
 	    return $this->dbName;
-	}
+	}*/
 	return $this->name;
     }
 
