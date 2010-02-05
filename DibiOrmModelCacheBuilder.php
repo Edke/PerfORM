@@ -43,10 +43,36 @@ class DibiOrmModelCacheBuilder
     /** @var array all models of application */
     private $models= array();
 
+
     /**
      * @var array
      */
     private $modelInfo= array();
+
+
+    /**
+     * @var string
+     */
+    private $modelCacheDir;
+
+
+    /**
+     * Constructor
+     */
+    public function  __construct()
+    {
+	/* check if modelCacheDir valid */
+	$this->modelCacheDir= realpath(Environment::getConfig('dibiorm')->modelCache);
+	if ( !file_exists($this->modelCacheDir))
+	{
+	    throw new Exception("Model cache directory '$this->modelCacheDir' does not exists");
+	}
+	if ( !is_writable($this->modelCacheDir) )
+	{
+	    throw new Exception("Model cache directory '$this->modelCacheDir' is not writable.");
+	}
+    }
+
 
     /**
      * Add class and file name to the list.
@@ -86,35 +112,6 @@ class DibiOrmModelCacheBuilder
      */
     public function getModels()
     {
-	if ( count($this->models) == 0)
-	{
-	    $modelCacheDir= realpath(Environment::getConfig('dibiorm')->modelCache);
-
-	    // require all new models
-	    foreach($this->modelInfo as $modelInfo)
-	    {
-		if ( !class_exists($modelInfo->model, false))
-		{
-		    require_once $modelCacheDir . DIRECTORY_SEPARATOR . $modelInfo->model .'.php';
-		}
-	    }
-
-	    // create instances if models
-	    foreach($this->modelInfo as $modelInfo)
-	    {
-		#Debug::consoleDump($modelInfo);
-		$model= new $modelInfo->model;
-		$model->setHash($modelInfo->hash);
-		foreach($model->getFields() as $key => $field)
-		{
-		    #Debug::consoleDump($key);
-		    //Debug::consoleDump($modelInfo->fields[$key]->hash, $field->getName().'-'.$key);
-		    //$field->setHash($modelInfo->fields[$key]->hash);
-		    $model->getField($field->getName())->setHash($modelInfo->fields[$key]->hash);
-		}
-		$this->models[]= $model;
-	    }
-	}
 	return $this->models;
     }
 
@@ -126,17 +123,6 @@ class DibiOrmModelCacheBuilder
      */
     public function rebuild()
     {
-	/* check if modelCacheDir valid */
-	$modelCacheDir= realpath(Environment::getConfig('dibiorm')->modelCache);
-	if ( !file_exists($modelCacheDir))
-	{
-	    throw new Exception("Model cache directory '$modelCacheDir' does not exists");
-	}
-	if ( !is_writable($modelCacheDir) )
-	{
-	    throw new Exception("Model cache directory '$modelCacheDir' is not writable.");
-	}
-
 	/* scan for model bases */
 	$this->acceptMask = self::wildcards2re($this->acceptFiles);
 	$this->ignoreMask = self::wildcards2re($this->ignoreDirs);
@@ -145,13 +131,13 @@ class DibiOrmModelCacheBuilder
 	    $this->scanDirectory($dir);
 	}
 
-	/* clean previous models */
-	$iterator = dir($modelCacheDir);
+	/* cleans previous models */
+	$iterator = dir($this->modelCacheDir);
 	while (FALSE !== ($entry = $iterator->read()))
 	{
 	    if ($entry == '.' || $entry == '..') continue;
 
-	    $path = $modelCacheDir . DIRECTORY_SEPARATOR . $entry;
+	    $path = $this->modelCacheDir . DIRECTORY_SEPARATOR . $entry;
 	    if (is_file($path) && preg_match($this->acceptMask, $entry))
 	    {
 		unlink($path);
@@ -177,16 +163,15 @@ class DibiOrmModelCacheBuilder
 		$properties .= sprintf("\n * @property-write %s \$%s", $fieldType->getPhpDocProperty(), $field->name);
 	    }
 	    $template= str_replace('%properties%', $properties, $template);
-	    file_put_contents($modelCacheDir . DIRECTORY_SEPARATOR . $modelInfo->model.'.php', $template);
+	    file_put_contents($this->modelCacheDir . DIRECTORY_SEPARATOR . $modelInfo->model.'.php', $template);
 	}
 
 	/* first run, make models callable */
-	
 	foreach($this->modelInfo as $modelInfo)
 	{
 	    if ( !class_exists($modelInfo->model, false))
 	    {
-		require_once $modelCacheDir . DIRECTORY_SEPARATOR . $modelInfo->model .'.php';
+		require_once $this->modelCacheDir . DIRECTORY_SEPARATOR . $modelInfo->model .'.php';
 	    }
 	}
 
