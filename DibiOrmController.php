@@ -257,7 +257,7 @@ final class DibiOrmController
      * @param boolean> $confirm
      * @return string
      */
-    public static function sqlclear($confirm)
+    public static function sqlclear($confirm = false)
     {
 	$storage= new DibiOrmStorage();
 	$storage->begin();
