@@ -135,7 +135,7 @@ class DibiOrmPostgreDriver extends DibiOrmDriver
 	'table' => $model->getTableName(),
 	'name' => $field->getRealName(),
 	'type' => $this->translateType($field),
-	'notnull' => ($field->isNotNull()) ? 'NULL' : 'NOT NULL',
+	'nullable' => ($field->isNullable()) ? 'NULL' : 'NOT NULL',
 	'default' => $this->translateDefault($field),
 	'from' => $renameFrom
 	);

@@ -432,7 +432,7 @@ abstract class DibiOrm
 	    {
 		$insert[$finalColumn]= $default;
 	    }
-	    elseif( $field->isNotNull() )
+	    elseif( !$field->isNullable() )
 	    {
 		throw new Exception("field '$key' has no value set or default value but not null");
 	    }
@@ -582,7 +582,7 @@ abstract class DibiOrm
 	    {
 		$update[$finalColumn]= $value;
 	    }
-	    elseif( $field->isNotNull() )
+	    elseif( !$field->isNullable() )
 	    {
 		throw new Exception("field '$key' has no value set but not null");
 	    }

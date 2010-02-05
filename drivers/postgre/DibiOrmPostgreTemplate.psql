@@ -3,7 +3,7 @@
 
 CREATE TABLE {$table->table} (
 {foreach $table->fields as $field}
-    {$field->name} {$field->type} {!$field->default} {$field->notnull}{if !$iterator->isLast()},{/if}
+    {$field->name} {$field->type} {!$field->default} {$field->nullable}{if !$iterator->isLast()},{/if}
 {/foreach}
 );
 
@@ -23,7 +23,7 @@ CREATE INDEX {$index->name} ON {$index->table} USING {$index->type};
 {foreach $addFields as $field}
 
 ALTER TABLE {$field->table}
-    ADD COLUMN {$field->name} {$field->type} {!$field->default} {$field->notnull};
+    ADD COLUMN {$field->name} {$field->type} {!$field->default} {$field->nullable};
 
 {/foreach}
 {/if}

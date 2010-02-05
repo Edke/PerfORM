@@ -17,7 +17,7 @@ abstract class Field {
     /**
      * @var boolean
      */
-    protected $isNull = null;
+    protected $isNullable = null;
 
     /**
      * @var mixed
@@ -57,11 +57,11 @@ abstract class Field {
 	    if (is_object($option)) {
 	    }
 	    elseif ( strtolower($option) == 'null' ) {
-		$this->setNull();
+		$this->setNullable();
 		$options->remove($option);
 	    }
 	    elseif ( strtolower($option) == 'notnull' ) {
-		$this->setNotNull();
+		$this->setNotNullable();
 		$options->remove($option);
 	    }
 	    elseif ( preg_match('#^default=(.+)$#i', $option, $matches) ) {
@@ -82,22 +82,22 @@ abstract class Field {
 	return $options;
     }
 
-    protected function setNotNull()
+    protected function setNotNullable()
     {
-	if( !is_null($this->isNull) ) {
+	if( !is_null($this->isNullable) ) {
 	    $this->addError("has already null/notnull");
 	    return false;
 	}
-	$this->isNull= false;
+	$this->isNullable= false;
     }
 
-    protected function setNull()
+    protected function setNullable()
     {
-	if( !is_null($this->isNull) ) {
+	if( !is_null($this->isNullable) ) {
 	    $this->addError("has already null/notnull");
 	    return false;
 	}
-	$this->isNull= true;
+	$this->isNullable= true;
     }
 
     final public function setDefault($default) {
@@ -173,7 +173,7 @@ abstract class Field {
 	{
 	    $array= array(
 		$this->isPrimaryKey(),
-		$this->isNotNull(),
+		$this->isNullable(),
 		$this->dbName,
 		$this->getDefaultValue(),
 		$this->getType()
@@ -192,8 +192,8 @@ abstract class Field {
 	return false;
     }
 
-    public function isNotNull() {
-	return $this->isNull && false;
+    public function isNullable() {
+	return $this->isNullable && true;
     }
 
     public function getType() {
