@@ -420,11 +420,14 @@ abstract class DibiOrm
     {
 	$insert= array();
 
-	foreach($this->fields as $key => $field)
+	foreach($this->getFields() as $key => $field)
 	{
 	    $finalColumn= $field->getRealName().'%'.$field->getType();
 
-	    if ( !is_null($value = $field->getDbValue()) )
+	    if ($field->isPrimaryKey() and get_class($field) == 'AutoField')
+	    {
+	    }
+	    elseif ( !is_null($value = $field->getDbValue()) )
 	    {
 		$insert[$finalColumn]= $value;
 	    }
@@ -582,10 +585,10 @@ abstract class DibiOrm
 	    {
 		$update[$finalColumn]= $value;
 	    }
-	    elseif( !$field->isNullable() )
+/*	    elseif( !$field->isNullable() )
 	    {
 		throw new Exception("field '$key' has no value set but not null");
-	    }
+	    }*/
 	}
 
 	if (count($update)>0)
