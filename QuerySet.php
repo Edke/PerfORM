@@ -238,7 +238,7 @@ final class QuerySet
 	    $result[]= $model;
 	}
 
-	if ( sizeof($result) > 1)
+	if ( sizeof($result) > 0)
 	{
 	    return $result;
 	}
