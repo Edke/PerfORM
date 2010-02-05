@@ -48,8 +48,17 @@ abstract class Field {
 
     protected $errors= array();
 
+    protected $parent;
+
     public function __construct($_options)
     {
+	if (!is_object($_options[0]) and !is_subclass_of($_options[0], 'DibiOrm'))
+	{
+	    throw new Exception('First parameter of Field has to be parent Model');
+	}
+	$this->setParent($_options[0]);
+	unset($_options[0]);
+
 	$options= new Set();
 	$options->import($_options);
 
@@ -135,6 +144,16 @@ abstract class Field {
 
     abstract function retyped($value);
 
+
+    /**
+     * Sets parent model
+     * @param DibiOrm $parent
+     */
+    protected function setParent($parent)
+    {
+	$this->parent= $parent;
+    }
+
     public function setPrimaryKey()
     {
 	$this->primaryKey= true;
@@ -149,6 +168,16 @@ abstract class Field {
     {
 	return $this->name;
     }
+
+    /**
+     * Getter for fields model parent
+     * @return DibiOrm
+     */
+    public function getParent()
+    {
+	return $this->parent;
+    }
+
 
     public function getRealName()
     {
@@ -232,6 +261,12 @@ abstract class Field {
     public function getDbValue()
     {
 	return $this->getValue();
+    }
+
+
+    public function  __destruct()
+    {
+	unset($this->parent);
     }
     
 }

@@ -159,8 +159,7 @@ class DibiOrmModelCacheBuilder
 	    $properties= null;
 	    foreach( $modelInfo->fields as $field)
 	    {
-		$fieldType= new $field->type;
-		$properties .= sprintf("\n * @property-write %s \$%s", $fieldType->getPhpDocProperty(), $field->name);
+		$properties .= sprintf("\n * @property-write %s \$%s", call_user_func($field->type . '::getPhpDocProperty'), $field->name);
 	    }
 	    $template= str_replace('%properties%', $properties, $template);
 	    file_put_contents($this->modelCacheDir . DIRECTORY_SEPARATOR . $modelInfo->model.'.php', $template);
@@ -251,14 +250,21 @@ class DibiOrmModelCacheBuilder
 		//Debug::consoleDump(array($class[1][$key],$class[2][$key],$class[3][$key]));
 
 		$_fields= array();
-		if ( preg_match_all('#\$this\-\>([^= ]+)\s*=\s*new\s*([a-z]+)\s*\((.+)\)#i', $class[3][$key], $field))
+		$setup= array();
+		if ( preg_match_all('#\$this\-\>([^= ]+)\s*=\s*(new\s*([a-z]+)\s*\()(.*)\)#i', $class[3][$key], $field))
 		{
 		    foreach($field[0] as $field_key => $field_value)
 		    {
 			$_fields[$field[1][$field_key]]= (object) array(
 			    'name' => $field[1][$field_key],
-			    'type' => $field[2][$field_key],
+			    'type' => $field[3][$field_key],
 			);
+
+			$options= trim($field[4][$field_key]);
+			$setup[] = str_replace(
+			    $field[2][$field_key],
+			    $field[2][$field_key].'$this'. (empty($options) ? '' : ', '),
+			    $field[0][$field_key]);
 		    }
 		}
 		$this->addModelInfo( (object) array(
@@ -266,7 +272,7 @@ class DibiOrmModelCacheBuilder
 		    'extends' => $class[1][$key],
 		    'model' => $class[2][$key],
 		    'table' => strtolower($class[2][$key]),
-		    'setup' => $class[3][$key],
+		    'setup' => "\t". implode(";\n\t", $setup). ";",
 		    'fields' => $_fields,
 		    ));
 	    }

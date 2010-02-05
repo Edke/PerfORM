@@ -22,7 +22,7 @@ class IntegerField extends Field {
     }
 
     
-    public function getPhpDocProperty()
+    static public function getPhpDocProperty()
     {
 	return 'integer';
     }

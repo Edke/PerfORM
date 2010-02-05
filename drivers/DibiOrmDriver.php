@@ -143,7 +143,7 @@ abstract class DibiOrmDriver {
 	    $min= null;
 	    foreach($item->getDependents() as $dependent)
 	    {
-		$min= ( is_null($min )) ? array_search($dependent, $_list) : min($min, array_search($dependent, $_list));
+		$min= ( is_null($min )) ?  $this->model_array_search($dependent, $_list) : min($min, array_search($dependent, $_list)) ;
 	    }
 	    if (is_integer($min))
 	    {
@@ -154,6 +154,19 @@ abstract class DibiOrmDriver {
 		}
 	    }
 	}
+    }
+
+    protected function model_array_search($needle, $haystack)
+    {
+	foreach($haystack as $key => $value)
+	{
+	    if ( get_class($needle) === get_class($value)
+		and $needle->getHash() === $value->getHash() )
+	    {
+		return $key;
+	    }
+	}
+	return false;
     }
     
 

@@ -61,7 +61,7 @@ final class CharField extends Field {
     }
 
 
-    public function getPhpDocProperty()
+    static public function getPhpDocProperty()
     {
 	return 'string';
     }

@@ -149,7 +149,7 @@ abstract class DibiOrm
 
 	if ( !$this->getPrimaryKey())
 	{
-	    $this->fields= array($this->defaultPrimaryKey => new AutoField('primary_key=true')) + $this->fields; //unshift primary to beginning
+	    $this->fields= array($this->defaultPrimaryKey => new AutoField($this, 'primary_key=true')) + $this->fields; //unshift primary to beginning
 	    $this->fields[$this->defaultPrimaryKey]->setName($this->defaultPrimaryKey);
 	    $this->setPrimaryKey($this->defaultPrimaryKey);
 	}
@@ -683,4 +683,11 @@ abstract class DibiOrm
 	}
 	throw new Exception("invalid field name '$field'");
     }
+
+
+    public function  __destruct()
+    {
+	unset($this->fields);
+    }
+
 }
