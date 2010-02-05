@@ -578,7 +578,7 @@ abstract class DibiOrm
 		$primaryKeyValue= $field->getDbValue();
 		$primaryKeyType= $field->getType();
 	    }
-	    elseif ( !is_null($value = $field->getValue()) && $field->isModified() )
+	    elseif ( !is_null($value = $field->getDbValue()) && $field->isModified() )
 	    {
 		$update[$finalColumn]= $value;
 	    }
