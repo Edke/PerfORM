@@ -301,6 +301,15 @@ abstract class DibiOrm
 
 
     /**
+     * Getter for model's name
+     */
+    public function getName()
+    {
+	return get_class($this);
+    }
+
+
+    /**
      * Getter for DibiOrmController's driver
      * @return DibiOrmDriver
      */

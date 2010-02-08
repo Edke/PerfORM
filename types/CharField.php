@@ -1,15 +1,44 @@
 <?php
+
 /**
- * Description of StringField
+ * DibiOrm - Object-relational mapping based on David Grudl's dibi
  *
- * @author kraken
+ * @copyright  Copyright (c) 2010 Eduard 'edke' Kracmar
+ * @license    no license set at this point
+ * @link       http://dibiorm.local :-)
+ * @category   DibiOrm
+ * @package    DibiOrm
  */
+
+
+/**
+ * CharField
+ *
+ * @final
+ * @copyright Copyright (c) 2010 Eduard 'edke' Kracmar
+ * @package DibiOrm
+ */
+
 final class CharField extends Field {
 
+
+    /**
+     * Limit of chars in field
+     * @var integer
+     */
     protected $size;
 
+
+    /**
+     * Datatype
+     * @var string
+     */
     protected $type = Dibi::FIELD_TEXT;
 
+
+    /**
+     * Constructor, parses charfield specific options
+     */
     public function  __construct()
     {
 	$options= parent::__construct(func_get_args());
@@ -25,20 +54,11 @@ final class CharField extends Field {
 	}
     }
 
-    protected function  setSize($size){
-	$size= (int) $size;
-	if ( !$size>0) {
-	    throw new Exception("invalid size '$size'");
-	}
-	$this->size= $size;
-    }
 
-
-    public function getSize() {
-	return $this->size;
-    }
-
-
+    /**
+     * Getter for hash, uses field's hash and adds size as additional parameter for hashing
+     * @return string
+     */
     public function getHash()
     {
 	if ( !$this->hash )
@@ -49,21 +69,56 @@ final class CharField extends Field {
     }
 
 
-    final public function retyped($value) {
+    /**
+     * Getter for ModelCacheBuilder, sets phpdoc type for property-write tag in model cache
+     * @return string
+     */
+    static public function getPhpDocProperty()
+    {
+	return 'string';
+    }
+
+
+    /**
+     * Getter for size
+     * @return integer
+     */
+    public function getSize() {
+	return $this->size;
+    }
+
+
+    /**
+     * Sets size of varchar
+     * @param integer $size 
+     */
+    protected function  setSize($size){
+	$size= (int) $size;
+	if ( !$size>0) {
+	    throw new Exception("invalid size '$size'");
+	}
+	$this->size= $size;
+    }
+
+
+    /**
+     * Retype value of field to string
+     * @param mixed $value
+     * @return string
+     */
+    final public function retype($value) {
 	return (string) $value;
     }
 
+
+    /**
+     * Validates field's errors and returns them as array
+     * @return array
+     */
     public function validate() {
 	if ( is_null($this->size)) {
 	    $this->addError("required option max_length was not set");
 	}
 	return parent::validate();
     }
-
-
-    static public function getPhpDocProperty()
-    {
-	return 'string';
-    }
 }
-
