@@ -311,10 +311,10 @@ final class DibiOrmController
 		    foreach( $model->getFields() as $field)
 		    {
 			# field exists
-			if ( $storage->modelHasField($model, $field))
+			if ( $storage->fieldBelongsToItsModel($field))
 			{
 
-			    if ( !$storage->fieldHasSync($model, $field))
+			    if ( !$storage->fieldHasSync($field))
 			    {
 				$ident= $model->getTableName().'-'.$field->getName().'-'.$field->getHash();
 				$columnInfo= self::getConnection()->getDatabaseInfo()->getTable($model->getTableName())->getColumn($field->getName());
@@ -322,13 +322,13 @@ final class DibiOrmController
 				# changing null to not null
 				if ( !$field->isNullable() and $columnInfo->isNullable() )
 				{
-				    $storage->changeFieldToNotNullable($field, $model);
+				    $storage->changeFieldToNotNullable($field);
 				}
 
 				# changing not null to null
 				if ( $field->isNullable() and !$columnInfo->isNullable() )
 				{
-				    $storage->changeFieldToNullable($field, $model);
+				    $storage->changeFieldToNullable($field);
 				}
 
 
@@ -343,7 +343,7 @@ final class DibiOrmController
 			    # TODO checking it's param changes
 			}
 			else {
-			    $storage->addFieldToModel($field, $model);
+			    $storage->addFieldToModel($field);
 			}
 		    }
 

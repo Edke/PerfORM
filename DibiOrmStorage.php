@@ -20,6 +20,7 @@
  * @copyright Copyright (c) 2010 Eduard 'edke' Kracmar
  * @package DibiOrm
  */
+
 final class DibiOrmStorage extends DibiConnection
 {
 
@@ -58,28 +59,26 @@ final class DibiOrmStorage extends DibiConnection
 
     /**
      * Adds column to table
-     *
      * @param Field $field
-     * @param DibiOrm $model
      */
-    public function addFieldToModel($field, $model)
+    public function addFieldToModel($field)
     {
 	$sql= $this->sql('insert into [fields] values( null, %s, %s, %s, %s)',
-	$field->getName(),
-	$model->getTableName(),
-	$field->getHash(),
-	get_class($field));
+	    $field->getName(),
+	    $field->getModel()->getTableName(),
+	    $field->getHash(),
+	    get_class($field));
 
 	$this->queue(
 	    DibiOrmStorage::FIELD_ADD,
-	    $field->getName().'|'.$model->getTableName(),
+	    $field->getName().'|'.$field->getModel()->getTableName(),
 	    $sql,
 	    array(
 		'field' => $field,
-		'model' => $model)
+		)
 	);
 
-	$key= $field->getHash().'|'.$model->getTableName();
+	$key= $field->getHash().'|'.$field->getModel()->getTableName();
 	if ( key_exists($key, $this->renamedFields))
 	{
 	    $array= $this->renamedFields[$key];
@@ -91,7 +90,7 @@ final class DibiOrmStorage extends DibiConnection
 	    $this->renamedFields[$key]= (object) array(
 	    'counter' => 1,
 	    'to' => $field->getName(),
-	    'modelName' => $model->getTableName(),
+	    'modelName' => $field->getModel()->getTableName(),
 	    );
 	}
     }
@@ -99,18 +98,16 @@ final class DibiOrmStorage extends DibiConnection
 
     /**
      * Change column from null to not null
-     *
      * @param Field $field
-     * @param DibiOrm $model
      */
-    public function changeFieldToNotNullable($field, $model)
+    public function changeFieldToNotNullable($field)
     {
 	$result= DibiOrmController::getConnection()->query('select * from %n where %n is null',
-	    $field->getParent()->getTableName(),
+	    $field->getModel()->getTableName(),
 	    $field->getName()
 	);
 
-	$pk= $field->getParent()->getPrimaryKey();
+	$pk= $field->getModel()->getPrimaryKey();
 
 	foreach($result as $row )
 	{
@@ -126,7 +123,7 @@ final class DibiOrmStorage extends DibiConnection
 	    }
 
 	    DibiOrmController::getConnection()->query('update %n set %n = %'.$field->getType().' where %n = %i',
-	    $field->getParent()->getTableName(),
+	    $field->getModel()->getTableName(),
 	    $field->getName(),
 	    $value,
 	    $pk,
@@ -134,26 +131,24 @@ final class DibiOrmStorage extends DibiConnection
 	    );
 	}
 
-	DibiOrmController::getDriver()->appendFieldToNotNullable($field, $model);
-	$this->updateFieldSync($field, $model);
+	DibiOrmController::getDriver()->appendFieldToNotNullable($field);
+	$this->updateFieldSync($field);
     }
 
 
     /**
      * Change column from not null to null
-     *
      * @param Field $field
      */
-    public function changeFieldToNullable($field, $model)
+    public function changeFieldToNullable($field)
     {
-	DibiOrmController::getDriver()->appendFieldToNullable($field, $model);
-	$this->updateFieldSync($field, $model);
+	DibiOrmController::getDriver()->appendFieldToNullable($field);
+	$this->updateFieldSync($field);
     }
 
 
     /**
      * Drops column from table
-     * 
      * @param string $fieldName
      * @param DibiOrm $model
      * @return string
@@ -168,17 +163,15 @@ final class DibiOrmStorage extends DibiConnection
 	$model->getTableName());
 
 	$this->queue(
-	DibiOrmStorage::FIELD_DROP,
-	$fieldName.'|'.$model->getTableName(),
-	$sql,
-	array(
-	'fieldName' => $fieldName,
-	'model' => $model)
+	    DibiOrmStorage::FIELD_DROP,
+	    $fieldName.'|'.$model->getTableName(),
+	    $sql,
+	    array(
+        	'fieldName' => $fieldName,
+		'model' => $model
+	    )
 	);
-	$this->renamedFields[$hash.'|'.$model->getTableName()]++;
-
-
-	$key= $hash.'|'.$model->getTableName();
+	$key= $hash.'|'. $model->getTableName();
 	if ( key_exists($key, $this->renamedFields))
 	{
 	    $array= $this->renamedFields[$key];
@@ -193,13 +186,11 @@ final class DibiOrmStorage extends DibiConnection
 	    'modelName' => $model->getTableName(),
 	    );
 	}
-
     }
 
 
     /**
      * Drops table from database
-     * 
      * @param DibiOrm|string $model
      * @return void
      */
@@ -207,18 +198,18 @@ final class DibiOrmStorage extends DibiConnection
     {
 	$modelName= is_object($model) ? $model->getTableName() : $model;
 	$hash= $this->fetchSingle('select hash from [tables] where [name] = %s ',
-	$modelName);
+	    $modelName);
 	$sql= array();
 	$sql[] = $this->sql('delete from [tables] where [name] = %s;', $modelName );
 	$sql[] = $this->sql('delete from [fields] where [table] = %s;', $modelName );
 
 	$this->queue(
-	DibiOrmStorage::TABLE_DROP,
-	$modelName,
-	$sql,
-	array(
-	'model' => $model)
-	);
+	    DibiOrmStorage::TABLE_DROP,
+	    $modelName,
+	    $sql,
+	    array(
+		'model' => $model)
+	    );
 
 
 	$key= $hash;
@@ -240,16 +231,14 @@ final class DibiOrmStorage extends DibiConnection
 
     /**
      * Checks if column in sync
-     *
-     * @param DibiOrm $model
      * @param Field $field
      * @return boolean
      */
-    public function fieldHasSync($model, $field)
+    public function fieldHasSync($field)
     {
 	return $this->fetch('select [id] from [fields] where [name] = %s and [table] = %s and [hash] = %s',
 	    $field->getName(),
-	    $model->getTableName(),
+	    $field->getModel()->getTableName(),
 	    $field->getHash()
 	) === false ? false : true;
     }
@@ -257,7 +246,6 @@ final class DibiOrmStorage extends DibiConnection
 
     /**
      * Get all fields of model from storage
-     *
      * @param DibiOrm $model
      * @return DibiResult
      */
@@ -269,7 +257,6 @@ final class DibiOrmStorage extends DibiConnection
 
     /**
      * Get all models from storage
-     *
      * @return DibiResult
      */
     public function getModels()
@@ -280,7 +267,6 @@ final class DibiOrmStorage extends DibiConnection
 
     /**
      * Checks if model exists
-     *
      * @param DibiOrm $model
      * @return boolean
      */
@@ -292,7 +278,6 @@ final class DibiOrmStorage extends DibiConnection
 
     /**
      * Inserts model's name and hash into storage
-     *
      * @param DibiOrm $model
      */
     public function insertModel($model)
@@ -309,12 +294,12 @@ final class DibiOrmStorage extends DibiConnection
 	    get_class($field));
 	}
 	$this->queue(
-	DibiOrmStorage::TABLE_ADD,
-	$modelName,
-	$sql,
-	array(
-	'model' => $model)
-	);
+	    DibiOrmStorage::TABLE_ADD,
+	    $modelName,
+	    $sql,
+	    array(
+		'model' => $model)
+	    );
 
 	$key= $model->getHash();
 	if ( key_exists($key, $this->renamedModels))
@@ -334,33 +319,35 @@ final class DibiOrmStorage extends DibiConnection
 
 
     /**
-     * Checks if model has field
-     *
-     * @param DibiOrm $model
+     * Checks if field belongs to it's model
      * @param Field $field
      * @return boolean
      */
-    public function modelHasField($model, $field)
+    public function fieldBelongsToItsModel($field)
     {
-	return $this->fetch('select [id] from [fields] where [table] = %s and [name] = %s', $model->getTableName(), $field->getName()) === false ? false : true;
+	return $this->fetch('select [id] from [fields] where [table] = %s and [name] = %s', 
+	    $field->getModel()->getTableName(),
+	    $field->getName()
+	) === false ? false : true;
     }
 
 
     /**
      * Checks if model in sync
-     *
      * @param DibiOrm $model
      * @return boolean
      */
     public function modelHasSync($model)
     {
-	return $this->fetch('select [id] from [tables] where [name] = %s and [hash] = %s', $model->getTableName(), $model->getHash()) === false ? false : true;
+	return $this->fetch('select [id] from [tables] where [name] = %s and [hash] = %s',
+	    $model->getTableName(),
+	    $model->getHash()
+	) === false ? false : true;
     }
 
 
     /**
      * Storage processing
-     * 
      * @return string
      */
     public function process()
@@ -374,7 +361,6 @@ final class DibiOrmStorage extends DibiConnection
 	{
 	    if ( $array->counter == 2 and isset($array->from) and isset($array->to) and isset($array->modelName))
 	    {
-		$model= $this->queue[DibiOrmStorage::FIELD_ADD][$array->to.'|'.$array->modelName]->values['model'];
 		$field= $this->queue[DibiOrmStorage::FIELD_ADD][$array->to.'|'.$array->modelName]->values['field'];
 		unset($this->queue[DibiOrmStorage::FIELD_ADD][$array->to.'|'.$array->modelName]);
 		unset($this->queue[DibiOrmStorage::FIELD_DROP][$array->from.'|'.$array->modelName]);
@@ -385,10 +371,10 @@ final class DibiOrmStorage extends DibiConnection
 		$array->modelName);
 
 		$this->query('update [tables] set [hash] = %s where [name] = %s',
-		$model->getHash(),
+		$field->getModel()->getHash(),
 		$array->modelName);
 
-		DibiOrmController::getDriver()->appendFieldToRename($field, $array->from, $model);
+		DibiOrmController::getDriver()->appendFieldToRename($field, $array->from);
 	    }
 	}
 
@@ -422,15 +408,18 @@ final class DibiOrmStorage extends DibiConnection
 		switch($operation)
 		{
 		    case DibiOrmStorage::FIELD_ADD:
-			DibiOrmController::getDriver()->appendFieldToAdd($action->values['field'], $action->values['model']);
+			DibiOrmController::getDriver()->appendFieldToAdd($action->values['field']);
+			$this->updateModelSync($action->values['field']->getModel());
 			break;
 
 		    case DibiOrmStorage::FIELD_DROP:
 			DibiOrmController::getDriver()->appendFieldToDrop($action->values['fieldName'], $action->values['model']);
+			$this->updateModelSync($action->values['model']);
 			break;
 
 		    case DibiOrmStorage::TABLE_ADD:
 			DibiOrmController::getDriver()->appendTableToCreate($action->values['model']);
+			//$this->updateModelSync();
 			break;
 
 		    case DibiOrmStorage::TABLE_DROP:
@@ -455,7 +444,6 @@ final class DibiOrmStorage extends DibiConnection
 
     /**
      * Adds item to queue
-     * 
      * @param integer $operation
      * @param string $sql
      * @param array $values
@@ -471,21 +459,29 @@ final class DibiOrmStorage extends DibiConnection
 
     /**
      * Update field in storage, sets hashes for field and it's model
-     *
      * @param Field $field
-     * @param DibiOrm $model
      */
-    public function updateFieldSync($field, $model)
+    public function updateFieldSync($field)
     {
 	$this->query('update [fields] set [hash] = %s where [name] = %s and [table] = %s',
 	$field->getHash(),
 	$field->getName(),
-	$model->GetTableName()
+	$field->getModel()->GetTableName()
 	);
 
+	$this->updateModelSync($field->getModel());
+    }
+
+
+    /**
+     * Update model in storage, sets hashes for it's model
+     * @param DibiOrm $model
+     */
+    public function updateModelSync($model)
+    {
 	$this->query('update [tables] set [hash] = %s where [name] = %s',
 	$model->getHash(),
-	$model->GetTableName()
+	$model->getTableName()
 	);
     }
 }

@@ -39,18 +39,18 @@ abstract class DibiOrmDriver {
      * @param Field $field
      * @param DibiOrm $model
      */
-    public function appendFieldToAdd($field, $model)
+    public function appendFieldToAdd($field)
     {
-	$this->addFields[]= $this->getField($field, $model);
+	$this->addFields[]= $this->getField($field);
     }
 
     /**
      * @param Field $field
      * @param DibiOrm $model
      */
-    public function appendFieldToRename($field, $from, $model)
+    public function appendFieldToRename($field, $from)
     {
-	$this->renameFields[]= $this->getField($field, $model, $from);
+	$this->renameFields[]= $this->getField($field, $from);
     }
 
     
@@ -98,21 +98,21 @@ abstract class DibiOrmDriver {
 
 
 
-    public function appendFieldToNullable($field, $model)
+    public function appendFieldToNullable($field)
     {
-	$this->changeFieldsToNullable[]= $this->getField($field, $model);
+	$this->changeFieldsToNullable[]= $this->getField($field);
     }
 
     
-    public function appendFieldToNotNullable($field, $model)
+    public function appendFieldToNotNullable($field)
     {
-	$this->changeFieldsToNotNullable[]= $this->getField($field, $model);
+	$this->changeFieldsToNotNullable[]= $this->getField($field);
     }
 
 
     abstract protected function getDriver();
 
-    abstract protected function getField($field, $model, $renameFrom);
+    abstract protected function getField($field, $renameFrom = null);
 
     protected function getTemplate() {
 	$template= new Template();

@@ -129,10 +129,10 @@ class DibiOrmPostgreDriver extends DibiOrmDriver
 
 
 
-    protected function getField($field, $model, $renameFrom = null)
+    protected function getField($field, $renameFrom = null)
     {
 	return (object) array(
-	'table' => $model->getTableName(),
+	'table' => $field->getModel()->getTableName(),
 	'name' => $field->getRealName(),
 	'type' => $this->translateType($field),
 	'nullable' => ($field->isNullable()) ? 'NULL' : 'NOT NULL',
@@ -141,11 +141,11 @@ class DibiOrmPostgreDriver extends DibiOrmDriver
 	);
     }
 
-    protected function getDropField($field, $model)
+    protected function getDropField($fieldName, $model)
     {
 	return (object) array(
 	'table' => $model->getTableName(),
-	'name' => $field,
+	'name' => $fieldName,
 	);
     }
 
