@@ -122,7 +122,7 @@ final class DibiOrmController
     protected static function execute($sql)
     {
 	self::getConnection()->begin();
-	self::getConnection()->query($sql);
+	self::getConnection()->nativeQuery($sql);
 	self::getConnection()->commit();
     }
 
