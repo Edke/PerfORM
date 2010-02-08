@@ -331,7 +331,14 @@ final class DibiOrmController
 				    $storage->changeFieldToNullable($field);
 				}
 
+				# changing default value
+				if ( self::getDriver()->translateDefault($field) != $columnInfo->getDefault() )
+				{
+				    $storage->changeFieldDefaultValue($field);
+				}
 
+				//Debug::consoleDump(self::getDriver()->translateDefault($field), $ident . ' type');
+				//Debug::consoleDump($columnInfo->getDefault(), $ident . ' type');
 				//Debug::consoleDump($columnInfo->getType(), $ident . ' type');
 				//Debug::consoleDump($field->getType(), $ident . ' orm type');
 				//Debug::consoleDump($columnInfo->getSize(), $ident . ' orm type');

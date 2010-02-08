@@ -96,6 +96,18 @@ final class DibiOrmStorage extends DibiConnection
     }
 
 
+
+    /**
+     * Change column's default value
+     * @param Field $field
+     */
+    public function changeFieldDefaultValue($field)
+    {
+	DibiOrmController::getDriver()->appendFieldToChangeDefault($field);
+	$this->updateFieldSync($field);
+    }
+
+
     /**
      * Change column from null to not null
      * @param Field $field

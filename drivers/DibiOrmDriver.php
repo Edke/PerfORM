@@ -35,6 +35,9 @@ abstract class DibiOrmDriver {
 
     protected $changeFieldsToNotNullable= array();
     
+    protected $changeFieldsDefaultValue= array();
+
+    
     /**
      * @param Field $field
      * @param DibiOrm $model
@@ -109,10 +112,16 @@ abstract class DibiOrmDriver {
 	$this->changeFieldsToNotNullable[]= $this->getField($field);
     }
 
+    public function appendFieldToChangeDefault($field)
+    {
+	$this->changeFieldsDefaultValue[]= $this->getField($field);
+    }
 
     abstract protected function getDriver();
 
     abstract protected function getField($field, $renameFrom = null);
+
+    abstract public function translateDefault($field);
 
     protected function getTemplate() {
 	$template= new Template();
@@ -215,6 +224,7 @@ abstract class DibiOrmDriver {
 	$template->renameIndexes= $this->renameIndexes;
 	$template->changeFieldsToNullable= $this->changeFieldsToNullable;
 	$template->changeFieldsToNotNullable= $this->changeFieldsToNotNullable;
+	$template->changeFieldsDefaultValue= $this->changeFieldsDefaultValue;
 
 	# create table ..
 	self::dependancySortReverse($this->createTables);

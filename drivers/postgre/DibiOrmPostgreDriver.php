@@ -36,7 +36,7 @@ class DibiOrmPostgreDriver extends DibiOrmDriver
 	}
     }
 
-    protected function translateDefault($field)
+    public function translateDefault($field)
     {
 
 	if ( is_null($field->getDefaultValue()))
@@ -47,13 +47,13 @@ class DibiOrmPostgreDriver extends DibiOrmDriver
 	switch ($field->getType() )
 	{
 	    case Dibi::FIELD_TEXT:
-		return sprintf("DEFAULT '%s'", $field->getDefaultValue());
+		return sprintf("'%s'::character varying", $field->getDefaultValue());
 
 	    case Dibi::FIELD_INTEGER:
-		return sprintf('DEFAULT (%d)', $field->getDefaultValue());
+		return sprintf('(%d)', $field->getDefaultValue());
 
 	    case Dibi::FIELD_FLOAT:
-		return sprintf('DEFAULT (%d)::double precision', $field->getDefaultValue());
+		return sprintf('(%d)::double precision', $field->getDefaultValue());
 
 	    default:
 		throw new Exception("default for class '$fieldClass' not recognized by translator");
