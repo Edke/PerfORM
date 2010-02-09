@@ -94,6 +94,13 @@ abstract class Field
 
 
     /**
+     * Callback called while recasting field
+     * @var array
+     */
+    protected $recastCallback;
+
+
+    /**
      * Datatype of field
      * @var string
      */
@@ -150,6 +157,11 @@ abstract class Field
 		$this->setDefaultCallback( $matches[1]);
 		$options->remove($option);
 	    }
+	    elseif ( preg_match('#^recast_callback=(.+)$#i', $option, $matches) )
+	    {
+		$this->setRecastCallback( $matches[1]);
+		$options->remove($option);
+	    }
 	    elseif ( preg_match('#^db_column=(.+)$#i', $option, $matches) )
 	    {
 		$this->setDbName( $matches[1]);
@@ -202,6 +214,16 @@ abstract class Field
     }
 
 
+    /**
+     * Getter for field's callback that sets default value
+     * @return callback
+     */
+    public  function getRecastCallback()
+    {
+	return $this->recastCallback;
+    }
+
+    
     /**
      * Getter for field's default value
      * @return mixed
@@ -263,6 +285,15 @@ abstract class Field
 	    return $this->dbName;
 	}*/
 	return $this->name;
+    }
+
+
+    /**
+     * Getter for size
+     * @return boolean
+     */
+    public function getSize() {
+	return false;
     }
 
 
@@ -432,6 +463,21 @@ abstract class Field
     public function setName($name)
     {
 	$this->name= $name;
+    }
+
+
+    /**
+     * Sets field's callback for recasting datatype
+     * @param array $callback
+     */
+    final public function setRecastCallback($callback)
+    {
+	if( !is_callable(array($this->getModel(), $callback)) )
+	{
+	    $this->addError("callback '$callback' not callable on field's model");
+	    return false;
+	}
+	$this->recastCallback= array($this->getModel(), $callback);
     }
 
 

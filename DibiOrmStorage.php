@@ -154,7 +154,65 @@ final class DibiOrmStorage extends DibiConnection
      */
     public function changeFieldToNullable($field)
     {
-	DibiOrmController::getBuilder()->appendFieldToNullable($field);
+	DibiOrmController::getBuilder()->changeFieldsNullable($field);
+	$this->updateFieldSync($field);
+    }
+
+    /**
+     * Change column from null to not null
+     * @param Field $field
+     */
+    public function changeFieldType($field)
+    {
+	if ( !$field->getRecastCallback())
+	{
+	    throw new Exception("Unable to recast value as recast callback was not set for field '".$field->getName()."'");
+	}
+
+	$builder= DibiOrmController::getBuilder('fieldretype');
+	
+	$tmpfield= $field->getName().'_'.md5(time());
+	$template= $builder->getTemplate('field-add');
+	$fieldInfo= $builder->getField($field);
+	$fieldInfo->name= $tmpfield;
+	$fieldInfo->nullable= true;
+	$template->field= $fieldInfo;
+	$sql= $builder->renderTemplate($template);
+	DibiOrmController::getConnection()->nativeQuery($sql);
+
+	$result= DibiOrmController::getConnection()->query('select * from %n',
+	    $field->getModel()->getTableName()
+	);
+
+	$pk= $field->getModel()->getPrimaryKey();
+
+	foreach($result as $row )
+	{
+	    if ( !($value= call_user_func($field->getRecastCallback(), $row)))
+	    {
+		throw new Exception("Unable to recast value for field '".$field->getName()."' (id=".$row->{$pk}.")");
+	    }
+
+	    DibiOrmController::getConnection()->query('update %n set %n = %'.$field->getType().' where %n = %i',
+	    $field->getModel()->getTableName(),
+	    $tmpfield,
+	    $value,
+	    $pk,
+	    $row->{$pk}
+	    );
+	}
+
+	if (!$field->isNullable())
+	{
+	    $fieldInfo->nullable= false;
+	    $template= $builder->getTemplate('field-change-nullable');
+	    $template->field= $fieldInfo;
+	    $sql= $builder->renderTemplate($template);
+	    DibiOrmController::getConnection()->nativeQuery($sql);
+	}
+
+	DibiOrmController::getBuilder()->dropField($field->getName(), $field->getModel());
+	DibiOrmController::getBuilder()->renameField($field, $tmpfield);
 	$this->updateFieldSync($field);
     }
 

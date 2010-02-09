@@ -124,13 +124,10 @@ final class DibiOrmController
 
     /**
      * Getter for Cache instance
-     *
      * Creates instance if called for the first time
      * Creates MemcachedStorage if extension memcache exists
      * Otherwise FileStorage Cache is created
-     *
      * Triggers notice if config variable advertisememcached in dibiorm block is not set to false
-     *
      * @return Cache
      */
     public static function getCache()
@@ -261,9 +258,7 @@ final class DibiOrmController
 
     /**
      * Models operation for clearing database structure for defined models
-     *
      * If confirm is set, sql code will be executed
-     *
      * @param boolean> $confirm
      * @return string
      */
@@ -294,10 +289,7 @@ final class DibiOrmController
 
     /**
      * Models operation for syncing database structure with defined models
-     *
      * If confirm is set, sql code will be executed
-     *
-     * @todo syncmodels
      * @param boolean $confirm
      * @return string
      */
@@ -308,7 +300,6 @@ final class DibiOrmController
 	self::getConnection()->begin();
 
 	/* first run: check models against storage, finds models to create and models to alter */
-	# Debug::consoleDump(self::getModels());
 	foreach( self::getModels() as $model)
 	{
 	    # model exists
@@ -323,11 +314,11 @@ final class DibiOrmController
 			# field exists
 			if ( $storage->fieldBelongsToItsModel($field))
 			{
-
+			    # field out of sync
 			    if ( !$storage->fieldHasSync($field))
 			    {
-				$ident= $model->getTableName().'-'.$field->getName().'-'.$field->getHash();
-				$columnInfo= self::getConnection()->getDatabaseInfo()->getTable($model->getTableName())->getColumn($field->getName());
+				//$ident= $model->getTableName().'-'.$field->getName().'-'.$field->getHash();
+				//$columnInfo= self::getConnection()->getDatabaseInfo()->getTable($model->getTableName())->getColumn($field->getName());
 
 				# changing null to not null
 				if ( !$field->isNullable() and $columnInfo->isNullable() )
@@ -347,17 +338,13 @@ final class DibiOrmController
 				    $storage->changeFieldDefaultValue($field);
 				}
 
-				//Debug::consoleDump(self::getBuilder()->translateDefault($field), $ident . ' type');
-				//Debug::consoleDump($columnInfo->getDefault(), $ident . ' type');
-				//Debug::consoleDump($columnInfo->getType(), $ident . ' type');
-				//Debug::consoleDump($field->getType(), $ident . ' orm type');
-				//Debug::consoleDump($columnInfo->getSize(), $ident . ' orm type');
-				//Debug::consoleDump($columnInfo->isNullable(), $ident . ' db nullable');
-				//Debug::consoleDump($field->isNullable(), $ident . ' orm nullable');
-				//Debug::consoleDump($columnInfo);
+				# changing datatype
+				if ( $field->getType() != $columnInfo->getType() or
+				    ($field->getType() == $columnInfo->getType() and $field->getType() == 's' and $field->getSize() != $columnInfo->getSize()))
+				{
+				    $storage->changeFieldType($field);
+				}
 			    }
-
-			    # TODO checking it's param changes
 			}
 			else {
 			    $storage->addFieldToModel($field);
