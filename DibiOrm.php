@@ -310,16 +310,6 @@ abstract class DibiOrm
 
 
     /**
-     * Getter for DibiOrmController's driver
-     * @return DibiOrmDriver
-     */
-    public function getDriver()
-    {
-	return DibiOrmController::getDriver();
-    }
-
-
-    /**
      * Getter for primary key field name
      * @return string
      * @todo remove check for multiple primary keys on table, needed to check elsewhere

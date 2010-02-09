@@ -1,10 +1,27 @@
 <?php
+
 /**
- * Description of dibiOrmPostgre
+ * DibiOrm - Object-relational mapping based on David Grudl's dibi
  *
- * @author kraken
+ * @copyright  Copyright (c) 2010 Eduard 'edke' Kracmar
+ * @license    no license set at this point
+ * @link       http://dibiorm.local :-)
+ * @category   DibiOrm
+ * @package    DibiOrm
  */
-class DibiOrmPostgreDriver extends DibiOrmDriver
+
+
+/**
+ * DibiOrmPostgreBuilder
+ *
+ * Subclass of DibiOrmSqlBulder, builds PostgreSQL code
+ *
+ * @final
+ * @copyright Copyright (c) 2010 Eduard 'edke' Kracmar
+ * @package DibiOrm
+ */
+
+final class DibiOrmPostgreBuilder extends DibiOrmSqlBuilder
 {
 
     CONST DRIVER = 'postgre';

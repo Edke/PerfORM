@@ -48,13 +48,6 @@ final class DibiOrmController
 
 
     /**
-     * Instance of DibiDriver
-     * @var DibiOrmPostgreDriver
-     */
-    protected static $driver;
-
-
-    /**
      * Collection of all application models
      * @var array
      */
@@ -82,7 +75,11 @@ final class DibiOrmController
     protected static $modelCaching= true;
 
 
-
+    /**
+     * Array of instances of DibiOrmSqlBuilders
+     * @var array
+     */
+    protected static $sqlBuilders;
 
 
     /**
@@ -93,8 +90,6 @@ final class DibiOrmController
     {
 	self::$sqlBuffer[]= $sql;
     }
-
-
 
 
     /**
@@ -176,22 +171,36 @@ final class DibiOrmController
 
 
     /**
-     * Getter for DibiOrm driver
-     * @return DibiOrmDriver
+     * Getter for SqlBuilder with $name
+     * @param string $name
      */
-    public static function getDriver()
+    public static function getBuilder($name = 'default')
     {
-	if ( !self::$driver)
+	if ( !key_exists($name, self::$sqlBuilders))
+	{
+	    $builderClassName= self::getBuilderName();
+	    self::$sqlBuilders[$name]= new $builderClassName;
+	}
+	return self::$sqlBuilders[$name];
+    }
+
+
+    /**
+     * Getter for SqlBuilder class name
+     * @return string
+     */
+    protected static function getBuilderName($driverName = null)
+    {
+	if ( is_null($driverName))
 	{
 	    $driverName= self::getConnection()->getConfig('driver');
-	    $driverClassName= 'DibiOrm'.ucwords($driverName).'Driver';
-	    if ( !class_exists($driverClassName))
-	    {
-		throw new Exception("driver for '$driverName' not found");
-	    }
-	    self::$driver= new $driverClassName;
 	}
-	return self::$driver;
+	$builderClassName= 'DibiOrm'.ucwords($driverName).'Builder';
+	if ( !class_exists($builderClassName))
+	{
+	    throw new Exception("builder for driver '$driverName' not found");
+	}
+	return $builderClassName;
     }
 
 
@@ -243,9 +252,9 @@ final class DibiOrmController
     {
 	foreach( self::getModels() as $model)
 	{
-	    self::getDriver()->appendTableToCreate($model);
+	    self::getBuilder()->appendTableToCreate($model);
 	}
-	return self::getDriver()->buildSql();
+	return self::getBuilder()->build();
     }
 
 
@@ -332,12 +341,12 @@ final class DibiOrmController
 				}
 
 				# changing default value
-				if ( self::getDriver()->translateDefault($field) != $columnInfo->getDefault() )
+				if ( self::getBuilder()->translateDefault($field) != $columnInfo->getDefault() )
 				{
 				    $storage->changeFieldDefaultValue($field);
 				}
 
-				//Debug::consoleDump(self::getDriver()->translateDefault($field), $ident . ' type');
+				//Debug::consoleDump(self::getBuilder()->translateDefault($field), $ident . ' type');
 				//Debug::consoleDump($columnInfo->getDefault(), $ident . ' type');
 				//Debug::consoleDump($columnInfo->getType(), $ident . ' type');
 				//Debug::consoleDump($field->getType(), $ident . ' orm type');

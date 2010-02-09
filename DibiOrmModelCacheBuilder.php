@@ -146,7 +146,7 @@ class DibiOrmModelCacheBuilder
 	$iterator->close();
 
 	/* build new models */
-	$_template= file_get_contents(dirname(__FILE__).'/ModelCache.phptemplate');
+	$_template= file_get_contents(dirname(__FILE__).'/ModelCacheTemplate/ModelCache.phptmpl');
 	foreach($this->modelInfo as $modelInfo)
 	{
 	    $template= $_template;

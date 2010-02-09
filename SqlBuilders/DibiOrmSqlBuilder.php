@@ -1,10 +1,27 @@
 <?php
+
 /**
- * Description of dibiOrmDriver
+ * DibiOrm - Object-relational mapping based on David Grudl's dibi
  *
- * @author kraken
+ * @copyright  Copyright (c) 2010 Eduard 'edke' Kracmar
+ * @license    no license set at this point
+ * @link       http://dibiorm.local :-)
+ * @category   DibiOrm
+ * @package    DibiOrm
  */
-abstract class DibiOrmDriver {
+
+
+/**
+ * DibiOrmSqlBuilder
+ *
+ * builds sql dumps to sync models with database structure
+ *
+ * @abstract
+ * @copyright Copyright (c) 2010 Eduard 'edke' Kracmar
+ * @package DibiOrm
+ */
+
+abstract class DibiOrmSqlBuilder {
 
 
     protected $createTables= array();
@@ -126,17 +143,19 @@ abstract class DibiOrmDriver {
     protected function getTemplate() {
 	$template= new Template();
 	$template->registerFilter(new LatteFilter);
-	$template->setFile( dirname(__FILE__). '/'. $this->getDriver() . '/DibiOrmPostgreTemplate.psql');
-
-
-
+	$template->setFile( dirname(__FILE__).'/'. $this->getDriver() . '/DibiOrmPostgreTemplate.psql');
 	return $template;
     }
 
+    /**
+     * Renders sql template and removes unnecessary empty lines
+     * @param Template $template
+     * @return string
+     */
     protected function renderTemplate($template) {
     	ob_start();
 	$template->render();
-	return ob_get_clean();
+	return trim(preg_replace('#(;([\s\n\r]+))#ms', ";\n\n", ob_get_clean()));
     }
 
 
@@ -209,7 +228,11 @@ abstract class DibiOrmDriver {
     abstract function getCreateTable($model);
     
 
-    public function buildSql()
+    /**
+     * Builds sql dump
+     * @return string
+     */
+    public function build()
     {
 	$template= $this->getTemplate();
 
@@ -248,7 +271,7 @@ abstract class DibiOrmDriver {
 	    $template->dropTables[]= $table;
 	}
 
-	return trim(preg_replace('#(;([\s\n\r]+))#ms', ";\n\n", $this->renderTemplate($template)));
+	return $this->renderTemplate($template);
     }
 }
 

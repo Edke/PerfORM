@@ -103,7 +103,7 @@ final class DibiOrmStorage extends DibiConnection
      */
     public function changeFieldDefaultValue($field)
     {
-	DibiOrmController::getDriver()->appendFieldToChangeDefault($field);
+	DibiOrmController::getBuilder()->appendFieldToChangeDefault($field);
 	$this->updateFieldSync($field);
     }
 
@@ -143,7 +143,7 @@ final class DibiOrmStorage extends DibiConnection
 	    );
 	}
 
-	DibiOrmController::getDriver()->appendFieldToNotNullable($field);
+	DibiOrmController::getBuilder()->appendFieldToNotNullable($field);
 	$this->updateFieldSync($field);
     }
 
@@ -154,7 +154,7 @@ final class DibiOrmStorage extends DibiConnection
      */
     public function changeFieldToNullable($field)
     {
-	DibiOrmController::getDriver()->appendFieldToNullable($field);
+	DibiOrmController::getBuilder()->appendFieldToNullable($field);
 	$this->updateFieldSync($field);
     }
 
@@ -386,7 +386,7 @@ final class DibiOrmStorage extends DibiConnection
 		$field->getModel()->getHash(),
 		$array->modelName);
 
-		DibiOrmController::getDriver()->appendFieldToRename($field, $array->from);
+		DibiOrmController::getBuilder()->appendFieldToRename($field, $array->from);
 	    }
 	}
 
@@ -407,7 +407,7 @@ final class DibiOrmStorage extends DibiConnection
 		$array->to,
 		$array->from);
 
-		DibiOrmController::getDriver()->appendTableToRename($model, $array->from);
+		DibiOrmController::getBuilder()->appendTableToRename($model, $array->from);
 	    }
 	}
 
@@ -420,22 +420,22 @@ final class DibiOrmStorage extends DibiConnection
 		switch($operation)
 		{
 		    case DibiOrmStorage::FIELD_ADD:
-			DibiOrmController::getDriver()->appendFieldToAdd($action->values['field']);
+			DibiOrmController::getBuilder()->appendFieldToAdd($action->values['field']);
 			$this->updateModelSync($action->values['field']->getModel());
 			break;
 
 		    case DibiOrmStorage::FIELD_DROP:
-			DibiOrmController::getDriver()->appendFieldToDrop($action->values['fieldName'], $action->values['model']);
+			DibiOrmController::getBuilder()->appendFieldToDrop($action->values['fieldName'], $action->values['model']);
 			$this->updateModelSync($action->values['model']);
 			break;
 
 		    case DibiOrmStorage::TABLE_ADD:
-			DibiOrmController::getDriver()->appendTableToCreate($action->values['model']);
+			DibiOrmController::getBuilder()->appendTableToCreate($action->values['model']);
 			//$this->updateModelSync();
 			break;
 
 		    case DibiOrmStorage::TABLE_DROP:
-			DibiOrmController::getDriver()->appendTableToDrop($action->values['model']);
+			DibiOrmController::getBuilder()->appendTableToDrop($action->values['model']);
 			break;
 		}
 
@@ -450,7 +450,7 @@ final class DibiOrmStorage extends DibiConnection
 	    }
 	}
 
-	return DibiOrmController::getDriver()->buildSql();
+	return DibiOrmController::getBuilder()->build();
     }
 
 
