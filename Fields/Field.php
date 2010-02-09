@@ -398,7 +398,7 @@ abstract class Field
      * Sets field's default value
      * @param miexd $default
      */
-    final public function setDefault($default)
+    public function setDefault($default)
     {
 	if( !is_null($this->default) )
 	{
@@ -407,12 +407,6 @@ abstract class Field
 	}
 
 	$retypeDefault= $this->retype($default);
-	if ( (string) $default != (string) $retypeDefault )
-	{
-	    $this->addError("invalid datatype of default value '$default'");
-	    return false;
-	}
-
 	$this->default= $retypeDefault;
     }
 

@@ -47,6 +47,9 @@ final class DibiOrmPostgreBuilder extends DibiOrmSqlBuilder
 	    case 'CharField':
 		return sprintf('character varying(%d)', $field->getSize());
 
+	    case 'BooleanField':
+		return 'boolean';
+
 	    default:
 		throw new Exception("datatype for class '$fieldClass' not recognized by translator");
 
@@ -71,6 +74,9 @@ final class DibiOrmPostgreBuilder extends DibiOrmSqlBuilder
 
 	    case Dibi::FIELD_FLOAT:
 		return sprintf('(%d)::double precision', $field->getDefaultValue());
+
+	    case Dibi::FIELD_BOOL:
+		return sprintf('%s', ($field->getDefaultValue()) ? 'true' : 'false');
 
 	    default:
 		throw new Exception("default for class '$fieldClass' not recognized by translator");

@@ -89,6 +89,22 @@ final class CharField extends Field {
 
 
     /**
+     * Sets field's default value
+     * @param miexd $default
+     */
+    final public function setDefault($default)
+    {
+	parent::setDefault($default);
+
+   	if ( (string) $default != (string) $this->default )
+	{
+	    $this->addError("invalid datatype of default value '$default'");
+	    return false;
+	}
+    }
+
+
+    /**
      * Sets size of varchar
      * @param integer $size 
      */

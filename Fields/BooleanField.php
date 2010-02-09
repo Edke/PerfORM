@@ -12,13 +12,13 @@
 
 
 /**
- * IntegerField
+ * BooleanField
  *
  * @copyright Copyright (c) 2010 Eduard 'edke' Kracmar
  * @package DibiOrm
  */
 
-class IntegerField extends Field
+class BooleanField extends Field
 {
 
 
@@ -26,7 +26,7 @@ class IntegerField extends Field
      * Datatype
      * @var string
      */
-    protected $type = Dibi::FIELD_INTEGER;
+    protected $type = Dibi::FIELD_BOOL;
 
 
     /**
@@ -49,7 +49,7 @@ class IntegerField extends Field
      */
     static public function getPhpDocProperty()
     {
-	return 'integer';
+	return 'boolean';
     }
 
 
@@ -60,22 +60,16 @@ class IntegerField extends Field
      */
     final public function retype($value)
     {
-	return (int) $value;
-    }
-
-
-    /**
-     * Sets field's default value
-     * @param miexd $default
-     */
-    final public function setDefault($default)
-    {
-	parent::setDefault($default);
-
-   	if ( (string) $default != (string) $this->default )
+	if ( preg_match('#(t|true|y|yes|1)#i', $value))
 	{
-	    $this->addError("invalid datatype of default value '$default'");
+	    return true;
+	}
+	elseif ( preg_match('#(f|false|n|no|0)#i', $value))
+	{
 	    return false;
+	}
+	else {
+	    $this->addError("unable to retype value '$value' to boolean");
 	}
     }
 }
