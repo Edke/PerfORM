@@ -164,7 +164,8 @@ abstract class Field
 	    }
 	    elseif ( preg_match('#^db_column=(.+)$#i', $option, $matches) )
 	    {
-		$this->setDbName( $matches[1]);
+		trigger_error("Option db_column has been disabled as there is no support for advanced operations as rename column when it's set", E_USER_NOTICE);
+		#$this->setDbName( $matches[1]);
 		$options->remove($option);
 	    }
 	    elseif ( strtolower($option) == 'primary_key=true' )
@@ -281,9 +282,9 @@ abstract class Field
      */
     public function getRealName()
     {
-	/*if ( $this->dbName ) {
+	if ( $this->dbName ) {
 	    return $this->dbName;
-	}*/
+	}
 	return $this->name;
     }
 
