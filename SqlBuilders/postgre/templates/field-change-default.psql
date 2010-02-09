@@ -1,4 +1,5 @@
 {if isset($field)}
+-- Changing default of field "{$field->name}"
 ALTER TABLE {$field->table}
     ALTER COLUMN {$field->name} {if $field->default}SET DEFAULT {!field->default}{else}DROP DEFAULT{/if};
 {/if}

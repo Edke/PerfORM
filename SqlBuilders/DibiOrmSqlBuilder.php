@@ -234,6 +234,7 @@ abstract class DibiOrmSqlBuilder {
 	if ( count($this->createTables)>0)
 	{
 	    $template= $this->getTemplate('tables-create');
+	    $template->tables= array();
 	    self::dependancySortReverse($this->createTables);
 	    foreach($this->createTables as $model)
 	    {
@@ -246,6 +247,7 @@ abstract class DibiOrmSqlBuilder {
 	if ( count($this->dropModelTables)>0 or count($this->dropTables)>0)
 	{
 	    $template= $this->getTemplate('tables-drop');
+	    $template->tables= array();
 	    self::dependancySort($this->dropModelTables);
 	    foreach($this->dropModelTables as $model)
 	    {

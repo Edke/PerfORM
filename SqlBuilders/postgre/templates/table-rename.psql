@@ -1,6 +1,5 @@
 {if isset($table)}
--- renaming table "{$table->from}" and it's keys, sequences to "{$table->table}"
-
+-- Renaming table "{$table->from}" and it's keys, sequences to "{$table->table}"
 {foreach $table->dropKeys as $key}
 ALTER TABLE {$key->from_table}
     DROP CONSTRAINT {$key->from_constraint_name};

@@ -252,7 +252,7 @@ final class DibiOrmController
 	{
 	    self::getBuilder()->createTable($model);
 	}
-	return self::getBuilder()->build();
+	return self::getBuilder()->getSql();
     }
 
 

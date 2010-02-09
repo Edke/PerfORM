@@ -1,4 +1,5 @@
 {if isset($field)}
+-- Adding field "{$field->name}"
 ALTER TABLE {$field->table}
     ADD COLUMN {$field->name} {$field->type} {if $field->default}DEFAULT {!$field->default}{/if} {if $field->nullable}NULL{else}NOT NULL{/if};
 {/if}

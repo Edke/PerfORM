@@ -1,7 +1,6 @@
 {if isset($tables)}
 {foreach $tables as $table}
--- creating table {$table->table}
-
+-- Creating table "{$table->table}"
 CREATE TABLE {$table->table} (
 {foreach $table->fields as $field}
     {$field->name} {$field->type} {if $field->default}DEFAULT {!$field->default}{/if} {if $field->nullable}NULL{else}NOT NULL{/if}{if !$iterator->isLast()},{/if}
