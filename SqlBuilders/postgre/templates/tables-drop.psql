@@ -1,0 +1,6 @@
+{if isset($tables)}
+{foreach $tables as $table}
+DROP TABLE {$table};
+
+{/foreach}
+{/if}

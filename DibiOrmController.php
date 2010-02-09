@@ -79,7 +79,7 @@ final class DibiOrmController
      * Array of instances of DibiOrmSqlBuilders
      * @var array
      */
-    protected static $sqlBuilders;
+    protected static $sqlBuilders= array();
 
 
     /**
@@ -173,6 +173,7 @@ final class DibiOrmController
     /**
      * Getter for SqlBuilder with $name
      * @param string $name
+     * @return DibiOrmSqlBuilder
      */
     public static function getBuilder($name = 'default')
     {
@@ -252,7 +253,7 @@ final class DibiOrmController
     {
 	foreach( self::getModels() as $model)
 	{
-	    self::getBuilder()->appendTableToCreate($model);
+	    self::getBuilder()->createTable($model);
 	}
 	return self::getBuilder()->build();
     }

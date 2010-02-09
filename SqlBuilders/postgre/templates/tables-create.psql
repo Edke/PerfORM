@@ -1,0 +1,17 @@
+{if isset($tables)}
+{foreach $tables as $table}
+-- creating table {$table->table}
+
+CREATE TABLE {$table->table} (
+{foreach $table->fields as $field}
+    {$field->name} {$field->type} {if $field->default}DEFAULT {!$field->default}{/if} {if $field->nullable}NULL{else}NOT NULL{/if}{if !$iterator->isLast()},{/if}
+{/foreach}
+);
+
+{foreach $table->keys as $key}
+ALTER TABLE ONLY {$key->table}
+{if $key->type == 'primary'}    ADD CONSTRAINT {$key->constraint_name} PRIMARY KEY ({$key->field});{/if}{if $key->type == 'foreign'}    ADD CONSTRAINT {$key->constraint_name} FOREIGN KEY ({$key->key_name}) REFERENCES {$key->reference_table}({$key->reference_key_name});{/if}
+
+{/foreach}
+{/foreach}
+{/if}

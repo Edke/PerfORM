@@ -23,63 +23,52 @@
 
 abstract class DibiOrmSqlBuilder {
 
-
     protected $createTables= array();
 
     protected $dropTables= array();
 
     protected $dropModelTables= array();
 
-    protected $addFields= array();
-
-    protected $renameFields= array();
-
-    protected $renameTables= array();
-
-    protected $renameIndexes= array();
-
-    protected $renameSequences= array();
-
-    protected $dropFields= array();
-
-    protected $dropKeys= array();
-
-    protected $addKeys= array();
-
-    protected $createIndexes= array();
-
-    protected $changeFieldsToNullable= array();
-
-    protected $changeFieldsToNotNullable= array();
     
-    protected $changeFieldsDefaultValue= array();
+    /**
+     * Storage for sql dump
+     * @var string
+     */
+    protected $sql;
 
     
     /**
      * @param Field $field
      * @param DibiOrm $model
      */
-    public function appendFieldToAdd($field)
+    public function addField($field)
     {
-	$this->addFields[]= $this->getField($field);
+	$template= $this->getTemplate('field-add');
+	$template->field= $this->getField($field);
+	$this->renderToBuffer($template);
     }
 
     /**
      * @param Field $field
      * @param DibiOrm $model
      */
-    public function appendFieldToRename($field, $from)
+    public function renameField($field, $from)
     {
-	$this->renameFields[]= $this->getField($field, $from);
+	$template= $this->getTemplate('field-rename');
+	$template->field= $this->getField($field, $from);
+	$this->renderToBuffer($template);
     }
 
     
     /**
      * @param DibiOrm $model
+     * @param string $from
      */
-    public function appendTableToRename($model, $from)
+    public function renameTable($model, $from)
     {
-	$this->renameTables[]= $this->getRenameTable($model, $from);
+	$template= $this->getTemplate('table-rename');
+	$template->table= $this->getRenameTable($model, $from);
+	$this->renderToBuffer($template);
     }
 
 
@@ -87,16 +76,18 @@ abstract class DibiOrmSqlBuilder {
      * @param Field $field
      * @param DibiOrm $model
      */
-    public function appendFieldToDrop($fieldName, $model)
+    public function dropField($fieldName, $model)
     {
-	$this->dropFields[]= $this->getDropField($fieldName, $model);
+	$template= $this->getTemplate('field-drop');
+	$template->field= $this->getDropField($fieldName, $model);
+	$this->renderToBuffer($template);
     }
 
 
     /**
      * @param DibiOrm $model
      */
-    public function appendTableToCreate($model)
+    public function createTable($model)
     {
 	$this->createTables[]= $model;
     }
@@ -105,7 +96,7 @@ abstract class DibiOrmSqlBuilder {
     /**
      * @param DibiOrm|string $model
      */
-    public function appendTableToDrop($model)
+    public function dropTable($model)
     {
 	if ( is_object($model))
 	{
@@ -117,21 +108,19 @@ abstract class DibiOrmSqlBuilder {
     }
 
 
-
-    public function appendFieldToNullable($field)
+    public function changeFieldsNullable($field)
     {
-	$this->changeFieldsToNullable[]= $this->getField($field);
+	$template= $this->getTemplate('field-change-nullable');
+	$template->field= $this->getField($field);
+	$this->renderToBuffer($template);
     }
-
     
-    public function appendFieldToNotNullable($field)
-    {
-	$this->changeFieldsToNotNullable[]= $this->getField($field);
-    }
 
-    public function appendFieldToChangeDefault($field)
+    public function changeFieldsDefault($field)
     {
-	$this->changeFieldsDefaultValue[]= $this->getField($field);
+	$template= $this->getTemplate('field-change-default');
+	$template->field= $this->getField($field);
+	$this->renderToBuffer($template);
     }
 
     abstract protected function getDriver();
@@ -140,19 +129,30 @@ abstract class DibiOrmSqlBuilder {
 
     abstract public function translateDefault($field);
 
-    protected function getTemplate() {
+    public function getTemplate($templateFile) {
 	$template= new Template();
 	$template->registerFilter(new LatteFilter);
-	$template->setFile( dirname(__FILE__).'/'. $this->getDriver() . '/DibiOrmPostgreTemplate.psql');
+	$template->setFile( dirname(__FILE__).'/'. $this->getDriver() . '/templates/'. $templateFile .'.psql');
 	return $template;
     }
+
+
+    /**
+     * Renders sql template and adds it to dump buffer
+     * @param Template $template
+     * @return string
+     */
+    public function renderToBuffer($template) {
+	$this->sql .= $this->renderTemplate($template). "\n";
+    }
+
 
     /**
      * Renders sql template and removes unnecessary empty lines
      * @param Template $template
      * @return string
      */
-    protected function renderTemplate($template) {
+    public function renderTemplate($template) {
     	ob_start();
 	$template->render();
 	return trim(preg_replace('#(;([\s\n\r]+))#ms', ";\n\n", ob_get_clean()));
@@ -228,50 +228,37 @@ abstract class DibiOrmSqlBuilder {
     abstract function getCreateTable($model);
     
 
-    /**
-     * Builds sql dump
-     * @return string
-     */
-    public function build()
+    public function getSql()
     {
-	$template= $this->getTemplate();
-
-	$template->createTables= array();
-	$template->dropTables= array();
-
-	$template->addFields= $this->addFields;
-	$template->dropFields= $this->dropFields;
-	$template->renameFields= $this->renameFields;
-	$template->renameTables= $this->renameTables;
-	$template->renameSequences= $this->renameSequences;
-	$template->renameIndexes= $this->renameIndexes;
-	$template->changeFieldsToNullable= $this->changeFieldsToNullable;
-	$template->changeFieldsToNotNullable= $this->changeFieldsToNotNullable;
-	$template->changeFieldsDefaultValue= $this->changeFieldsDefaultValue;
-
-	# create table ..
-	self::dependancySortReverse($this->createTables);
-	foreach($this->createTables as $model)
+	# dependancy solving for create tables
+	if ( count($this->createTables)>0)
 	{
-	    $template->createTables[]= $this->getCreateTable($model);
+	    $template= $this->getTemplate('tables-create');
+	    self::dependancySortReverse($this->createTables);
+	    foreach($this->createTables as $model)
+	    {
+		$template->tables[]= $this->getCreateTable($model);
+	    }
+	    $this->renderToBuffer($template);
 	}
 
-	$template->addKeys= $this->addKeys;
-	$template->dropKeys= $this->dropKeys;
-	$template->createIndexes= $this->createIndexes;
-
-	# drop table ..
-	self::dependancySort($this->dropModelTables);
-	foreach($this->dropModelTables as $model)
+	# dependancy solving for drop tables
+	if ( count($this->dropModelTables)>0 or count($this->dropTables)>0)
 	{
-	    $template->dropTables[]= $model->getTableName();
+	    $template= $this->getTemplate('tables-drop');
+	    self::dependancySort($this->dropModelTables);
+	    foreach($this->dropModelTables as $model)
+	    {
+		$template->tables[]= $model->getTableName();
+	    }
+	    foreach($this->dropTables as $table)
+	    {
+		$template->tables[]= $table;
+	    }
+	    $this->renderToBuffer($template);
 	}
-	foreach($this->dropTables as $table)
-	{
-	    $template->dropTables[]= $table;
-	}
-
-	return $this->renderTemplate($template);
+	
+	return $this->sql;
     }
 }
 

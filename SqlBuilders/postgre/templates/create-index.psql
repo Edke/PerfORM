@@ -1,0 +1,4 @@
+{if isset($index)}
+CREATE INDEX {$index->name} ON {$index->table} USING {$index->type};
+
+{/if}

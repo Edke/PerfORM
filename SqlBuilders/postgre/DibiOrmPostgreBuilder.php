@@ -90,18 +90,21 @@ final class DibiOrmPostgreBuilder extends DibiOrmSqlBuilder
 	    $fields[]= $this->getField($field, $model);
 	}
 
+	$keys= array();
+
 	if ( $pk = $model->getPrimaryKey() )
 	{
-	    $this->addKeys[]= $this->getPrimaryKey($model, $pk);
+	    $keys[]= $this->getPrimaryKey($model, $pk);
 	}
 	foreach( $model->getForeignKeys() as $foreignKey)
 	{
-	    $this->addKeys[]= $this->getForeignKey($model, $foreignKey);
+	    $keys[]= $this->getForeignKey($model, $foreignKey);
 	}
 
 	return (object) array(
 	    'table' => $model->getTableName(),
 	    'fields' => $fields,
+	    'keys' => $keys
 	);
     }
     
@@ -113,46 +116,52 @@ final class DibiOrmPostgreBuilder extends DibiOrmSqlBuilder
      */
     public function getRenameTable($model, $from)
     {
-
+	$renameSequences= array();
+	$renameIndexes= array();
 	if ( $pk = $model->getPrimaryKey() )
 	{
-	    $this->renameIndexes[]= $this->getPrimaryKey($model, $pk, $from);
+	    $renameIndexes[]= $this->getPrimaryKey($model, $pk, $from);
 
 	    if (get_class($model->getField($pk)) == 'AutoField')
 	    {
-		$this->renameSequences[]= (object) array(
+		$renameSequences[]= (object) array(
 		    'from' => $from.'_'.$pk.'_seq',
 		    'to' => $model->getTableName().'_'.$pk.'_seq',
 		);
 	    }
 	}
 
+	$dropKeys= array();
 	foreach( $model->getForeignKeys() as $foreignKey)
 	{
-	    $this->dropKeys[]= $this->getForeignKey($model, $foreignKey, $from);
+	    $dropKeys[]= $this->getForeignKey($model, $foreignKey, $from);
 	}
 
-
+	$addKeys= array();
 	foreach( $model->getForeignKeys() as $foreignKey)
 	{
-	    $this->addKeys[]= $this->getForeignKey($model, $foreignKey);
+	    $addKeys[]= $this->getForeignKey($model, $foreignKey);
 	}
 
 	return (object) array(
 	    'table' => $model->getTableName(),
 	    'from' => $from,
+	    'dropKeys' => $dropKeys,
+	    'addKeys' => $addKeys,
+	    'renameSequences' => $renameSequences,
+	    'renameIndexes' => $renameIndexes
 	);
     }
 
 
 
-    protected function getField($field, $renameFrom = null)
+    public function getField($field, $renameFrom = null)
     {
 	return (object) array(
 	'table' => $field->getModel()->getTableName(),
 	'name' => $field->getRealName(),
 	'type' => $this->translateType($field),
-	'nullable' => ($field->isNullable()) ? 'NULL' : 'NOT NULL',
+	'nullable' => $field->isNullable(),
 	'default' => $this->translateDefault($field),
 	'from' => $renameFrom
 	);
@@ -190,50 +199,5 @@ final class DibiOrmPostgreBuilder extends DibiOrmSqlBuilder
 	'from_table' => $from,
 	'from_constraint_name' => $from .'_'. $key->getRealName() .'_fkey',
 	);
-    }
-
-    /**
-     * @param Orm $orm
-     */
-    public function syncTable($orm)
-    {
-	$tableInfo= $orm->getConnection()->getDatabaseInfo()->getTable($orm->getTableName());
-	$sql= null;
-
-	// checking model against db
-	foreach ($orm->getFields() as $name => $field)
-	{
-
-	    // column exists
-	    if ( $tableInfo->hasColumn($field->getRealName()) )
-	    {
-		//TODO
-
-	    }
-	    else
-	    {
-		$template= $this->getTemplate('alter-table-add-column.psql' );
-		$template->table= $orm;
-		$template->field= $this->addField($field);
-		$sql .= $this->renderTemplate($template);
-	    }
-	}
-
-	// checking db against model
-	foreach ( $tableInfo->getColumnNames() as $column)
-	{
-
-	    // column doesn't exists, needs to be dropped
-	    if ( !$orm->hasField($column) )
-	    {
-		$template= $this->getTemplate('alter-table-drop-column.psql' );
-		$template->table= $orm;
-		$template->field= $column;
-		$sql .= $this->renderTemplate($template);
-	    }
-	}
-
-
-	return $sql;
     }
 }

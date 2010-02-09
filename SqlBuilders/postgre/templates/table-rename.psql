@@ -1,0 +1,32 @@
+{if isset($table)}
+-- renaming table "{$table->from}" and it's keys, sequences to "{$table->table}"
+
+{foreach $table->dropKeys as $key}
+ALTER TABLE {$key->from_table}
+    DROP CONSTRAINT {$key->from_constraint_name};
+
+{/foreach}
+
+
+ALTER TABLE {$table->from}
+    RENAME TO {$table->table};
+
+{foreach $table->renameSequences as $sequence}
+ALTER SEQUENCE {$sequence->from}
+    RENAME TO {$sequence->to};
+{/foreach}
+
+{foreach $table->renameIndexes as $index}
+ALTER INDEX {$index->from_constraint_name}
+    RENAME TO {$index->constraint_name};
+{/foreach}
+
+
+{foreach $table->addKeys as $key}
+ALTER TABLE ONLY {$key->table}
+{if $key->type == 'primary'}    ADD CONSTRAINT {$key->constraint_name} PRIMARY KEY ({$key->field});{/if}{if $key->type == 'foreign'}    ADD CONSTRAINT {$key->constraint_name} FOREIGN KEY ({$key->key_name}) REFERENCES {$key->reference_table}({$key->reference_key_name});{/if}
+
+{/foreach}
+
+
+{/if}

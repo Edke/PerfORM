@@ -1,0 +1,5 @@
+{if isset($field)}
+ALTER TABLE {$field->table}
+    RENAME COLUMN {$field->from} TO {$field->name};
+{/if}
+
