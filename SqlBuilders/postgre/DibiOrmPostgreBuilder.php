@@ -44,6 +44,9 @@ final class DibiOrmPostgreBuilder extends DibiOrmSqlBuilder
 	    case 'ForeignKeyField':
 		return 'integer';
 
+	    case 'SmallIntegerField':
+		return 'smallint';
+
 	    case 'CharField':
 		return sprintf('character varying(%d)', $field->getSize());
 
@@ -69,6 +72,9 @@ final class DibiOrmPostgreBuilder extends DibiOrmSqlBuilder
 	    case 'IntegerField':
 	    case 'ForeignKeyField':
 		return preg_match('#(INT4)#i', $nativeType) ? true : false;
+
+	    case 'SmallIntegerField':
+		return preg_match('#(INT2)#i', $nativeType) ? true : false;
 
 	    case 'CharField':
 		return preg_match('#(VARCHAR)#i', $nativeType) ? true : false;
