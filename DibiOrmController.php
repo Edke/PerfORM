@@ -317,11 +317,13 @@ final class DibiOrmController
 			    # field out of sync
 			    if ( !$storage->fieldHasSync($field))
 			    {
-				//$ident= $model->getTableName().'-'.$field->getName().'-'.$field->getHash();
+				#$ident= $model->getTableName().'-'.$field->getName().'-'.$field->getHash();
 				$columnInfo= self::getConnection()->getDatabaseInfo()->getTable($model->getTableName())->getColumn($field->getName());
 
+				//Debug::consoleDump(!self::getBuilder()->hasNativeType($field, $columnInfo->getNativeType() ), $ident);
+
 				# changing datatype
-				if ( $field->getType() != $columnInfo->getType() or
+				if ( !self::getBuilder()->hasNativeType($field, $columnInfo->getNativeType() ) or
 				    ($field->getType() == $columnInfo->getType() and $field->getType() == 's' and $field->getSize() != $columnInfo->getSize()))
 				{
 				    $storage->changeFieldType($field);

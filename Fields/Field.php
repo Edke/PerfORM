@@ -255,7 +255,8 @@ abstract class Field
 	    $this->isNullable(),
 	    $this->dbName,
 	    $this->getDefaultValue(),
-	    $this->getType()
+	    $this->getType(),
+	    get_class($this)
 	    );
 	    $this->hash= md5(implode('|', $array));
 	}

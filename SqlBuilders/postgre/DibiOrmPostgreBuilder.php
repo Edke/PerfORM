@@ -59,6 +59,33 @@ final class DibiOrmPostgreBuilder extends DibiOrmSqlBuilder
 	}
     }
 
+
+    public function hasNativeType($field, $nativeType)
+    {
+	$fieldClass= get_class($field);
+	switch ($fieldClass)
+	{
+	    case 'AutoField':
+	    case 'IntegerField':
+	    case 'ForeignKeyField':
+		return preg_match('#(INT4)#i', $nativeType) ? true : false;
+
+	    case 'CharField':
+		return preg_match('#(VARCHAR)#i', $nativeType) ? true : false;
+
+	    case 'TextField':
+		return preg_match('#(TEXT)#i', $nativeType) ? true : false;
+
+	    case 'BooleanField':
+		return preg_match('#(BOOL)#i', $nativeType) ? true : false;
+
+	    default:
+		throw new Exception("datatype for class '$fieldClass' not recognized by native type comparer");
+
+	}
+    }
+
+
     public function translateDefault($field)
     {
 
@@ -73,7 +100,7 @@ final class DibiOrmPostgreBuilder extends DibiOrmSqlBuilder
 		return sprintf("'%s'::character varying", $field->getDefaultValue());
 
 	    case Dibi::FIELD_INTEGER:
-		return sprintf('(%d)', $field->getDefaultValue());
+		return sprintf('%d', $field->getDefaultValue());
 
 	    case Dibi::FIELD_FLOAT:
 		return sprintf('(%d)::double precision', $field->getDefaultValue());
