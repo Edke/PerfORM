@@ -123,15 +123,16 @@ final class DibiOrmStorage extends DibiConnection
 
 	foreach($result as $row )
 	{
-	    if ( $value= $field->getDefaultValue() )
+	    if ( !is_null($value= $field->getDefaultValue()) )
 	    {
 	    }
-	    elseif ($value= call_user_func($field->getDefaultCallback(), $row))
+	    elseif ( is_callable($field->getDefaultCallback()))
 	    {
+		$value= call_user_func($field->getDefaultCallback(), $row);
 	    }
 	    else
 	    {
-		throw new Exception($value. "Unable to set default value for field '".$field->getName()."'");
+		throw new Exception("Unable to set default value for field '".$field->getName()."'");
 	    }
 
 	    DibiOrmController::getConnection()->query('update %n set %n = %'.$field->getType().' where %n = %i',
@@ -188,7 +189,15 @@ final class DibiOrmStorage extends DibiConnection
 
 	foreach($result as $row )
 	{
-	    if ( !($value= call_user_func($field->getRecastCallback(), $row)))
+	    if ( is_callable($field->getRecastCallback()))
+	    {
+		$value= call_user_func($field->getRecastCallback(), $row);
+		if ( !$field->isNullable() and is_null($value))
+		{
+		    throw new Exception("Unable to recast null value for field '".$field->getName()."' (id=".$row->{$pk}.") as field is not null");
+		}
+	    }
+	    else
 	    {
 		throw new Exception("Unable to recast value for field '".$field->getName()."' (id=".$row->{$pk}.")");
 	    }
