@@ -47,6 +47,9 @@ final class DibiOrmPostgreBuilder extends DibiOrmSqlBuilder
 	    case 'CharField':
 		return sprintf('character varying(%d)', $field->getSize());
 
+	    case 'TextField':
+		return 'text';
+
 	    case 'BooleanField':
 		return 'boolean';
 

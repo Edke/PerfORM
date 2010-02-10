@@ -14,26 +14,11 @@
 /**
  * CharField
  *
- * @final
  * @copyright Copyright (c) 2010 Eduard 'edke' Kracmar
  * @package DibiOrm
  */
 
-final class CharField extends Field {
-
-
-    /**
-     * Limit of chars in field
-     * @var integer
-     */
-    protected $size;
-
-
-    /**
-     * Datatype
-     * @var string
-     */
-    protected $type = Dibi::FIELD_TEXT;
+class CharField extends TextField {
 
 
     /**
@@ -41,17 +26,20 @@ final class CharField extends Field {
      */
     public function  __construct()
     {
-	$options= parent::__construct(func_get_args());
+	$args= func_get_args();
+	$args= ( is_array($args) && count($args) == 1 && isset($args[0]) ) ? $args[0] : $args;
+	$options= parent::__construct($args);
 
 	foreach ( $options as $option){
 	    if ( preg_match('#^max_length=([0-9]+)$#i', $option, $matches) ) {
 		$this->setSize( $matches[1]);
 		$options->remove($option);
 	    }
-	    else{
+	    elseif ( __CLASS__ == get_class($this))  {
 		$this->addError("unknown option '$option'");
 	    }
 	}
+	return $options;
     }
 
 
@@ -70,37 +58,11 @@ final class CharField extends Field {
 
 
     /**
-     * Getter for ModelCacheBuilder, sets phpdoc type for property-write tag in model cache
-     * @return string
-     */
-    static public function getPhpDocProperty()
-    {
-	return 'string';
-    }
-
-
-    /**
      * Getter for size
      * @return integer
      */
     public function getSize() {
 	return $this->size;
-    }
-
-
-    /**
-     * Sets field's default value
-     * @param miexd $default
-     */
-    final public function setDefault($default)
-    {
-	parent::setDefault($default);
-
-   	if ( (string) $default != (string) $this->default )
-	{
-	    $this->addError("invalid datatype of default value '$default'");
-	    return false;
-	}
     }
 
 
@@ -114,16 +76,6 @@ final class CharField extends Field {
 	    throw new Exception("invalid size '$size'");
 	}
 	$this->size= $size;
-    }
-
-
-    /**
-     * Retype value of field to string
-     * @param mixed $value
-     * @return string
-     */
-    final public function retype($value) {
-	return (string) $value;
     }
 
 

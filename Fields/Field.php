@@ -101,6 +101,13 @@ abstract class Field
 
 
     /**
+     * Limit of field
+     * @var integer
+     */
+    protected $size;
+
+
+    /**
      * Datatype of field
      * @var string
      */
@@ -473,6 +480,16 @@ abstract class Field
 	    return false;
 	}
 	$this->recastCallback= array($this->getModel(), $callback);
+    }
+
+
+    /**
+     * Sets size of field
+     * @param integer $size 
+     */
+    protected function  setSize($size){
+	$this->addError("size is not supported");
+	return false;
     }
 
 
