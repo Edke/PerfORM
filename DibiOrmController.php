@@ -318,31 +318,33 @@ final class DibiOrmController
 			    if ( !$storage->fieldHasSync($field))
 			    {
 				//$ident= $model->getTableName().'-'.$field->getName().'-'.$field->getHash();
-				//$columnInfo= self::getConnection()->getDatabaseInfo()->getTable($model->getTableName())->getColumn($field->getName());
-
-				# changing null to not null
-				if ( !$field->isNullable() and $columnInfo->isNullable() )
-				{
-				    $storage->changeFieldToNotNullable($field);
-				}
-
-				# changing not null to null
-				if ( $field->isNullable() and !$columnInfo->isNullable() )
-				{
-				    $storage->changeFieldToNullable($field);
-				}
-
-				# changing default value
-				if ( self::getBuilder()->translateDefault($field) != $columnInfo->getDefault() )
-				{
-				    $storage->changeFieldDefaultValue($field);
-				}
+				$columnInfo= self::getConnection()->getDatabaseInfo()->getTable($model->getTableName())->getColumn($field->getName());
 
 				# changing datatype
 				if ( $field->getType() != $columnInfo->getType() or
 				    ($field->getType() == $columnInfo->getType() and $field->getType() == 's' and $field->getSize() != $columnInfo->getSize()))
 				{
 				    $storage->changeFieldType($field);
+				}
+				# other changes
+				else {
+				    # changing null to not null
+				    if ( !$field->isNullable() and $columnInfo->isNullable() )
+				    {
+					$storage->changeFieldToNotNullable($field);
+				    }
+
+				    # changing not null to null
+				    if ( $field->isNullable() and !$columnInfo->isNullable() )
+				    {
+					$storage->changeFieldToNullable($field);
+				    }
+
+				    # changing default value
+				    if ( self::getBuilder()->translateDefault($field) != $columnInfo->getDefault() )
+				    {
+					$storage->changeFieldDefaultValue($field);
+				    }
 				}
 			    }
 			}
