@@ -30,16 +30,20 @@ class IntegerField extends Field
 
 
     /**
-     * Constructor, adds error on unknown options
+     * Constructor, parses charfield specific options
      */
-    public function __construct()
+    public function  __construct()
     {
-	$options= parent::__construct(func_get_args());
+	$args= func_get_args();
+	$args= ( is_array($args) && count($args) == 1 && isset($args[0]) ) ? $args[0] : $args;
+	$options= parent::__construct($args);
+	foreach ( $options as $option){
+	    if ( __CLASS__ == get_class($this))  {
 
-	foreach ( $options as $option)
-	{
-	    $this->addError("unknown option '$option'");
+		$this->addError("unknown option '$option'");
+	    }
 	}
+	return $options;
     }
 
 
@@ -54,28 +58,23 @@ class IntegerField extends Field
 
 
     /**
+     * Checks if value is valid for field
+     * @param mixed $value
+     * @return boolean
+     */
+    public function isValidValue($value)
+    {
+	return ( (string) $value == (string) $this->retype($value) ) ? true : false;
+    }
+
+
+    /**
      * Retype value of field to string
      * @param mixed $value
      * @return string
      */
     public function retype($value)
     {
-	return (int) $value;
-    }
-
-
-    /**
-     * Sets field's default value
-     * @param miexd $default
-     */
-    final public function setDefault($default)
-    {
-	parent::setDefault($default);
-
-   	if ( (string) $default != (string) $this->default )
-	{
-	    $this->addError("invalid datatype of default value '$default'");
-	    return false;
-	}
+	return (is_null($value)) ? null : (int) $value;
     }
 }

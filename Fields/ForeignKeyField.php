@@ -153,6 +153,17 @@ final class ForeignKeyField extends Field
 
 
     /**
+     * Checks if value is valid for field
+     * @param mixed $value
+     * @return boolean
+     */
+    public function isValidValue($value)
+    {
+	return true;
+    }
+
+
+    /**
      * Retype value of field to string
      * @param mixed $value
      * @return string

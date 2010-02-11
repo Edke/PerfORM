@@ -57,18 +57,13 @@ class TextField extends Field {
 
 
     /**
-     * Sets field's default value
-     * @param miexd $default
+     *
+     * @param mixed $value
+     * @return boolean
      */
-    final public function setDefault($default)
+    public function isValidValue($value)
     {
-	parent::setDefault($default);
-
-   	if ( (string) $default != (string) $this->default )
-	{
-	    $this->addError("invalid datatype of default value '$default'");
-	    return false;
-	}
+	return ( (string) $value == (string) $this->retype($value) ) ? true : false;
     }
 
 
@@ -78,6 +73,6 @@ class TextField extends Field {
      * @return string
      */
     final public function retype($value) {
-	return (string) $value;
+	return (is_null($value)) ? null : (string) $value;
     }
 }

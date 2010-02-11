@@ -54,22 +54,39 @@ class BooleanField extends Field
 
 
     /**
+     * Checks if value is valid for field
+     * @param mixed $value
+     * @return boolean
+     */
+    public function isValidValue($value)
+    {
+	return preg_match('#^(t|true|y|yes|1|f|false|n|no|0)$#i', $value) ? true : false;
+    }
+
+
+    /**
      * Retype value of field to string
      * @param mixed $value
      * @return string
      */
     final public function retype($value)
     {
-	if ( preg_match('#(t|true|y|yes|1)#i', $value))
+	if ( is_null($value))
 	{
-	    return true;
-	}
-	elseif ( preg_match('#(f|false|n|no|0)#i', $value))
-	{
-	    return false;
+	    return null;
 	}
 	else {
-	    $this->addError("unable to retype value '$value' to boolean");
+	    if ( preg_match('#^(t|true|y|yes|1)$#i', $value))
+	    {
+		return true;
+	    }
+	    elseif ( preg_match('#^(f|false|n|no|0)$#i', $value))
+	    {
+		return false;
+	    }
+	    else {
+		$this->addError("unable to retype value '$value' to boolean");
+	    }
 	}
     }
 }

@@ -347,6 +347,14 @@ abstract class Field
 
 
     /**
+     * Checks if value is valid for field
+     * @param mixed $value
+     * @return boolean
+     */
+    abstract protected function isValidValue($value);
+
+
+    /**
      * Determines whether field is mandatory
      * @return <type>
      */
@@ -406,16 +414,14 @@ abstract class Field
      * Sets field's default value
      * @param miexd $default
      */
-    public function setDefault($default)
+    protected function setDefault($default)
     {
 	if( !is_null($this->default) )
 	{
 	    $this->addError("has already default value '$this->default'");
 	    return false;
 	}
-
-	$retypeDefault= $this->retype($default);
-	$this->default= $retypeDefault;
+	$this->default= $default;
     }
 
 
@@ -529,6 +535,18 @@ abstract class Field
      */
     public function validate()
     {
+	# checking default value
+	if ( $this->default &&
+	    !$this->isValidValue($this->default))
+	{
+	    Debug::consoleDump($this->default);
+	    $this->addError("invalid datatype of default value '$this->default'");
+	}
+	elseif ($this->default)
+	{
+	    $this->default= $this->retype($this->default);
+	}
+
 	foreach($this->errors as $key => $error)
 	{
 	    $this->errors[$key] = str_replace('%s', $this->getModel()->getName(). '::'.$this->name, $error);
