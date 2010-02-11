@@ -47,6 +47,9 @@ final class DibiOrmPostgreBuilder extends DibiOrmSqlBuilder
 	    case 'SmallIntegerField':
 		return 'smallint';
 
+	    case 'DecimalField':
+		return sprintf('numeric(%d,%d)', $field->getDigits(), $field->getDecimals());
+
 	    case 'CharField':
 		return sprintf('character varying(%d)', $field->getSize());
 
@@ -85,6 +88,9 @@ final class DibiOrmPostgreBuilder extends DibiOrmSqlBuilder
 	    case 'BooleanField':
 		return preg_match('#(BOOL)#i', $nativeType) ? true : false;
 
+	    case 'DecimalField':
+		return preg_match('#(NUMERIC)#i', $nativeType) ? true : false;
+
 	    default:
 		throw new Exception("datatype for class '$fieldClass' not recognized by native type comparer");
 
@@ -106,10 +112,10 @@ final class DibiOrmPostgreBuilder extends DibiOrmSqlBuilder
 		return sprintf("'%s'::character varying", $field->getDefaultValue());
 
 	    case Dibi::FIELD_INTEGER:
-		return sprintf('%d', $field->getDefaultValue());
+		return sprintf('%s', $field->getDefaultValue());
 
 	    case Dibi::FIELD_FLOAT:
-		return sprintf('(%d)::double precision', $field->getDefaultValue());
+		return sprintf('%s', $field->getDefaultValue());
 
 	    case Dibi::FIELD_BOOL:
 		return sprintf('%s', ($field->getDefaultValue()) ? 'true' : 'false');

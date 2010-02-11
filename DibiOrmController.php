@@ -320,11 +320,15 @@ final class DibiOrmController
 				#$ident= $model->getTableName().'-'.$field->getName().'-'.$field->getHash();
 				$columnInfo= self::getConnection()->getDatabaseInfo()->getTable($model->getTableName())->getColumn($field->getName());
 
-				//Debug::consoleDump(!self::getBuilder()->hasNativeType($field, $columnInfo->getNativeType() ), $ident);
+				//if (get_class($field) == 'DecimalField' ) Debug::consoleDump($columnInfo->getSize(), $ident);
 
 				# changing datatype
 				if ( !self::getBuilder()->hasNativeType($field, $columnInfo->getNativeType() ) or
-				    ($field->getType() == $columnInfo->getType() and $field->getType() == 's' and $field->getSize() != $columnInfo->getSize()))
+				    ($field->getType() == $columnInfo->getType() and $field->getType() == 's' and $field->getSize() != $columnInfo->getSize()) or
+				    (get_class($field) == 'DecimalField' and $columnInfo->getNativeType() == 'NUMERIC' and
+					($field->getDigits() != $columnInfo->getVendorInfo('numeric_precision') or
+					 $field->getDecimals() != $columnInfo->getVendorInfo('numeric_scale')) )
+				    )
 				{
 				    $storage->changeFieldType($field);
 				}
