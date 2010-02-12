@@ -676,7 +676,11 @@ abstract class DibiOrm
      */
     public function  __get($field)
     {
-	if ( key_exists($field, $this->fields) && is_object($this->fields[$field]))
+	if( key_exists($field, $this->fields) && is_object($this->fields[$field]) && get_class($this->fields[$field]) == 'DateTimeField' )
+	{
+	    return $this->fields[$field];
+	}
+	elseif ( key_exists($field, $this->fields) && is_object($this->fields[$field]))
 	{
 	    return $this->fields[$field]->getValue();
 	}

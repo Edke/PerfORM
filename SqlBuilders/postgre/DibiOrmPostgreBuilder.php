@@ -53,6 +53,9 @@ final class DibiOrmPostgreBuilder extends DibiOrmSqlBuilder
 	    case 'CharField':
 		return sprintf('character varying(%d)', $field->getSize());
 
+	    case 'DateTimeField':
+		return 'timestamp without time zone';
+
 	    case 'TextField':
 		return 'text';
 
@@ -60,7 +63,7 @@ final class DibiOrmPostgreBuilder extends DibiOrmSqlBuilder
 		return 'boolean';
 
 	    default:
-		throw new Exception("datatype for class '$fieldClass' not recognized by translator");
+		throw new Exception("datatype for class '$fieldClass' not recognized by type translator");
 
 	}
     }
@@ -87,6 +90,9 @@ final class DibiOrmPostgreBuilder extends DibiOrmSqlBuilder
 
 	    case 'BooleanField':
 		return preg_match('#(BOOL)#i', $nativeType) ? true : false;
+
+	    case 'DateTimeField':
+		return preg_match('#(TIMESTAMP)#i', $nativeType) ? true : false;
 
 	    case 'DecimalField':
 		return preg_match('#(NUMERIC)#i', $nativeType) ? true : false;
