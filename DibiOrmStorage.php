@@ -178,8 +178,8 @@ final class DibiOrmStorage extends DibiConnection
 	$fieldInfo->name= $tmpfield;
 	$fieldInfo->nullable= true;
 	$template->field= $fieldInfo;
-	$sql= $builder->renderTemplate($template);
-	DibiOrmController::getConnection()->nativeQuery($sql);
+	DibiOrmController::getBuilder()->addToBuffer($builder->renderTemplate($template));
+	//DibiOrmController::getConnection()->nativeQuery($sql);
 
 	$result= DibiOrmController::getConnection()->query('select * from %n',
 	    $field->getModel()->getTableName()
@@ -202,13 +202,14 @@ final class DibiOrmStorage extends DibiConnection
 		throw new Exception("Unable to recast value for field '".$field->getName()."' (id=".$row->{$pk}.")");
 	    }
 
-	    DibiOrmController::getConnection()->query('update %n set %n = %'.$field->getType().' where %n = %i',
-	    $field->getModel()->getTableName(),
-	    $tmpfield,
-	    $value,
-	    $pk,
-	    $row->{$pk}
+	    $sql= DibiOrmController::getConnection()->sql('update %n set %n = %'.$field->getType().' where %n = %i;',
+		$field->getModel()->getTableName(),
+		$tmpfield,
+		$value,
+		$pk,
+		$row->{$pk}
 	    );
+	    DibiOrmController::getBuilder()->addToBuffer($sql);
 	}
 
 	if (!$field->isNullable())
@@ -217,7 +218,8 @@ final class DibiOrmStorage extends DibiConnection
 	    $template= $builder->getTemplate('field-change-nullable');
 	    $template->field= $fieldInfo;
 	    $sql= $builder->renderTemplate($template);
-	    DibiOrmController::getConnection()->nativeQuery($sql);
+	    DibiOrmController::getBuilder()->addToBuffer($sql);
+	    //DibiOrmController::getConnection()->nativeQuery($sql);
 	}
 
 	DibiOrmController::getBuilder()->dropField($field->getName(), $field->getModel());
