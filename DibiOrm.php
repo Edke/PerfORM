@@ -430,7 +430,7 @@ abstract class DibiOrm
 	    {
 		$insert[$finalColumn]= $value;
 	    }
-	    elseif( !is_null($default = $field->getDefaultValue())  )
+	    elseif( !is_null($default = $field->getDefault())  )
 	    {
 		$insert[$finalColumn]= $default;
 	    }

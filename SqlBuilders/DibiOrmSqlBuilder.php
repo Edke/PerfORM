@@ -36,7 +36,17 @@ abstract class DibiOrmSqlBuilder {
      */
     protected $sql;
 
-    
+
+    /**
+     * Adds sql to buffer
+     * @param string $sql
+     */
+    public function addToBuffer($sql)
+    {
+	$this->sql .= $sql ."\n";
+    }
+
+
     /**
      * @param Field $field
      * @param DibiOrm $model

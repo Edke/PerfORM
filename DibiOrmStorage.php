@@ -487,7 +487,51 @@ final class DibiOrmStorage extends DibiConnection
 		switch($operation)
 		{
 		    case DibiOrmStorage::FIELD_ADD:
-			DibiOrmController::getBuilder()->addField($action->values['field']);
+			$field= $action->values['field'];
+
+			$builder= DibiOrmController::getBuilder('fieldadd');
+			$template= $builder->getTemplate('field-add');
+			$fieldInfo= $builder->getField($field);
+			$fieldInfo->nullable= true;
+			$template->field= $fieldInfo;
+
+			DibiOrmController::getBuilder()->addToBuffer( $builder->renderTemplate($template) );
+			//DibiOrmController::getConnection()->nativeQuery($sql);
+
+			$result= DibiOrmController::getConnection()->query('select * from %n',
+			    $field->getModel()->getTableName()
+			);
+
+			$pk= $field->getModel()->getPrimaryKey();
+			foreach($result as $row )
+			{
+			    if ( !is_null($default= $field->getDefault($row)))
+			    {
+				DibiOrmController::getBuilder()->addToBuffer(
+				    DibiOrmController::getConnection()->sql('update %n set %n = %'.$field->getType().' where %n = %i;',
+					$field->getModel()->getTableName(),
+					$field->getName(),
+					$default,
+					$pk,
+					$row->{$pk}
+				    ));
+			    }
+			    elseif ( !$field->isNullable())
+			    {
+				throw new Exception("Unable to find default value for field '".$field->getName()."' (id=".$row->{$pk}.")");
+			    }
+			}
+
+			if (!$field->isNullable())
+			{
+			    $fieldInfo->nullable= false;
+			    $template= $builder->getTemplate('field-change-nullable');
+			    $template->field= $fieldInfo;
+			    DibiOrmController::getBuilder()->addToBuffer( $builder->renderTemplate($template) );
+			    //DibiOrmController::getConnection()->nativeQuery($sql);
+			}
+
+			//DibiOrmController::getBuilder()->addField();
 			$this->updateModelSync($action->values['field']->getModel());
 			break;
 

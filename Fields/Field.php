@@ -213,6 +213,27 @@ abstract class Field
 
 
     /**
+     * Getter for field's default value or default_callback
+     * @return mixed
+     */
+    public  function getDefault($row = null)
+    {
+	if( !is_null($default = $this->getDefaultValue())  )
+	{
+	    return $default;
+	}
+	elseif( $this->getDefaultCallback() )
+	{
+	    return call_user_func($this->getDefaultCallback(), $row);
+	}
+	else
+	{
+	    return null;
+	}
+    }
+
+
+    /**
      * Getter for field's callback that sets default value
      * @return callback
      */
@@ -223,22 +244,22 @@ abstract class Field
 
 
     /**
-     * Getter for field's callback that sets default value
-     * @return callback
-     */
-    public  function getRecastCallback()
-    {
-	return $this->recastCallback;
-    }
-
-    
-    /**
      * Getter for field's default value
      * @return mixed
      */
     public  function getDefaultValue()
     {
 	return $this->default;
+    }
+
+
+    /**
+     * Getter for field's callback that sets default value
+     * @return callback
+     */
+    public  function getRecastCallback()
+    {
+	return $this->recastCallback;
     }
 
 
