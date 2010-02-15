@@ -445,7 +445,7 @@ abstract class DibiOrm
 	    {
 		$insert[$finalColumn]= $default;
 	    }
-	    elseif( $field->getIdent() == DibiOrm::DateTimeField and $field->isAutoNow() )
+	    elseif( $field->getIdent() == DibiOrm::DateTimeField and ($field->isAutoNow() or $field->isAutoNowAdd()) )
 	    {
 		$field->now();
 		$insert[$finalColumn]= $field->getDbValue();
