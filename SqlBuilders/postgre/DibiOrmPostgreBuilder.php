@@ -56,6 +56,9 @@ final class DibiOrmPostgreBuilder extends DibiOrmSqlBuilder
 	    case 'DateField':
 		return 'date';
 
+	    case 'TimeField':
+		return 'time';
+
 	    case 'DateTimeField':
 		return 'timestamp without time zone';
 
@@ -96,6 +99,9 @@ final class DibiOrmPostgreBuilder extends DibiOrmSqlBuilder
 
 	    case 'DateField':
 		return preg_match('#(DATE)#i', $nativeType) ? true : false;
+
+	    case 'TimeField':
+		return preg_match('#(TIME)#i', $nativeType) ? true : false;
 
 	    case 'DateTimeField':
 		return preg_match('#(TIMESTAMP)#i', $nativeType) ? true : false;

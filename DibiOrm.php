@@ -35,6 +35,7 @@ abstract class DibiOrm
     const IntegerField = 1;
     const SmallIntegerField = 7;
     const TextField = 6;
+    const TimeField = 11;
 
 
     /**
@@ -697,6 +698,7 @@ abstract class DibiOrm
 	if( key_exists($field, $this->fields) &&
 	    is_object($this->fields[$field]) &&
 	    ($this->fields[$field]->getIdent() == DibiOrm::DateTimeField ||
+	    $this->fields[$field]->getIdent() == DibiOrm::TimeField ||
 	    $this->fields[$field]->getIdent() == DibiOrm::DateField)
 	    )
 	{
