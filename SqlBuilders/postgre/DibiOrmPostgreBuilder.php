@@ -53,6 +53,9 @@ final class DibiOrmPostgreBuilder extends DibiOrmSqlBuilder
 	    case 'CharField':
 		return sprintf('character varying(%d)', $field->getSize());
 
+	    case 'DateField':
+		return 'date';
+
 	    case 'DateTimeField':
 		return 'timestamp without time zone';
 
@@ -90,6 +93,9 @@ final class DibiOrmPostgreBuilder extends DibiOrmSqlBuilder
 
 	    case 'BooleanField':
 		return preg_match('#(BOOL)#i', $nativeType) ? true : false;
+
+	    case 'DateField':
+		return preg_match('#(DATE)#i', $nativeType) ? true : false;
 
 	    case 'DateTimeField':
 		return preg_match('#(TIMESTAMP)#i', $nativeType) ? true : false;

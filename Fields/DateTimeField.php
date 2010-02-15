@@ -173,7 +173,7 @@ class DateTimeField extends Field {
      * @param mixed $value
      * @return string
      */
-    final public function retype($value)
+    public function retype($value)
     {
 	if ( is_null($value))
 	{

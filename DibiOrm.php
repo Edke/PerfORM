@@ -28,6 +28,7 @@ abstract class DibiOrm
     const AutoField = 3;
     const BooleanField = 5;
     const CharField = 2;
+    const DateField = 10;
     const DateTimeField = 9;
     const DecimalField = 8;
     const ForeignKeyField = 4;
@@ -693,7 +694,11 @@ abstract class DibiOrm
      */
     public function  __get($field)
     {
-	if( key_exists($field, $this->fields) && is_object($this->fields[$field]) && get_class($this->fields[$field]) == 'DateTimeField' )
+	if( key_exists($field, $this->fields) &&
+	    is_object($this->fields[$field]) &&
+	    ($this->fields[$field]->getIdent() == DibiOrm::DateTimeField ||
+	    $this->fields[$field]->getIdent() == DibiOrm::DateField)
+	    )
 	{
 	    return $this->fields[$field];
 	}
