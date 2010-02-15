@@ -103,6 +103,10 @@ class DateTimeField extends Field {
      */
     public function getValue()
     {
+	return !is_null($this->value) ? date($this->outputFormat,$this->value) : null;
+    }
+
+
     /**
      * Determined whether auto_now feature is enabled
      * @return boolean
@@ -120,7 +124,8 @@ class DateTimeField extends Field {
      */
     public function isValidValue($value)
     {
-	return ( is_null($value)) or  preg_match('#^[0-9]+$#', $value) or new DateTime($value) ? true : false;
+	$retyped= $this->retype($value);
+	return ( is_null($retyped)) or is_integer($retyped) or is_object($retyped) ? true : false;
     }
 
 
@@ -172,6 +177,7 @@ class DateTimeField extends Field {
      */
     public function  __toString()
     {
-	return $this->getValue();
+	$value= $this->getValue();
+	return is_null($value) ? '' : $value;
     }
 }
