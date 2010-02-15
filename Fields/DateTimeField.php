@@ -20,6 +20,14 @@
 
 class DateTimeField extends Field {
 
+
+    /**
+     * AutoNow switch
+     * @var boolean
+     */
+    protected $autoNow= false;
+
+
     /**
      * strftime's format used to format value when getting
      * @var string
@@ -47,6 +55,10 @@ class DateTimeField extends Field {
 		$this->setOutputFormat( $matches[1]);
 		$options->remove($option);
 	    }
+	    if ( preg_match('#^auto_now$#i', $option) ) {
+		$this->enableAutoNow();
+		$options->remove($option);
+	    }
 	    elseif ( __CLASS__ == get_class($this))  {
 
 		$this->addError("unknown option '$option'");
@@ -57,6 +69,12 @@ class DateTimeField extends Field {
 
 
     /**
+     * Enables auto_now functiononality
+     */
+    protected function enableAutoNow()
+    {
+	$this->autoNow= true;
+    }
 
 
     /**
@@ -85,7 +103,13 @@ class DateTimeField extends Field {
      */
     public function getValue()
     {
-	return date($this->outputFormat,$this->value);
+    /**
+     * Determined whether auto_now feature is enabled
+     * @return boolean
+     */
+    public function isAutoNow()
+    {
+	return $this->autoNow;
     }
 
 

@@ -445,9 +445,10 @@ abstract class DibiOrm
 	    {
 		$insert[$finalColumn]= $default;
 	    }
-	    elseif( $field->getIdent() == DibiOrm::DateTimeField ) )
+	    elseif( $field->getIdent() == DibiOrm::DateTimeField and $field->isAutoNow() )
 	    {
-		$insert[$finalColumn]= call_user_func($field->getDefaultCallback());
+		$field->now();
+		$insert[$finalColumn]= $field->getDbValue();
 	    }
 	    elseif( !$field->isNullable() )
 	    {
@@ -598,6 +599,11 @@ abstract class DibiOrm
 	    elseif ( !is_null($value = $field->getDbValue()) && $field->isModified() )
 	    {
 		$update[$finalColumn]= $value;
+	    }
+	    elseif( $field->getIdent() == DibiOrm::DateTimeField and $field->isAutoNow() )
+	    {
+		$field->now();
+		$update[$finalColumn]= $field->getDbValue();
 	    }
 	}
 
