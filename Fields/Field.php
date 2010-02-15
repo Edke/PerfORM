@@ -264,6 +264,12 @@ abstract class Field
 
 
     /**
+     * Returns identification integer of field
+     */
+    abstract public function getIdent();
+
+
+    /**
      * Getter for field's hash
      * @return string
      */

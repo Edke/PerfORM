@@ -47,6 +47,16 @@ class TextField extends Field {
 
 
     /**
+     * Returns identification integer of field
+     * @return integer
+     */
+    public function getIdent()
+    {
+	return DibiOrm::TextField;
+    }
+
+
+    /**
      * Getter for ModelCacheBuilder, sets phpdoc type for property-write tag in model cache
      * @return string
      */

@@ -20,6 +20,16 @@
  */
 
 final class AutoField extends IntegerField {
+
+
+    /**
+     * Returns identification integer of field
+     * @return integer
+     */
+    public function getIdent()
+    {
+	return DibiOrm::AutoField;
+    }
 }
 
 

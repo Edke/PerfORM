@@ -88,6 +88,16 @@ final class ForeignKeyField extends Field
 
 
     /**
+     * Returns identification integer of field
+     * @return integer
+     */
+    public function getIdent()
+    {
+	return DibiOrm::ForeignKeyField;
+    }
+
+
+    /**
      * Getter for value of key, if key has no value, issue save() for reference model
      * @return mixed
      */

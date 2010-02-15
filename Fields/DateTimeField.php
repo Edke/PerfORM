@@ -57,6 +57,19 @@ class DateTimeField extends Field {
 
 
     /**
+
+
+    /**
+     * Returns identification integer of field
+     * @return integer
+     */
+    public function getIdent()
+    {
+	return DibiOrm::DateTimeField;
+    }
+
+
+    /**
      * Getter for ModelCacheBuilder, sets phpdoc type for property-write tag in model cache
      * @return string
      */

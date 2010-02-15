@@ -25,6 +25,17 @@ abstract class DibiOrm
 {
 
 
+    const AutoField = 3;
+    const BooleanField = 5;
+    const CharField = 2;
+    const DateTimeField = 9;
+    const DecimalField = 8;
+    const ForeignKeyField = 4;
+    const IntegerField = 1;
+    const SmallIntegerField = 7;
+    const TextField = 6;
+
+
     /**
      * Table alias
      * @var string
@@ -423,7 +434,7 @@ abstract class DibiOrm
 	{
 	    $finalColumn= $field->getRealName().'%'.$field->getType();
 
-	    if ($field->isPrimaryKey() and get_class($field) == 'AutoField')
+	    if ($field->isPrimaryKey() and $field->getIdent() == DibiOrm::AutoField)
 	    {
 	    }
 	    elseif ( !is_null($value = $field->getDbValue()) )
@@ -434,7 +445,7 @@ abstract class DibiOrm
 	    {
 		$insert[$finalColumn]= $default;
 	    }
-	    elseif( $field->getDefaultCallback() )
+	    elseif( $field->getIdent() == DibiOrm::DateTimeField ) )
 	    {
 		$insert[$finalColumn]= call_user_func($field->getDefaultCallback());
 	    }

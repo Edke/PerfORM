@@ -103,6 +103,16 @@ class DecimalField extends Field
 
 
     /**
+     * Returns identification integer of field
+     * @return integer
+     */
+    public function getIdent()
+    {
+	return DibiOrm::DecimalField;
+    }
+
+
+    /**
      * Getter for ModelCacheBuilder, sets phpdoc type for property-write tag in model cache
      * @return string
      */

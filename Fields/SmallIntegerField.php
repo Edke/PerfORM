@@ -21,6 +21,17 @@
 class SmallIntegerField extends IntegerField
 {
 
+
+    /**
+     * Returns identification integer of field
+     * @return integer
+     */
+    public function getIdent()
+    {
+	return DibiOrm::SmallIntegerField;
+    }
+
+
     /**
      * Retype value of field to string, range handling
      * @param mixed $value

@@ -58,6 +58,16 @@ class CharField extends TextField {
 
 
     /**
+     * Returns identification integer of field
+     * @return integer
+     */
+    public function getIdent()
+    {
+	return DibiOrm::CharField;
+    }
+
+
+    /**
      * Getter for size
      * @return integer
      */
