@@ -1,15 +1,14 @@
 #!/usr/bin/php
 <?php
 
-define('APP_DIR', realpath('../dibiorm-sandbox/app'));
-define('LIBS_DIR', realpath('../dibiorm-sandbox/libs'));
+define('APP_DIR', dirname(dirname(__FILE__)).'/app');
+define('LIBS_DIR', dirname(dirname(__FILE__)).'/libs');
 
 require_once LIBS_DIR .'/Nette/loader.php';
 
 $robot = new RobotLoader();
 $robot->addDirectory(APP_DIR);
 $robot->addDirectory(LIBS_DIR);
-$robot->addDirectory(APP_DIR.'/../../dibiorm');
 
 $robot->autoRebuild = true;
 $robot->ignoreDirs= '.*, *.old, *.bak, *.tmp, temp, fshl_cache';
