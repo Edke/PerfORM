@@ -1,0 +1,18 @@
+{extends $layout}
+{block #content}
+{if !$sql}
+{block|ansi_console_colors}Database %9%rdoes not%n contain any model information to be cleared.{/block}
+{elseif $confirm}
+
+Executed code:
+
+{!$sql|fshl_highlighter|ansi_console_colors}
+{else}
+
+Execute SQL code to clear database:
+
+{!$sql|fshl_highlighter|ansi_console_colors}
+
+{if !$confirm}{block|ansi_console_colors}Run tool with %9--confirm%n option to execute SQL code{/block}{/if}
+{/if}
+{/block}

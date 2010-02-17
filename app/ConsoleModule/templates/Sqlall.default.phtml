@@ -1,0 +1,13 @@
+{extends $layout}
+{block #content}
+{if !$sql}
+There is no model
+
+{else}
+
+SQL code of DibiOrm model:
+
+{!$sql|fshl_highlighter|ansi_console_colors}
+
+{/if}
+{/block}

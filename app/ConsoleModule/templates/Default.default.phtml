@@ -1,0 +1,17 @@
+{extends $layout}
+{block #content}
+
+Usage: manage.php ACTION [OPTIONS]
+
+Possible actions:
+    default or no action	show this help
+    syncdb			generate SQL code to synchronize database with model definition
+    sqlall			generate SQL code of whole model definition
+    sqlclear			generate SQL code to drop database structure
+
+    
+Possible options:
+    --confirm			confirms action as syncsql or sqlclear and executes code
+
+
+{/block}
