@@ -159,7 +159,8 @@ class PerfORMModelCacheBuilder
 	    $properties= null;
 	    foreach( $modelInfo->fields as $field)
 	    {
-		$properties .= sprintf("\n * @property-write %s \$%s", call_user_func($field->type . '::getPhpDocProperty'), $field->name);
+		$propertyType= $field->reference ? $field->reference : call_user_func($field->type . '::getPhpDocProperty');
+		$properties .= sprintf("\n * @property-write %s \$%s", $propertyType , $field->name);
 	    }
 	    $template= str_replace('%properties%', $properties, $template);
 	    file_put_contents($this->modelCacheDir . DIRECTORY_SEPARATOR . $modelInfo->model.'.php', $template);
@@ -253,9 +254,16 @@ class PerfORMModelCacheBuilder
 		{
 		    foreach($field[0] as $field_key => $field_value)
 		    {
+			$reference= null;
+			if ( $field[3][$field_key] == 'ForeignKeyField' && preg_match('#new\s*([^ ,]+)#i', $field[4][$field_key], $ref) )
+			{
+			    $reference= $ref[1];
+			}
+
 			$_fields[$field[1][$field_key]]= (object) array(
 			    'name' => $field[1][$field_key],
 			    'type' => $field[3][$field_key],
+			    'reference' => $reference,
 			);
 
 			$options= trim($field[4][$field_key]);
