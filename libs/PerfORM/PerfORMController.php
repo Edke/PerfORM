@@ -116,9 +116,7 @@ final class PerfORMController
      */
     protected static function execute($sql)
     {
-	self::getConnection()->begin();
 	self::getConnection()->nativeQuery($sql);
-	self::getConnection()->commit();
     }
 
 
@@ -279,7 +277,9 @@ final class PerfORMController
 
 	if ( !is_null($sql) && $confirm )
 	{
+	    self::getConnection()->begin();
 	    self::execute($sql);
+	    self::getConnection()->commit();
 	}
 
 	$confirm ? $storage->commit() : $storage->rollback();
@@ -389,8 +389,8 @@ final class PerfORMController
 
 	if ( !is_null($sql) && $confirm )
 	{
-	    self::getConnection()->commit();
 	    self::execute($sql);
+	    self::getConnection()->commit();
 	    $storage->commit();
 	}
 	else {
