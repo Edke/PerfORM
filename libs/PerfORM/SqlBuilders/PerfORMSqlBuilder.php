@@ -181,18 +181,27 @@ abstract class PerfORMSqlBuilder {
 	    $min= null;
 	    foreach($item->getDependents() as $dependent)
 	    {
-		$min= ( is_null($min )) ?  $this->model_array_search($dependent, $_list) : min($min, array_search($dependent, $_list)) ;
+		$min= ( is_null($min )) ?  $this->model_array_search($dependent, $list) : min($min, $this->model_array_search($dependent, $list)) ;
 	    }
-	    if (is_integer($min))
+	    if ( is_integer($min) && $this->model_array_search($item, $list) > $min)
 	    {
-		if ( array_search($item, $_list) > $min)
-		{
-		    unset($list[array_search($item,$list)]);
-		    $list= $this->insertArrayIndex($list, $item, $min);
-		}
+		unset($list[$this->model_array_search($item,$list)]);
+		$list= $this->insertArrayIndex($list, $item, $min);
 	    }
 	}
     }
+
+
+    /**
+     * Reversed sort of dependancySort method
+     * @param array $list
+     */
+    protected function dependancySortReverse( &$list)
+    {
+	$this->dependancySort($list);
+	$list= array_reverse($list);
+    }
+
 
     protected function model_array_search($needle, $haystack)
     {
@@ -205,17 +214,6 @@ abstract class PerfORMSqlBuilder {
 	    }
 	}
 	return false;
-    }
-    
-
-    /**
-     * Reversed sort of dependancySort method
-     * @param array $list
-     */
-    protected function dependancySortReverse( &$list)
-    {
-	$this->dependancySort($list);
-	$list= array_reverse($list);
     }
 
 
