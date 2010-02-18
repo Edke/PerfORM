@@ -1,24 +1,24 @@
 <?php
 
 /**
- * DibiOrm - Object-relational mapping based on David Grudl's dibi
+ * PerfORM - Object-relational mapping based on David Grudl's dibi
  *
  * @copyright  Copyright (c) 2010 Eduard 'edke' Kracmar
  * @license    no license set at this point
- * @link       http://dibiorm.local :-)
- * @category   DibiOrm
- * @package    DibiOrm
+ * @link       http://perform.local :-)
+ * @category   PerfORM
+ * @package    PerfORM
  */
 
 
 /**
- * DibiOrmController
+ * PerfORMController
  *
- * Enviroment for DibiOrm:
+ * Enviroment for PerfORM:
  *  - database operations
  *  - models collection
  *  - configuration options
- *  - robot loader
+ *  - builder loader
  *  - driver and dibi connection
  *  - cache
  *  - sql buffer for pretty examples
@@ -26,10 +26,10 @@
  *
  * @final
  * @copyright Copyright (c) 2010 Eduard 'edke' Kracmar
- * @package DibiOrm
+ * @package PerfORM
  */
 
-final class DibiOrmController
+final class PerfORMController
 {
 
 
@@ -55,8 +55,8 @@ final class DibiOrmController
 
 
     /**
-     * Instance of DibiOrmModelCacheBuilder
-     * @var DibiOrmModelCacheBuilder
+     * Instance of PerfORMModelCacheBuilder
+     * @var PerfORMModelCacheBuilder
      */
     protected static $cacheBuilder;
 
@@ -76,7 +76,7 @@ final class DibiOrmController
 
 
     /**
-     * Array of instances of DibiOrmSqlBuilders
+     * Array of instances of PerfORMSqlBuilders
      * @var array
      */
     protected static $sqlBuilders= array();
@@ -127,14 +127,14 @@ final class DibiOrmController
      * Creates instance if called for the first time
      * Creates MemcachedStorage if extension memcache exists
      * Otherwise FileStorage Cache is created
-     * Triggers notice if config variable advertisememcached in dibiorm block is not set to false
+     * Triggers notice if config variable advertisememcached in perform block is not set to false
      * @return Cache
      */
     public static function getCache()
     {
 	if ( !self::$cache)
 	{
-	    $config= Environment::getConfig('dibiorm');
+	    $config= Environment::getConfig('perform');
 	    if (extension_loaded('memcache'))
 	    {
 		self::$cache= new Cache(new MemcachedStorage($config->memcache_host, $config->memcache_port, $config->cache_prefix));
@@ -170,7 +170,7 @@ final class DibiOrmController
     /**
      * Getter for SqlBuilder with $name
      * @param string $name
-     * @return DibiOrmSqlBuilder
+     * @return PerfORMSqlBuilder
      */
     public static function getBuilder($name = 'default')
     {
@@ -193,7 +193,7 @@ final class DibiOrmController
 	{
 	    $driverName= self::getConnection()->getConfig('driver');
 	}
-	$builderClassName= 'DibiOrm'.ucwords($driverName).'Builder';
+	$builderClassName= 'PerfORM'.ucwords($driverName).'Builder';
 	if ( !class_exists($builderClassName))
 	{
 	    throw new Exception("builder for driver '$driverName' not found");
@@ -210,7 +210,7 @@ final class DibiOrmController
     {
 	if ( is_null(self::$models))
 	{
-	    self::$cacheBuilder= new DibiOrmModelCacheBuilder();
+	    self::$cacheBuilder= new PerfORMModelCacheBuilder();
 	    self::$cacheBuilder->addDirectory(APP_DIR);
 	    self::$cacheBuilder->rebuild();
 	    self::$models= self::$cacheBuilder->getModels();
@@ -264,7 +264,7 @@ final class DibiOrmController
      */
     public static function sqlclear($confirm = false)
     {
-	$storage= new DibiOrmStorage();
+	$storage= new PerfORMStorage();
 	$storage->begin();
 	
 	foreach( self::getModels() as $model)
@@ -295,7 +295,7 @@ final class DibiOrmController
      */
     public static function syncdb($confirm = false)
     {
-	$storage= new DibiOrmStorage();
+	$storage= new PerfORMStorage();
 	$storage->begin();
 	self::getConnection()->begin();
 

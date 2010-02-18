@@ -1,27 +1,27 @@
 <?php
 
 /**
- * DibiOrm - Object-relational mapping based on David Grudl's dibi
+ * PerfORM - Object-relational mapping based on David Grudl's dibi
  *
  * @copyright  Copyright (c) 2010 Eduard 'edke' Kracmar
  * @license    no license set at this point
- * @link       http://dibiorm.local :-)
- * @category   DibiOrm
- * @package    DibiOrm
+ * @link       http://perform.local :-)
+ * @category   PerfORM
+ * @package    PerfORM
  */
 
 
 /**
- * DibiOrm
+ * PerfORM
  *
  * Base model's class responsible for model definition and interaction
  *
  * @abstract
  * @copyright Copyright (c) 2010 Eduard 'edke' Kracmar
- * @package DibiOrm
+ * @package PerfORM
  */
 
-abstract class DibiOrm
+abstract class PerfORM
 {
 
 
@@ -103,7 +103,7 @@ abstract class DibiOrm
      */
     public function  __construct($importValues = null)
     {
-	if ( DibiOrmController::useModelCaching() )
+	if ( PerfORMController::useModelCaching() )
 	{
 	    $this->loadDefinition();
 	}
@@ -121,7 +121,7 @@ abstract class DibiOrm
 
     /**
      * Builds recursively aliases for $model
-     * @param DibiOrm $model
+     * @param PerfORM $model
      */
     protected function buildAliases($model, $aliases)
     {
@@ -149,7 +149,7 @@ abstract class DibiOrm
     /**
      * Build model definition from setup
      *
-     * Model will be cached if caching is enabled (DibiOrmController::useModelCaching())
+     * Model will be cached if caching is enabled (PerfORMController::useModelCaching())
      */
     protected function buildDefinition()
     {
@@ -187,9 +187,9 @@ abstract class DibiOrm
 	$this->hash= md5(implode('|', $field_hashes));
 	
 
-	if (DibiOrmController::useModelCaching())
+	if (PerfORMController::useModelCaching())
 	{
-	    $cache= DibiOrmController::getCache();
+	    $cache= PerfORMController::getCache();
 	    $cache[$this->getCacheKey()]= $this;
 	}
     }
@@ -197,7 +197,7 @@ abstract class DibiOrm
 
     /**
      * Checks if $model depends on this model
-     * @param DibiOrm $model
+     * @param PerfORM $model
      * @return boolean
      */
     public function dependsOn($model)
@@ -234,12 +234,12 @@ abstract class DibiOrm
 
 
     /**
-     * Getter for DibiOrmController's connection
+     * Getter for PerfORMController's connection
      * @return DibiConnection
      */
     public function getConnection()
     {
-	return DibiOrmController::getConnection();
+	return PerfORMController::getConnection();
     }
 
 
@@ -436,7 +436,7 @@ abstract class DibiOrm
 	{
 	    $finalColumn= $field->getRealName().'%'.$field->getType();
 
-	    if ($field->isPrimaryKey() and $field->getIdent() == DibiOrm::AutoField)
+	    if ($field->isPrimaryKey() and $field->getIdent() == PerfORM::AutoField)
 	    {
 	    }
 	    elseif ( !is_null($value = $field->getDbValue()) )
@@ -447,7 +447,7 @@ abstract class DibiOrm
 	    {
 		$insert[$finalColumn]= $default;
 	    }
-	    elseif( $field->getIdent() == DibiOrm::DateTimeField and ($field->isAutoNow() or $field->isAutoNowAdd()) )
+	    elseif( $field->getIdent() == PerfORM::DateTimeField and ($field->isAutoNow() or $field->isAutoNowAdd()) )
 	    {
 		$field->now();
 		$insert[$finalColumn]= $field->getDbValue();
@@ -462,7 +462,7 @@ abstract class DibiOrm
 	{
 	    //Debug::consoleDump($insert, 'insert array');
 
-	    DibiOrmController::queryAndLog('insert into %n', $this->getTableName(), $insert);
+	    PerfORMController::queryAndLog('insert into %n', $this->getTableName(), $insert);
 	    $this->setUnmodified();
 	    $insertId= $this->getConnection()->insertId();
 	    $this->fields[$this->getPrimaryKey()]->setValue($insertId);
@@ -490,7 +490,7 @@ abstract class DibiOrm
      */
     protected function loadDefinition()
     {
-	$cache= DibiOrmController::getCache();
+	$cache= PerfORMController::getCache();
 	$cacheKey= $this->getCacheKey();
 	if ( isset($cache[$cacheKey]) and is_object($cache[$cacheKey]) and get_class($cache[$cacheKey]) == get_class($this))
 	{
@@ -602,7 +602,7 @@ abstract class DibiOrm
 	    {
 		$update[$finalColumn]= $value;
 	    }
-	    elseif( $field->getIdent() == DibiOrm::DateTimeField and $field->isAutoNow() )
+	    elseif( $field->getIdent() == PerfORM::DateTimeField and $field->isAutoNow() )
 	    {
 		$field->now();
 		$update[$finalColumn]= $field->getDbValue();
@@ -612,7 +612,7 @@ abstract class DibiOrm
 	if (count($update)>0)
 	{
 	    #Debug::consoleDump($update, 'update array');
-	    DibiOrmController::queryAndLog('update %n set', $this->getTableName(), $update, "where %n = %$primaryKeyType", $primaryKey, $primaryKeyValue);
+	    PerfORMController::queryAndLog('update %n set', $this->getTableName(), $update, "where %n = %$primaryKeyType", $primaryKey, $primaryKeyValue);
 	    $this->setUnmodified();
 	    return $primaryKeyValue;
 	}
@@ -697,9 +697,9 @@ abstract class DibiOrm
     {
 	if( key_exists($field, $this->fields) &&
 	    is_object($this->fields[$field]) &&
-	    ($this->fields[$field]->getIdent() == DibiOrm::DateTimeField ||
-	    $this->fields[$field]->getIdent() == DibiOrm::TimeField ||
-	    $this->fields[$field]->getIdent() == DibiOrm::DateField)
+	    ($this->fields[$field]->getIdent() == PerfORM::DateTimeField ||
+	    $this->fields[$field]->getIdent() == PerfORM::TimeField ||
+	    $this->fields[$field]->getIdent() == PerfORM::DateField)
 	    )
 	{
 	    return $this->fields[$field];

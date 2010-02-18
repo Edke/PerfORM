@@ -1,13 +1,13 @@
 <?php
 
 /**
- * DibiOrm - Object-relational mapping based on David Grudl's dibi
+ * PerfORM - Object-relational mapping based on David Grudl's dibi
  *
  * @copyright  Copyright (c) 2010 Eduard 'edke' Kracmar
  * @license    no license set at this point
- * @link       http://dibiorm.local :-)
- * @category   DibiOrm
- * @package    DibiOrm
+ * @link       http://perform.local :-)
+ * @category   PerfORM
+ * @package    PerfORM
  */
 
 
@@ -15,7 +15,7 @@
  * DecimalField
  *
  * @copyright Copyright (c) 2010 Eduard 'edke' Kracmar
- * @package DibiOrm
+ * @package PerfORM
  */
 
 class DecimalField extends Field
@@ -108,7 +108,7 @@ class DecimalField extends Field
      */
     public function getIdent()
     {
-	return DibiOrm::DecimalField;
+	return PerfORM::DecimalField;
     }
 
 

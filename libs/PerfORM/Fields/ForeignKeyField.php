@@ -1,13 +1,13 @@
 <?php
 
 /**
- * DibiOrm - Object-relational mapping based on David Grudl's dibi
+ * PerfORM - Object-relational mapping based on David Grudl's dibi
  *
  * @copyright  Copyright (c) 2010 Eduard 'edke' Kracmar
  * @license    no license set at this point
- * @link       http://dibiorm.local :-)
- * @category   DibiOrm
- * @package    DibiOrm
+ * @link       http://perform.local :-)
+ * @category   PerfORM
+ * @package    PerfORM
  */
 
 
@@ -16,7 +16,7 @@
  *
  * @final
  * @copyright Copyright (c) 2010 Eduard 'edke' Kracmar
- * @package DibiOrm
+ * @package PerfORM
  */
 
 final class ForeignKeyField extends Field
@@ -32,7 +32,7 @@ final class ForeignKeyField extends Field
 
     /**
      * References to relation model
-     * @var DibiOrm
+     * @var PerfORM
      */
     protected $reference;
 
@@ -60,7 +60,7 @@ final class ForeignKeyField extends Field
 
 	foreach ( $options as $option)
 	{
-	    if ( is_object($option) && is_subclass_of($option, 'DibiOrm'))
+	    if ( is_object($option) && is_subclass_of($option, 'PerfORM'))
 	    {
 		$this->reference= $option;
 		$options->remove($option);
@@ -93,7 +93,7 @@ final class ForeignKeyField extends Field
      */
     public function getIdent()
     {
-	return DibiOrm::ForeignKeyField;
+	return PerfORM::ForeignKeyField;
     }
 
 
@@ -124,7 +124,7 @@ final class ForeignKeyField extends Field
 
     /**
      * Getter for reference model
-     * @return DibiOrm
+     * @return PerfORM
      */
     public function getReference()
     {

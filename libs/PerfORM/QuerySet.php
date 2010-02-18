@@ -1,13 +1,13 @@
 <?php
 
 /**
- * DibiOrm - Object-relational mapping based on David Grudl's dibi
+ * PerfORM - Object-relational mapping based on David Grudl's dibi
  *
  * @copyright  Copyright (c) 2010 Eduard 'edke' Kracmar
  * @license    no license set at this point
- * @link       http://dibiorm.local :-)
+ * @link       http://perform.local :-)
  * @category   QuerySet
- * @package    DibiOrm
+ * @package    PerfORM
  */
 
 
@@ -18,7 +18,7 @@
  *
  * @final
  * @copyright Copyright (c) 2010 Eduard 'edke' Kracmar
- * @package DibiOrm
+ * @package PerfORM
  */
 
 final class QuerySet
@@ -48,14 +48,14 @@ final class QuerySet
 
     /**
      * Instance of model
-     * @var DibiOrm
+     * @var PerfORM
      */
     protected $model;
 
 
     /**
      * Constructor
-     * @param DibiOrm $model
+     * @param PerfORM $model
      */
     public function  __construct($model)
     {
@@ -65,7 +65,7 @@ final class QuerySet
 
     /**
      * Adds fields recursively from model's definition
-     * @param DibiOrm $model
+     * @param PerfORM $model
      */
     protected function addFields($model)
     {
@@ -82,7 +82,7 @@ final class QuerySet
 
     /**
      * Adds joins recursively from model's definition if relation to other models exists
-     * @param DibiOrm $model
+     * @param PerfORM $model
      */
     protected function addJoins($model)
     {
@@ -119,16 +119,16 @@ final class QuerySet
      */
     public function clear()
     {
-	DibiOrmController::getConnection()->query("DELETE FROM %n", $this->model->getTableName());
-	DibiOrmController::addSql(dibi::$sql);
+	PerfORMController::getConnection()->query("DELETE FROM %n", $this->model->getTableName());
+	PerfORMController::addSql(dibi::$sql);
     }
 
 
     /**
      * Fill model with values from result
-     * @param DibiOrm $model
+     * @param PerfORM $model
      * @param array $values
-     * @result DibiOrm
+     * @result PerfORM
      */
     protected function fill($model, $values)
     {
@@ -217,7 +217,7 @@ final class QuerySet
 	    $query[]= sprintf("FROM %s", $this->model->getTableName() );
 	    $this->addJoins($this->model);
 	    $query[]= implode("\n",$this->joins);
-	    $this->dataSource= new DibiDataSource(implode("\n", $query), DibiOrmController::getConnection());
+	    $this->dataSource= new DibiDataSource(implode("\n", $query), PerfORMController::getConnection());
 	}
 	return $this->dataSource;
     }

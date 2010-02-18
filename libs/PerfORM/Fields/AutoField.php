@@ -1,13 +1,13 @@
 <?php
 
 /**
- * DibiOrm - Object-relational mapping based on David Grudl's dibi
+ * PerfORM - Object-relational mapping based on David Grudl's dibi
  *
  * @copyright  Copyright (c) 2010 Eduard 'edke' Kracmar
  * @license    no license set at this point
- * @link       http://dibiorm.local :-)
- * @category   DibiOrm
- * @package    DibiOrm
+ * @link       http://perform.local :-)
+ * @category   PerfORM
+ * @package    PerfORM
  */
 
 
@@ -16,7 +16,7 @@
  *
  * @final
  * @copyright Copyright (c) 2010 Eduard 'edke' Kracmar
- * @package DibiOrm
+ * @package PerfORM
  */
 
 final class AutoField extends IntegerField {
@@ -28,7 +28,7 @@ final class AutoField extends IntegerField {
      */
     public function getIdent()
     {
-	return DibiOrm::AutoField;
+	return PerfORM::AutoField;
     }
 }
 

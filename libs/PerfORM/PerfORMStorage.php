@@ -1,27 +1,27 @@
 <?php
 
 /**
- * DibiOrm - Object-relational mapping based on David Grudl's dibi
+ * PerfORM - Object-relational mapping based on David Grudl's dibi
  *
  * @copyright  Copyright (c) 2010 Eduard 'edke' Kracmar
  * @license    no license set at this point
- * @link       http://dibiorm.local :-)
- * @category   DibiOrm
- * @package    DibiOrm
+ * @link       http://perform.local :-)
+ * @category   PerfORM
+ * @package    PerfORM
  */
 
 
 /**
- * DibiOrmStorage
+ * PerfORMStorage
  *
  * write desc when class ready
  *
  * @final
  * @copyright Copyright (c) 2010 Eduard 'edke' Kracmar
- * @package DibiOrm
+ * @package PerfORM
  */
 
-final class DibiOrmStorage extends DibiConnection
+final class PerfORMStorage extends DibiConnection
 {
 
     const TABLE_ADD = 1;
@@ -39,7 +39,7 @@ final class DibiOrmStorage extends DibiConnection
      */
     public function  __construct()
     {
-	parent::__construct(Environment::getConfig('dibiorm')->storage, 'storage');
+	parent::__construct(Environment::getConfig('perform')->storage, 'storage');
 
 	if ( !$this->getDatabaseInfo()->hasTable('fields'))
 	{
@@ -70,7 +70,7 @@ final class DibiOrmStorage extends DibiConnection
 	    get_class($field));
 
 	$this->queue(
-	    DibiOrmStorage::FIELD_ADD,
+	    PerfORMStorage::FIELD_ADD,
 	    $field->getName().'|'.$field->getModel()->getTableName(),
 	    $sql,
 	    array(
@@ -103,7 +103,7 @@ final class DibiOrmStorage extends DibiConnection
      */
     public function changeFieldDefaultValue($field)
     {
-	DibiOrmController::getBuilder()->changeFieldsDefault($field);
+	PerfORMController::getBuilder()->changeFieldsDefault($field);
 	$this->updateFieldSync($field);
     }
 
@@ -114,7 +114,7 @@ final class DibiOrmStorage extends DibiConnection
      */
     public function changeFieldToNotNullable($field)
     {
-	$result= DibiOrmController::getConnection()->query('select * from %n where %n is null',
+	$result= PerfORMController::getConnection()->query('select * from %n where %n is null',
 	    $field->getModel()->getTableName(),
 	    $field->getName()
 	);
@@ -135,7 +135,7 @@ final class DibiOrmStorage extends DibiConnection
 		throw new Exception("Unable to set default value for field '".$field->getName()."'");
 	    }
 
-	    DibiOrmController::getConnection()->query('update %n set %n = %'.$field->getType().' where %n = %i',
+	    PerfORMController::getConnection()->query('update %n set %n = %'.$field->getType().' where %n = %i',
 	    $field->getModel()->getTableName(),
 	    $field->getName(),
 	    $value,
@@ -144,7 +144,7 @@ final class DibiOrmStorage extends DibiConnection
 	    );
 	}
 
-	DibiOrmController::getBuilder()->changeFieldsNullable($field);
+	PerfORMController::getBuilder()->changeFieldsNullable($field);
 	$this->updateFieldSync($field);
     }
 
@@ -155,7 +155,7 @@ final class DibiOrmStorage extends DibiConnection
      */
     public function changeFieldToNullable($field)
     {
-	DibiOrmController::getBuilder()->changeFieldsNullable($field);
+	PerfORMController::getBuilder()->changeFieldsNullable($field);
 	$this->updateFieldSync($field);
     }
 
@@ -170,7 +170,7 @@ final class DibiOrmStorage extends DibiConnection
 	    throw new Exception("Unable to recast value as recast callback was not set for field '".$field->getName()."'");
 	}
 
-	$builder= DibiOrmController::getBuilder('fieldretype');
+	$builder= PerfORMController::getBuilder('fieldretype');
 	
 	$tmpfield= $field->getName().'_'.md5(time());
 	$template= $builder->getTemplate('field-add');
@@ -178,10 +178,10 @@ final class DibiOrmStorage extends DibiConnection
 	$fieldInfo->name= $tmpfield;
 	$fieldInfo->nullable= true;
 	$template->field= $fieldInfo;
-	DibiOrmController::getBuilder()->addToBuffer($builder->renderTemplate($template));
-	//DibiOrmController::getConnection()->nativeQuery($sql);
+	PerfORMController::getBuilder()->addToBuffer($builder->renderTemplate($template));
+	//PerfORMController::getConnection()->nativeQuery($sql);
 
-	$result= DibiOrmController::getConnection()->query('select * from %n',
+	$result= PerfORMController::getConnection()->query('select * from %n',
 	    $field->getModel()->getTableName()
 	);
 
@@ -202,14 +202,14 @@ final class DibiOrmStorage extends DibiConnection
 		throw new Exception("Unable to recast value for field '".$field->getName()."' (id=".$row->{$pk}.")");
 	    }
 
-	    $sql= DibiOrmController::getConnection()->sql('update %n set %n = %'.$field->getType().' where %n = %i;',
+	    $sql= PerfORMController::getConnection()->sql('update %n set %n = %'.$field->getType().' where %n = %i;',
 		$field->getModel()->getTableName(),
 		$tmpfield,
 		$value,
 		$pk,
 		$row->{$pk}
 	    );
-	    DibiOrmController::getBuilder()->addToBuffer($sql);
+	    PerfORMController::getBuilder()->addToBuffer($sql);
 	}
 
 	if (!$field->isNullable())
@@ -218,12 +218,12 @@ final class DibiOrmStorage extends DibiConnection
 	    $template= $builder->getTemplate('field-change-nullable');
 	    $template->field= $fieldInfo;
 	    $sql= $builder->renderTemplate($template);
-	    DibiOrmController::getBuilder()->addToBuffer($sql);
-	    //DibiOrmController::getConnection()->nativeQuery($sql);
+	    PerfORMController::getBuilder()->addToBuffer($sql);
+	    //PerfORMController::getConnection()->nativeQuery($sql);
 	}
 
-	DibiOrmController::getBuilder()->dropField($field->getName(), $field->getModel());
-	DibiOrmController::getBuilder()->renameField($field, $tmpfield);
+	PerfORMController::getBuilder()->dropField($field->getName(), $field->getModel());
+	PerfORMController::getBuilder()->renameField($field, $tmpfield);
 	$this->updateFieldSync($field);
     }
 
@@ -231,7 +231,7 @@ final class DibiOrmStorage extends DibiConnection
     /**
      * Drops column from table
      * @param string $fieldName
-     * @param DibiOrm $model
+     * @param PerfORM $model
      * @return string
      */
     public function dropFieldFromModel($fieldName, $model)
@@ -244,7 +244,7 @@ final class DibiOrmStorage extends DibiConnection
 	$model->getTableName());
 
 	$this->queue(
-	    DibiOrmStorage::FIELD_DROP,
+	    PerfORMStorage::FIELD_DROP,
 	    $fieldName.'|'.$model->getTableName(),
 	    $sql,
 	    array(
@@ -272,7 +272,7 @@ final class DibiOrmStorage extends DibiConnection
 
     /**
      * Drops table from database
-     * @param DibiOrm|string $model
+     * @param PerfORM|string $model
      * @return void
      */
     public function dropModel($model)
@@ -285,7 +285,7 @@ final class DibiOrmStorage extends DibiConnection
 	$sql[] = $this->sql('delete from [fields] where [table] = %s;', $modelName );
 
 	$this->queue(
-	    DibiOrmStorage::TABLE_DROP,
+	    PerfORMStorage::TABLE_DROP,
 	    $modelName,
 	    $sql,
 	    array(
@@ -327,7 +327,7 @@ final class DibiOrmStorage extends DibiConnection
 
     /**
      * Get all fields of model from storage
-     * @param DibiOrm $model
+     * @param PerfORM $model
      * @return DibiResult
      */
     public function getModelFields($model)
@@ -348,7 +348,7 @@ final class DibiOrmStorage extends DibiConnection
 
     /**
      * Checks if model exists
-     * @param DibiOrm $model
+     * @param PerfORM $model
      * @return boolean
      */
     public function hasModel($model)
@@ -359,7 +359,7 @@ final class DibiOrmStorage extends DibiConnection
 
     /**
      * Inserts model's name and hash into storage
-     * @param DibiOrm $model
+     * @param PerfORM $model
      */
     public function insertModel($model)
     {
@@ -375,7 +375,7 @@ final class DibiOrmStorage extends DibiConnection
 	    get_class($field));
 	}
 	$this->queue(
-	    DibiOrmStorage::TABLE_ADD,
+	    PerfORMStorage::TABLE_ADD,
 	    $modelName,
 	    $sql,
 	    array(
@@ -415,7 +415,7 @@ final class DibiOrmStorage extends DibiConnection
 
     /**
      * Checks if model in sync
-     * @param DibiOrm $model
+     * @param PerfORM $model
      * @return boolean
      */
     public function modelHasSync($model)
@@ -442,9 +442,9 @@ final class DibiOrmStorage extends DibiConnection
 	{
 	    if ( $array->counter == 2 and isset($array->from) and isset($array->to) and isset($array->modelName))
 	    {
-		$field= $this->queue[DibiOrmStorage::FIELD_ADD][$array->to.'|'.$array->modelName]->values['field'];
-		unset($this->queue[DibiOrmStorage::FIELD_ADD][$array->to.'|'.$array->modelName]);
-		unset($this->queue[DibiOrmStorage::FIELD_DROP][$array->from.'|'.$array->modelName]);
+		$field= $this->queue[PerfORMStorage::FIELD_ADD][$array->to.'|'.$array->modelName]->values['field'];
+		unset($this->queue[PerfORMStorage::FIELD_ADD][$array->to.'|'.$array->modelName]);
+		unset($this->queue[PerfORMStorage::FIELD_DROP][$array->from.'|'.$array->modelName]);
 
 		$this->query('update [fields] set [name] = %s where [name] = %s and [table] = %s',
 		$array->to,
@@ -455,7 +455,7 @@ final class DibiOrmStorage extends DibiConnection
 		$field->getModel()->getHash(),
 		$array->modelName);
 
-		DibiOrmController::getBuilder()->renameField($field, $array->from);
+		PerfORMController::getBuilder()->renameField($field, $array->from);
 	    }
 	}
 
@@ -464,9 +464,9 @@ final class DibiOrmStorage extends DibiConnection
 	{
 	    if ( $array->counter == 2 and isset($array->from) and isset($array->to))
 	    {
-		$model= $this->queue[DibiOrmStorage::TABLE_ADD][$array->to]->values['model'];
-		unset($this->queue[DibiOrmStorage::TABLE_ADD][$array->to]);
-		unset($this->queue[DibiOrmStorage::TABLE_DROP][$array->from]);
+		$model= $this->queue[PerfORMStorage::TABLE_ADD][$array->to]->values['model'];
+		unset($this->queue[PerfORMStorage::TABLE_ADD][$array->to]);
+		unset($this->queue[PerfORMStorage::TABLE_DROP][$array->from]);
 
 		$this->query('update [tables] set [name] = %s where [name] = %s',
 		$array->to,
@@ -476,7 +476,7 @@ final class DibiOrmStorage extends DibiConnection
 		$array->to,
 		$array->from);
 
-		DibiOrmController::getBuilder()->renameTable($model, $array->from);
+		PerfORMController::getBuilder()->renameTable($model, $array->from);
 	    }
 	}
 
@@ -488,19 +488,19 @@ final class DibiOrmStorage extends DibiConnection
 
 		switch($operation)
 		{
-		    case DibiOrmStorage::FIELD_ADD:
+		    case PerfORMStorage::FIELD_ADD:
 			$field= $action->values['field'];
 
-			$builder= DibiOrmController::getBuilder('fieldadd');
+			$builder= PerfORMController::getBuilder('fieldadd');
 			$template= $builder->getTemplate('field-add');
 			$fieldInfo= $builder->getField($field);
 			$fieldInfo->nullable= true;
 			$template->field= $fieldInfo;
 
-			DibiOrmController::getBuilder()->addToBuffer( $builder->renderTemplate($template) );
-			//DibiOrmController::getConnection()->nativeQuery($sql);
+			PerfORMController::getBuilder()->addToBuffer( $builder->renderTemplate($template) );
+			//PerfORMController::getConnection()->nativeQuery($sql);
 
-			$result= DibiOrmController::getConnection()->query('select * from %n',
+			$result= PerfORMController::getConnection()->query('select * from %n',
 			    $field->getModel()->getTableName()
 			);
 
@@ -509,8 +509,8 @@ final class DibiOrmStorage extends DibiConnection
 			{
 			    if ( !is_null($default= $field->getDefault($row)))
 			    {
-				DibiOrmController::getBuilder()->addToBuffer(
-				    DibiOrmController::getConnection()->sql('update %n set %n = %'.$field->getType().' where %n = %i;',
+				PerfORMController::getBuilder()->addToBuffer(
+				    PerfORMController::getConnection()->sql('update %n set %n = %'.$field->getType().' where %n = %i;',
 					$field->getModel()->getTableName(),
 					$field->getName(),
 					$default,
@@ -529,26 +529,26 @@ final class DibiOrmStorage extends DibiConnection
 			    $fieldInfo->nullable= false;
 			    $template= $builder->getTemplate('field-change-nullable');
 			    $template->field= $fieldInfo;
-			    DibiOrmController::getBuilder()->addToBuffer( $builder->renderTemplate($template) );
-			    //DibiOrmController::getConnection()->nativeQuery($sql);
+			    PerfORMController::getBuilder()->addToBuffer( $builder->renderTemplate($template) );
+			    //PerfORMController::getConnection()->nativeQuery($sql);
 			}
 
-			//DibiOrmController::getBuilder()->addField();
+			//PerfORMController::getBuilder()->addField();
 			$this->updateModelSync($action->values['field']->getModel());
 			break;
 
-		    case DibiOrmStorage::FIELD_DROP:
-			DibiOrmController::getBuilder()->dropField($action->values['fieldName'], $action->values['model']);
+		    case PerfORMStorage::FIELD_DROP:
+			PerfORMController::getBuilder()->dropField($action->values['fieldName'], $action->values['model']);
 			$this->updateModelSync($action->values['model']);
 			break;
 
-		    case DibiOrmStorage::TABLE_ADD:
-			DibiOrmController::getBuilder()->createTable($action->values['model']);
+		    case PerfORMStorage::TABLE_ADD:
+			PerfORMController::getBuilder()->createTable($action->values['model']);
 			//$this->updateModelSync();
 			break;
 
-		    case DibiOrmStorage::TABLE_DROP:
-			DibiOrmController::getBuilder()->dropTable($action->values['model']);
+		    case PerfORMStorage::TABLE_DROP:
+			PerfORMController::getBuilder()->dropTable($action->values['model']);
 			break;
 		}
 
@@ -563,7 +563,7 @@ final class DibiOrmStorage extends DibiConnection
 	    }
 	}
 
-	return DibiOrmController::getBuilder()->getSql();
+	return PerfORMController::getBuilder()->getSql();
     }
 
 
@@ -600,7 +600,7 @@ final class DibiOrmStorage extends DibiConnection
 
     /**
      * Update model in storage, sets hashes for it's model
-     * @param DibiOrm $model
+     * @param PerfORM $model
      */
     public function updateModelSync($model)
     {

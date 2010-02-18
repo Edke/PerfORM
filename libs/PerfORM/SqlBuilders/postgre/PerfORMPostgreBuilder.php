@@ -1,27 +1,27 @@
 <?php
 
 /**
- * DibiOrm - Object-relational mapping based on David Grudl's dibi
+ * PerfORM - Object-relational mapping based on David Grudl's dibi
  *
  * @copyright  Copyright (c) 2010 Eduard 'edke' Kracmar
  * @license    no license set at this point
- * @link       http://dibiorm.local :-)
- * @category   DibiOrm
- * @package    DibiOrm
+ * @link       http://perform.local :-)
+ * @category   PerfORM
+ * @package    PerfORM
  */
 
 
 /**
- * DibiOrmPostgreBuilder
+ * PerfORMPostgreBuilder
  *
- * Subclass of DibiOrmSqlBulder, builds PostgreSQL code
+ * Subclass of PerfORMSqlBulder, builds PostgreSQL code
  *
  * @final
  * @copyright Copyright (c) 2010 Eduard 'edke' Kracmar
- * @package DibiOrm
+ * @package PerfORM
  */
 
-final class DibiOrmPostgreBuilder extends DibiOrmSqlBuilder
+final class PerfORMPostgreBuilder extends PerfORMSqlBuilder
 {
 
     CONST DRIVER = 'postgre';
@@ -145,7 +145,7 @@ final class DibiOrmPostgreBuilder extends DibiOrmSqlBuilder
     }
 
     /**
-     * @param DibiOrm $model
+     * @param PerfORM $model
      * @return stdClass
      */
     public function getCreateTable($model)
@@ -176,7 +176,7 @@ final class DibiOrmPostgreBuilder extends DibiOrmSqlBuilder
     
 
     /**
-     * @param DibiOrm $model
+     * @param PerfORM $model
      * @param string $from
      * @return stdClass
      */

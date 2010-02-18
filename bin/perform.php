@@ -23,7 +23,7 @@ dibi::connect(Environment::getConfig('database'));
 
 $application = Environment::getApplication();
 $application->allowedMethods = NULL;
-$application->router[] = new DibiOrmCliRouter(array(
+$application->router[] = new PerfORMCliRouter(array(
 	'module' => 'Console',
 	'presenter' => 'Default',
 	'action' => 'default'

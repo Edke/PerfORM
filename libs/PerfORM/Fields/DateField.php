@@ -1,38 +1,38 @@
 <?php
 
 /**
- * DibiOrm - Object-relational mapping based on David Grudl's dibi
+ * PerfORM - Object-relational mapping based on David Grudl's dibi
  *
  * @copyright  Copyright (c) 2010 Eduard 'edke' Kracmar
  * @license    no license set at this point
- * @link       http://dibiorm.local :-)
- * @category   DibiOrm
- * @package    DibiOrm
+ * @link       http://perform.local :-)
+ * @category   PerfORM
+ * @package    PerfORM
  */
 
 
 /**
- * TimeField
+ * DateField
  *
  * @copyright Copyright (c) 2010 Eduard 'edke' Kracmar
- * @package DibiOrm
+ * @package PerfORM
  */
 
-class TimeField extends DateTimeField {
+class DateField extends DateTimeField {
 
 
     /**
      * strftime's format used to format value when getting
      * @var string
      */
-    protected $outputFormat= 'H:i:s';
+    protected $outputFormat= 'd.m.Y';
 
 
     /**
      * Datatype
      * @var string
      */
-    protected $type = Dibi::FIELD_TIME;
+    protected $type = Dibi::FIELD_DATE;
 
 
     /**
@@ -58,6 +58,6 @@ class TimeField extends DateTimeField {
      */
     public function getIdent()
     {
-	return DibiOrm::TimeField;
+	return PerfORM::DateField;
     }
 }

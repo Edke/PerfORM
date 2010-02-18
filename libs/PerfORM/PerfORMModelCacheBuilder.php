@@ -1,29 +1,29 @@
 <?php
 
 /**
- * DibiOrm - Object-relational mapping based on David Grudl's dibi
+ * PerfORM - Object-relational mapping based on David Grudl's dibi
  *
  * @copyright  Copyright (c) 2004, 2010 David Grudl
  * @copyright  Copyright (c) 2010 Eduard 'edke' Kracmar
  * @license    http://nettephp.com/license  Nette license
  * @link       http://nettephp.com
- * @category   DibiOrm
- * @package    DibiOrm
+ * @category   PerfORM
+ * @package    PerfORM
  */
 
 
 /**
- * DibiOrmModelCacheBuilder
+ * PerfORMModelCacheBuilder
  *
  * Builder heavilly extended from great David Grudl's RobotLoadet of Nette
  * Searches for Models in APP directory and builds model's cache
  *
  * @copyright Copyright (c) 2004, 2010 David Grudl
  * @copyright Copyright (c) 2010 Eduard 'edke' Kracmar
- * @package DibiOrm
+ * @package PerfORM
  */
 
-class DibiOrmModelCacheBuilder
+class PerfORMModelCacheBuilder
 {
     /** @var array */
     public $scanDirs;
@@ -62,7 +62,7 @@ class DibiOrmModelCacheBuilder
     public function  __construct()
     {
 	/* check if modelCacheDir valid */
-	$this->modelCacheDir= realpath(Environment::getConfig('dibiorm')->modelCache);
+	$this->modelCacheDir= realpath(Environment::getConfig('perform')->modelCache);
 	if ( !file_exists($this->modelCacheDir))
 	{
 	    throw new Exception("Model cache directory '$this->modelCacheDir' does not exists");
@@ -233,8 +233,6 @@ class DibiOrmModelCacheBuilder
      */
     protected function scanScript($file)
     {
-	//$this->addClass($namespace . $name, $file);
-	//$file= '/home/kraken/NetBeansProjects/dibiorm-sandbox/app/models/Author.php';
 	$buffer= file_get_contents($file);
 
 	// clean comments
@@ -242,7 +240,7 @@ class DibiOrmModelCacheBuilder
 	$buffer= preg_replace('#/\*.*\*/#msU', '', $buffer);
 
 
-	if ( preg_match_all('#abstract\s*class\s*(Base([^ ]+))\s*extends\s*(?:DibiOrm)\s*{.*protected\s*function\s*setup\s*\(\s*\)\s*{(.*)}#imsU', $buffer, $class))
+	if ( preg_match_all('#abstract\s*class\s*(Base([^ ]+))\s*extends\s*(?:PerfORM)\s*{.*protected\s*function\s*setup\s*\(\s*\)\s*{(.*)}#imsU', $buffer, $class))
 	{
 	    foreach($class[0] as $key => $value)
 	    {

@@ -14,7 +14,7 @@
 /**
  * Modified CliRouter, uses module, presenter and action from default values
  */
-class DibiOrmCliRouter extends CliRouter
+class PerfORMCliRouter extends CliRouter
 {
 	const PRESENTER_KEY = 'presenter';
 

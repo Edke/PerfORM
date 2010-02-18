@@ -1,13 +1,13 @@
 <?php
 
 /**
- * DibiOrm - Object-relational mapping based on David Grudl's dibi
+ * PerfORM - Object-relational mapping based on David Grudl's dibi
  *
  * @copyright  Copyright (c) 2010 Eduard 'edke' Kracmar
  * @license    no license set at this point
- * @link       http://dibiorm.local :-)
- * @category   DibiOrm
- * @package    DibiOrm
+ * @link       http://perform.local :-)
+ * @category   PerfORM
+ * @package    PerfORM
  */
 
 
@@ -15,7 +15,7 @@
  * CharField
  *
  * @copyright Copyright (c) 2010 Eduard 'edke' Kracmar
- * @package DibiOrm
+ * @package PerfORM
  */
 
 class CharField extends TextField {
@@ -63,7 +63,7 @@ class CharField extends TextField {
      */
     public function getIdent()
     {
-	return DibiOrm::CharField;
+	return PerfORM::CharField;
     }
 
 

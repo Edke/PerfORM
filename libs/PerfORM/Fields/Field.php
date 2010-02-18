@@ -1,13 +1,13 @@
 <?php
 
 /**
- * DibiOrm - Object-relational mapping based on David Grudl's dibi
+ * PerfORM - Object-relational mapping based on David Grudl's dibi
  *
  * @copyright  Copyright (c) 2010 Eduard 'edke' Kracmar
  * @license    no license set at this point
- * @link       http://dibiorm.local :-)
- * @category   DibiOrm
- * @package    DibiOrm
+ * @link       http://perform.local :-)
+ * @category   PerfORM
+ * @package    PerfORM
  */
 
 
@@ -16,7 +16,7 @@
  *
  * @abstract
  * @copyright Copyright (c) 2010 Eduard 'edke' Kracmar
- * @package DibiOrm
+ * @package PerfORM
  */
 
 abstract class Field
@@ -67,7 +67,7 @@ abstract class Field
 
     /**
      * Back reference to field's model
-     * @var DibiOrm
+     * @var PerfORM
      */
     protected $model;
 
@@ -129,7 +129,7 @@ abstract class Field
      */
     public function __construct($_options)
     {
-	if (!is_object($_options[0]) and !is_subclass_of($_options[0], 'DibiOrm'))
+	if (!is_object($_options[0]) and !is_subclass_of($_options[0], 'PerfORM'))
 	{
 	    throw new Exception('First parameter of Field has to be parent Model');
 	}
@@ -293,7 +293,7 @@ abstract class Field
 
     /**
      * Getter for field's model
-     * @return DibiOrm
+     * @return PerfORM
      */
     public function getModel()
     {
@@ -484,7 +484,7 @@ abstract class Field
 
     /**
      * Sets parent model
-     * @param DibiOrm $model
+     * @param PerfORM $model
      */
     protected function setModel($model)
     {

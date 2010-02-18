@@ -1,27 +1,27 @@
 <?php
 
 /**
- * DibiOrm - Object-relational mapping based on David Grudl's dibi
+ * PerfORM - Object-relational mapping based on David Grudl's dibi
  *
  * @copyright  Copyright (c) 2010 Eduard 'edke' Kracmar
  * @license    no license set at this point
- * @link       http://dibiorm.local :-)
- * @category   DibiOrm
- * @package    DibiOrm
+ * @link       http://perform.local :-)
+ * @category   PerfORM
+ * @package    PerfORM
  */
 
 
 /**
- * DibiOrmSqlBuilder
+ * PerfORMSqlBuilder
  *
  * builds sql dumps to sync models with database structure
  *
  * @abstract
  * @copyright Copyright (c) 2010 Eduard 'edke' Kracmar
- * @package DibiOrm
+ * @package PerfORM
  */
 
-abstract class DibiOrmSqlBuilder {
+abstract class PerfORMSqlBuilder {
 
     protected $createTables= array();
 
@@ -49,7 +49,7 @@ abstract class DibiOrmSqlBuilder {
 
     /**
      * @param Field $field
-     * @param DibiOrm $model
+     * @param PerfORM $model
      */
     public function addField($field)
     {
@@ -60,7 +60,7 @@ abstract class DibiOrmSqlBuilder {
 
     /**
      * @param Field $field
-     * @param DibiOrm $model
+     * @param PerfORM $model
      */
     public function renameField($field, $from)
     {
@@ -71,7 +71,7 @@ abstract class DibiOrmSqlBuilder {
 
     
     /**
-     * @param DibiOrm $model
+     * @param PerfORM $model
      * @param string $from
      */
     public function renameTable($model, $from)
@@ -84,7 +84,7 @@ abstract class DibiOrmSqlBuilder {
 
     /**
      * @param Field $field
-     * @param DibiOrm $model
+     * @param PerfORM $model
      */
     public function dropField($fieldName, $model)
     {
@@ -95,7 +95,7 @@ abstract class DibiOrmSqlBuilder {
 
 
     /**
-     * @param DibiOrm $model
+     * @param PerfORM $model
      */
     public function createTable($model)
     {
@@ -104,7 +104,7 @@ abstract class DibiOrmSqlBuilder {
 
 
     /**
-     * @param DibiOrm|string $model
+     * @param PerfORM|string $model
      */
     public function dropTable($model)
     {
