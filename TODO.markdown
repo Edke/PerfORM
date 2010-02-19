@@ -3,6 +3,7 @@ TODO List:
 =========
 
 
+* indexes 
 * support for sqlite2
 * support for IPAddressField (http://docs.djangoproject.com/en/1.1/ref/models/fields/#ipaddressfield)
 * support for EmailField (http://docs.djangoproject.com/en/1.1/ref/models/fields/#emailfield)
