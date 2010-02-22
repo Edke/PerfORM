@@ -234,13 +234,17 @@ final class PerfORMPostgreBuilder extends PerfORMSqlBuilder
     }
 
 
-    public function getIndex($index)
+    public function getIndex($index, $renameFrom = null)
     {
+	$name= $index->getModel()->getTableName() .'_'. $index->getName();
+	$from= ($renameFrom) ? preg_replace("#^".$index->getModel()->getTableName()."#", $renameFrom, $name ) : null;
+
 	return (object) array(
 	'table' => $index->getModel()->getTableName(),
-	'name' => $index->getModel()->getTableName() .'_'. $index->getName(),
+	'name' => $name,
 	'fields' => $index->getFields(),
 	'unique' => $index->isUnique(),
+	'from' => $from
 	);
     }
 

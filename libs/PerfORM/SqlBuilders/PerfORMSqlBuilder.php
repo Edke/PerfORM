@@ -69,7 +69,19 @@ abstract class PerfORMSqlBuilder {
 	$this->renderToBuffer($template);
     }
 
-    
+
+    /**
+     * @param Field $field
+     * @param PerfORM $model
+     */
+    public function renameIndex($index, $from)
+    {
+	$template= $this->getTemplate('index-rename');
+	$template->index= $this->getIndex($index, $from);
+	$this->renderToBuffer($template);
+    }
+
+
     /**
      * @param PerfORM $model
      * @param string $from

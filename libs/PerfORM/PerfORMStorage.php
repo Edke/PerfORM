@@ -543,6 +543,18 @@ final class PerfORMStorage extends DibiConnection
 		$array->from);
 
 		PerfORMController::getBuilder()->renameTable($model, $array->from);
+
+		$this->query('delete from [indexes] where [table] = %s', $array->from);
+
+		foreach($model->getIndexes() as $index)
+		{
+		    $this->query('insert into [indexes] values( null, %s, %s, %s, %s)',
+			$index->getName(),
+			$index->getModel()->getTableName(),
+			$index->getHash(),
+			$index->isUnique());
+		    PerfORMController::getBuilder()->renameIndex($index, $array->from);
+		}
 	    }
 	}
 
@@ -610,6 +622,10 @@ final class PerfORMStorage extends DibiConnection
 
 		    case PerfORMStorage::TABLE_ADD:
 			PerfORMController::getBuilder()->createTable($action->values['model']);
+			foreach($action->values['model']->getIndexes() as $index)
+			{
+			    $this->addIndexToModel($index);
+			}
 			//$this->updateModelSync();
 			break;
 

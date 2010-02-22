@@ -396,10 +396,6 @@ final class PerfORMController
 	    else
 	    {
 		$storage->insertModel($model);
-		foreach($model->getIndexes() as $index)
-		{
-		    $storage->addIndexToModel($index);
-		}
 	    }
 	}
 
