@@ -587,6 +587,6 @@ abstract class Field
      */
     public function  __destruct()
     {
-	unset($this->parent);
+	unset($this->model);
     }
 }
