@@ -173,10 +173,10 @@ abstract class PerfORM
 
 	    if ( key_exists($key, $this->indexes))
 	    {
-		$this->indexes[$key]->addField($fieldName);
+		$this->indexes[$key]->addField($this->getField($fieldName)->getRealName());
 	    }
 	    else {
-		$this->indexes[$key]= new Index($this, $fieldName, $key, $unique);
+		$this->indexes[$key]= new Index($this, $this->getField($fieldName)->getRealName(), $key, $unique);
 	    }
 	}
     }
