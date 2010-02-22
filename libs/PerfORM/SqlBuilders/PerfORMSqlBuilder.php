@@ -95,11 +95,34 @@ abstract class PerfORMSqlBuilder {
 
 
     /**
+     * @param Field $field
+     * @param PerfORM $model
+     */
+    public function dropIndex($indexName, $model)
+    {
+	$template= $this->getTemplate('index-drop');
+	$template->index= $this->getDropIndex($indexName, $model);
+	$this->renderToBuffer($template);
+    }
+
+
+    /**
      * @param PerfORM $model
      */
     public function createTable($model)
     {
 	$this->createTables[]= $model;
+    }
+
+
+    /**
+     * @param Index $index
+     */
+    public function createIndex($index)
+    {
+	$template= $this->getTemplate('index-create');
+	$template->index= $this->getIndex($index);
+	$this->renderToBuffer($template);
     }
 
 
@@ -152,8 +175,14 @@ abstract class PerfORMSqlBuilder {
      * @param Template $template
      * @return string
      */
-    public function renderToBuffer($template) {
-	$this->sql .= $this->renderTemplate($template). "\n";
+    public function renderToBuffer($template, $atBeginning= false) {
+	if ( $atBeginning)
+	{
+	    $this->sql = $this->renderTemplate($template). "\n" . $this->sql;
+	}
+	else {
+	    $this->sql .= $this->renderTemplate($template). "\n";
+	}
     }
 
 
@@ -248,7 +277,7 @@ abstract class PerfORMSqlBuilder {
 	    {
 		$template->tables[]= $this->getCreateTable($model);
 	    }
-	    $this->renderToBuffer($template);
+	    $this->renderToBuffer($template, true);
 	}
 
 	# dependancy solving for drop tables
@@ -265,7 +294,7 @@ abstract class PerfORMSqlBuilder {
 	    {
 		$template->tables[]= $table;
 	    }
-	    $this->renderToBuffer($template);
+	    $this->renderToBuffer($template, true );
 	}
 	
 	return $this->sql;

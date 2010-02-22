@@ -153,7 +153,8 @@ class PerfORMModelCacheBuilder
 	    $template= str_replace('%lastModification%', time(), $template);
 	    $template= str_replace('%modelName%', $modelInfo->model, $template);
 	    $template= str_replace('%modelBase%', $modelInfo->extends, $template);
-	    $template= str_replace('%setup%', $modelInfo->setup, $template);
+	    $template= str_replace('%setup_fields%', $modelInfo->setup_fields, $template);
+	    $template= str_replace('%setup_indexes%', $modelInfo->setup_indexes, $template);
 	    $template= str_replace('%source%', $modelInfo->path, $template);
 
 	    $properties= null;
@@ -245,11 +246,8 @@ class PerfORMModelCacheBuilder
 	{
 	    foreach($class[0] as $key => $value)
 	    {
-		//Debug::consoleDump($class);
-		//Debug::consoleDump(array($class[1][$key],$class[2][$key],$class[3][$key]));
-
+		$setup_fields= array();
 		$_fields= array();
-		$setup= array();
 		if ( preg_match_all('#\$this\-\>([^= ]+)\s*=\s*(new\s*([a-z]+)\s*\()(.*)\)#i', $class[3][$key], $field))
 		{
 		    foreach($field[0] as $field_key => $field_value)
@@ -267,18 +265,29 @@ class PerfORMModelCacheBuilder
 			);
 
 			$options= trim($field[4][$field_key]);
-			$setup[] = str_replace(
+			$setup_fields[] = str_replace(
 			    $field[2][$field_key],
 			    $field[2][$field_key].'$this'. (empty($options) ? '' : ', '),
 			    $field[0][$field_key]);
 		    }
 		}
+
+		$setup_indexes= array();
+		if ( preg_match_all('#\$this\-\>addIndex\s*\([^;]+\)#i', $class[3][$key], $index))
+		{
+		    foreach($index[0] as $index_key => $index_value)
+		    {
+			$setup_indexes[] = $index_value;
+		    }
+		}
+
 		$this->addModelInfo( (object) array(
 		    'path' => $file,
 		    'extends' => $class[1][$key],
 		    'model' => $class[2][$key],
 		    'table' => strtolower($class[2][$key]),
-		    'setup' => "\t". implode(";\n\t", $setup). ";",
+		    'setup_fields' => "\t". implode(";\n\t", $setup_fields). ";",
+		    'setup_indexes' => "\t". implode(";\n\t", $setup_indexes). ";",
 		    'fields' => $_fields,
 		    ));
 	    }

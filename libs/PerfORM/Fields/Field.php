@@ -59,6 +59,13 @@ abstract class Field
 
 
     /**
+     * Array of indexes field is in
+     * @var array
+     */
+    protected $indexes= array();
+
+
+    /**
      * Is field mandatory ?
      * @var boolean
      */
@@ -169,6 +176,11 @@ abstract class Field
 		$this->setRecastCallback( $matches[1]);
 		$options->remove($option);
 	    }
+	    elseif ( preg_match('#^(unique|index)(=(.+))*$#i', $option, $matches) )
+	    {
+		$this->addIndex(isset($matches[3]) ?  $matches[3] : null, $matches[1] == 'unique' ? true: false);
+		$options->remove($option);
+	    }
 	    elseif ( preg_match('#^db_column=(.+)$#i', $option, $matches) )
 	    {
 		trigger_error("Option db_column has been disabled as there is no support for advanced operations as rename column when it's set", E_USER_NOTICE);
@@ -198,6 +210,28 @@ abstract class Field
 	else
 	{
 	    $this->errors[]= '%s '. sprintf('(%s): %s',get_class($this), $msg);
+	}
+    }
+
+
+    /**
+     * Adds index
+     * @param string $indexName
+     * @param boolean $unique
+     */
+    public function addIndex($indexName = null, $unique = false)
+    {
+	$suffix= ( $unique) ? 'key' : 'idx';
+	$key = $indexName.'_'.$suffix;
+	if ( key_exists($key, $this->indexes))
+	{
+	    $this->addError("Index '$key' already exists");
+	}
+	else{
+	    $this->indexes[$key]= (object) array(
+		'name' => $indexName,
+		'unique' => $unique,
+	    );
 	}
     }
 
@@ -268,6 +302,15 @@ abstract class Field
      */
     abstract public function getIdent();
 
+
+    /**
+     * Getter for field's indexes
+     */
+    public function getIndexes()
+    {
+	return $this->indexes;
+    }
+    
 
     /**
      * Getter for field's hash

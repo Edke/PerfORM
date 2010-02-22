@@ -233,11 +233,32 @@ final class PerfORMPostgreBuilder extends PerfORMSqlBuilder
 	);
     }
 
+
+    public function getIndex($index)
+    {
+	return (object) array(
+	'table' => $index->getModel()->getTableName(),
+	'name' => $index->getModel()->getTableName() .'_'. $index->getName(),
+	'fields' => $index->getFields(),
+	'unique' => $index->isUnique(),
+	);
+    }
+
+
     protected function getDropField($fieldName, $model)
     {
 	return (object) array(
 	'table' => $model->getTableName(),
 	'name' => $fieldName,
+	);
+    }
+
+
+    protected function getDropIndex($indexName, $model)
+    {
+	return (object) array(
+	'table' => $model->getTableName(),
+	'name' => $model->getTableName() .'_'. $indexName,
 	);
     }
 

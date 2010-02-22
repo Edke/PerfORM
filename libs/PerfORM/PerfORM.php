@@ -74,6 +74,13 @@ abstract class PerfORM
 
 
     /**
+     * Array of model's indexes
+     * @var array
+     */
+    protected $indexes= array();
+
+
+    /**
      * Switch for notifying if model (and which fields) was/were modified
      * @var boolean
      */
@@ -137,6 +144,38 @@ abstract class PerfORM
 
 
     /**
+     * Adds index to model
+     * @param mixed $fieldNames
+     * @param string $indexName
+     * @param boolean $unique
+     */
+    public function addIndex($fieldNames, $indexName, $unique)
+    {
+	$suffix= ($unique) ? '_key' : '_idx';
+	if ( !is_array($fieldNames))
+	{
+	    $fieldNames= array($fieldNames);
+	}
+	$key= is_null($indexName) ? implode('_',$fieldNames).$suffix : $indexName.$suffix;
+	foreach($fieldNames as $fieldName)
+	{
+	    if ( !$this->hasField($fieldName))
+	    {
+		$this->addError(sprintf("%%s::%s (Index) field '%s' does not exists in model",$key, $fieldName));
+	    }
+
+	    if ( key_exists($key, $this->indexes))
+	    {
+		$this->indexes[$key]->addField($fieldName);
+	    }
+	    else {
+		$this->indexes[$key]= new Index($this, $fieldName, $key, $unique);
+	    }
+	}
+    }
+
+
+    /**
      * Builds recursively aliases for $model
      * @param PerfORM $model
      */
@@ -186,6 +225,15 @@ abstract class PerfORM
 
 	$this->validate();
 
+	# indexes
+	foreach( $this->getFields() as $field)
+	{
+	    foreach($field->getIndexes() as $index)
+	    {
+		$this->addIndex($field->getName(), $index->name, $index->unique);
+	    }
+	}
+
 	# aliases for model
 	$tableName= $this->getTableName();
 	$aliases= array();
@@ -195,14 +243,17 @@ abstract class PerfORM
 
 
 	# model hashing
-	$field_hashes= array();
+	$model_hashes= array();
 	foreach( $this->getFields() as $field)
 	{
-	    $field_hashes[]= md5($field->getName().'|'.$field->getHash());
+	    $model_hashes[]= md5($field->getName().'|'.$field->getHash());
 	}
-	sort($field_hashes);
-	$this->hash= md5(implode('|', $field_hashes));
-	
+	foreach( $this->getIndexes() as $index)
+	{
+	    $model_hashes[]= md5($index->getName().'|'.$index->getHash());
+	}
+	sort($model_hashes);
+	$this->hash= md5(implode('|', $model_hashes));
 
 	if (PerfORMController::useModelCaching())
 	{
@@ -320,6 +371,16 @@ abstract class PerfORM
     public function getHash()
     {
 	return $this->hash;
+    }
+
+
+    /**
+     * Getter for model's indexes
+     * @return array
+     */
+    public function getIndexes()
+    {
+	return $this->indexes;
     }
 
 

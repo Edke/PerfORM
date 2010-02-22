@@ -249,6 +249,10 @@ final class PerfORMController
 	foreach( self::getModels() as $model)
 	{
 	    self::getBuilder()->createTable($model);
+	    foreach($model->getIndexes() as $index)
+	    {
+		self::getBuilder()->createIndex($index);
+	    }
 	}
 	return self::getBuilder()->getSql();
     }
@@ -367,12 +371,35 @@ final class PerfORMController
 			    $storage->dropFieldFromModel($storageField->name, $model);
 			}
 		    }
+
+		    # checking storage indexes against model
+		    foreach( $storage->getModelIndexes($model) as $storageIndex)
+		    {
+			if ( !key_exists($storageIndex->name, $model->getIndexes() ))
+			{
+			    $storage->dropIndexFromModel($storageIndex->name, $model);
+			}
+		    }
+
+		    # checking indexes in model against storage
+		    foreach($model->getIndexes() as $index)
+		    {
+			# index does not exists
+			if ( !$storage->modelHasIndex($index))
+			{
+			    $storage->addIndexToModel($index);
+			}
+		    }
 		}
 	    }
 	    # model does not exists, create
 	    else
 	    {
 		$storage->insertModel($model);
+		foreach($model->getIndexes() as $index)
+		{
+		    $storage->addIndexToModel($index);
+		}
 	    }
 	}
 

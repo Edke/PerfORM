@@ -54,6 +54,14 @@ final class PerfORMStorage extends DibiConnection
 	    $this->query('CREATE TABLE [tables] ( [id] INTEGER NOT NULL PRIMARY KEY,
 		[name] VARCHAR(100) NOT NULL UNIQUE, [hash] VARCHAR(32) NOT NULL);');
 	}
+
+	if ( !$this->getDatabaseInfo()->hasTable('indexes'))
+	{
+	    $this->query('CREATE TABLE [indexes] ([id] INTEGER NOT NULL PRIMARY KEY,
+		[name] VARCHAR(100) NOT NULL, [table] VARCHAR(50) NOT NULL,
+		[hash] VARCHAR(32) NOT NULL, [unique] BOOLEAN);
+		CREATE UNIQUE INDEX [indexes_idx] on [indexes] ( [name], [table]);');
+	}
     }
 
 
@@ -95,6 +103,21 @@ final class PerfORMStorage extends DibiConnection
 	}
     }
 
+
+    /**
+     * Adds index to table
+     * @param Index $index
+     */
+    public function addIndexToModel($index)
+    {
+	$this->query('insert into [indexes] values( null, %s, %s, %s, %s)',
+	    $index->getName(),
+	    $index->getModel()->getTableName(),
+	    $index->getHash(),
+	    $index->isUnique());
+
+	PerfORMController::getBuilder()->createIndex($index);
+    }
 
 
     /**
@@ -271,6 +294,22 @@ final class PerfORMStorage extends DibiConnection
 
 
     /**
+     * Drops index from table
+     * @param string $indexName
+     * @param PerfORM $model
+     */
+    public function dropIndexFromModel($indexName, $model)
+    {
+	$this->query('delete from [indexes] where [name] = %s and [table] = %s',
+	    $indexName,
+	    $model->getTableName());
+
+	PerfORMController::getBuilder()->dropIndex($indexName, $model);
+	$this->updateModelSync($model);
+    }
+
+
+    /**
      * Drops table from database
      * @param PerfORM|string $model
      * @return void
@@ -283,6 +322,7 @@ final class PerfORMStorage extends DibiConnection
 	$sql= array();
 	$sql[] = $this->sql('delete from [tables] where [name] = %s;', $modelName );
 	$sql[] = $this->sql('delete from [fields] where [table] = %s;', $modelName );
+	$sql[] = $this->sql('delete from [indexes] where [table] = %s;', $modelName );
 
 	$this->queue(
 	    PerfORMStorage::TABLE_DROP,
@@ -333,6 +373,17 @@ final class PerfORMStorage extends DibiConnection
     public function getModelFields($model)
     {
 	return $this->query('select [name] from [fields] where [table] = %s', $model->getTableName() );
+    }
+
+
+    /**
+     * Get all indexes of model from storage
+     * @param PerfORM $model
+     * @return DibiResult
+     */
+    public function getModelIndexes($model)
+    {
+	return $this->query('select [name] from [indexes] where [table] = %s', $model->getTableName() );
     }
 
 
@@ -423,6 +474,21 @@ final class PerfORMStorage extends DibiConnection
 	return $this->fetch('select [id] from [tables] where [name] = %s and [hash] = %s',
 	    $model->getTableName(),
 	    $model->getHash()
+	) === false ? false : true;
+    }
+
+
+    /**
+     * Checks if model in sync
+     * @param PerfORM $model
+     * @return boolean
+     */
+    public function modelHasIndex($index)
+    {
+	return $this->fetch('select [id] from [indexes] where [name] = %s and [table] = %s and [hash] = %s',
+	    $index->getName(),
+	    $index->getModel()->getTableName(),
+	    $index->getHash()
 	) === false ? false : true;
     }
 
