@@ -479,7 +479,7 @@ abstract class PerfORM
 
 	foreach($this->getFields() as $field)
 	{
-	    if ( $field->getRealName() == $name )
+	    if ( $field->getRealName() == $name or $field->getName() == $name )
 	    {
 		return true;
 	    }
