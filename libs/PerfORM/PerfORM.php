@@ -95,6 +95,13 @@ abstract class PerfORM
 
 
     /**
+     * Suffix for table
+     * @var string
+     */
+    protected $suffix= null;
+
+
+    /**
      * Sql name of model and table
      * @var string
      */
@@ -209,10 +216,6 @@ abstract class PerfORM
      */
     protected function buildDefinition()
     {
-	if ( is_null($this->getTableName()))
-	{
-	    $this->tableName= strtolower(get_class($this));
-	}
 
 	$this->setup();
 
@@ -459,7 +462,11 @@ abstract class PerfORM
      */
     public function getTableName()
     {
-	return $this->tableName;
+	if ( is_null($this->tableName))
+	{
+	    $this->tableName= strtolower(get_class($this));
+	}
+	return is_null($this->suffix) ? $this->tableName : $this->suffix . $this->tableName ;
     }
 
 
