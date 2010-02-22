@@ -60,6 +60,13 @@ abstract class PerfORM
 
 
     /**
+     * Storage for validation of model errors
+     * @var array
+     */
+    protected $errors= array();
+
+
+    /**
      * Storage for model fields
      * @var array
      */
@@ -116,6 +123,16 @@ abstract class PerfORM
 	{
 	    $this->import($importValues);
 	}
+    }
+
+
+    /**
+     * Adds error message while validating model
+     * @param string $msg
+     */
+    public function addError($msg)
+    {
+	$this->errors[]= str_replace('%s', get_class($this), $msg);
     }
 
 
@@ -630,14 +647,13 @@ abstract class PerfORM
      */
     protected function validate()
     {
-	$errors= array();
 	foreach($this->getFields() as $field)
 	{
-	    $errors= array_merge($errors, $field->validate());
+	    $this->errors= array_merge($this->errors, $field->validate());
 	}
-	if (count($errors)>0)
+	if (count($this->errors)>0)
 	{
-	    throw new Exception(implode("; ", $errors));
+	    throw new Exception(implode("; ", $this->errors));
 	}
     }
 
