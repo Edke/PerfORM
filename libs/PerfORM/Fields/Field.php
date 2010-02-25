@@ -108,6 +108,13 @@ abstract class Field
 
 
     /**
+     * Callback called when object has null value (not default, this is used also while updating, mimics trigger behaviour)
+     * @var array
+     */
+    protected $nullCallback;
+
+
+    /**
      * Limit of field
      * @var integer
      */
@@ -176,6 +183,11 @@ abstract class Field
 		$this->setRecastCallback( $matches[1]);
 		$options->remove($option);
 	    }
+	    elseif ( preg_match('#^null_callback=(.+)$#i', $option, $matches) )
+	    {
+		$this->setNullCallback( $matches[1]);
+		$options->remove($option);
+	    }
 	    elseif ( preg_match('#^(unique|index)(=(.+))*$#i', $option, $matches) )
 	    {
 		$this->addIndex(isset($matches[3]) ?  $matches[3] : null, $matches[1] == 'unique' ? true: false);
@@ -238,11 +250,29 @@ abstract class Field
 
     /**
      * Getter for field's value
+     * @param boolean $insert true is insert, false is update
      * @return mixed
      */
-    public function getDbValue()
+    public function getDbValue($insert)
     {
-	return $this->getValue();
+	if ( $insert !== true and $insert !== false )
+	{
+	    throw new Exception("Mode is not set");
+	}
+
+	if ( !is_null($value = $this->getValue() ) ) {
+	    return $value;
+	}
+	elseif( !is_null($default = $this->getDefault()) && $insert )
+	{
+	    return $default;
+	}
+	elseif( !is_null($callback = $this->getNullCallback())  )
+	{
+	    return call_user_func($callback);
+	}
+	
+	return null;
     }
 
 
@@ -294,6 +324,16 @@ abstract class Field
     public  function getRecastCallback()
     {
 	return $this->recastCallback;
+    }
+
+
+    /**
+     * Getter for field's Null callback
+     * @return callback
+     */
+    public  function getNullCallback()
+    {
+	return $this->nullCallback;
     }
 
 
@@ -557,6 +597,21 @@ abstract class Field
 	    return false;
 	}
 	$this->recastCallback= array($this->getModel(), $callback);
+    }
+
+
+    /**
+     * Sets field's onSave callback to get value that depends on other fields
+     * @param array $callback
+     */
+    final public function setNullCallback($callback)
+    {
+	if( !is_callable(array($this->getModel(), $callback)) )
+	{
+	    $this->addError("callback '$callback' not callable on field's model");
+	    return false;
+	}
+	$this->nullCallback= array($this->getModel(), $callback);
     }
 
 

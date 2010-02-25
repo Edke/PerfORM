@@ -98,6 +98,28 @@ class DateTimeField extends Field {
 
 
     /**
+     * Getter for field's value
+     * @param boolean $insert true is insert, false is update
+     * @return mixed
+     */
+    public function getDbValue($insert)
+    {
+	//Debug::consoleDump(parent::getDbValue($insert));
+	if ( !$this->isModified() &&
+	    (
+		(($this->isAutoNow() || $this->isAutoNowAdd()) && $insert) ||
+		($this->isAutoNow() && !$insert)
+	    )
+	)
+	{
+	    $this->now();
+	    $this->modified= true;
+	}
+	return parent::getDbValue($insert);
+    }
+
+
+    /**
      * Returns identification integer of field
      * @return integer
      */
@@ -123,7 +145,7 @@ class DateTimeField extends Field {
      */
     public function getValue()
     {
-	return !is_null($this->value) ? date($this->outputFormat,$this->value) : null;
+	return !is_null(parent::getValue()) ? date($this->outputFormat,parent::getValue()) : null;
     }
 
 

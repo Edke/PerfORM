@@ -516,18 +516,9 @@ abstract class PerfORM
 	    if ($field->isPrimaryKey() and $field->getIdent() == PerfORM::AutoField)
 	    {
 	    }
-	    elseif ( !is_null($value = $field->getDbValue()) )
+	    elseif ( !is_null($value = $field->getDbValue(true)) )
 	    {
 		$insert[$finalColumn]= $value;
-	    }
-	    elseif( !is_null($default = $field->getDefault())  )
-	    {
-		$insert[$finalColumn]= $default;
-	    }
-	    elseif( $field->getIdent() == PerfORM::DateTimeField and ($field->isAutoNow() or $field->isAutoNowAdd()) )
-	    {
-		$field->now();
-		$insert[$finalColumn]= $field->getDbValue();
 	    }
 	    elseif( !$field->isNullable() )
 	    {
@@ -682,17 +673,17 @@ abstract class PerfORM
 	    if ($field->isPrimaryKey())
 	    {
 		$primaryKey= $field->getRealName();
-		$primaryKeyValue= $field->getDbValue();
+		$primaryKeyValue= $field->getDbValue(false);
 		$primaryKeyType= $field->getType();
 	    }
-	    elseif ( !is_null($value = $field->getDbValue()) && $field->isModified() )
+	    elseif ( !is_null($dbValue = $field->getDbValue(false)) && $field->isModified() )
 	    {
-		$update[$finalColumn]= $value;
+		$update[$finalColumn]= $dbValue;
 	    }
-	    elseif( $field->getIdent() == PerfORM::DateTimeField and $field->isAutoNow() )
+	    # if field has nullCallback defined, include it in update no matter if modified or not
+	    elseif ( $field->getNullCallback() )
 	    {
-		$field->now();
-		$update[$finalColumn]= $field->getDbValue();
+		$update[$finalColumn]= $dbValue;
 	    }
 	}
 
