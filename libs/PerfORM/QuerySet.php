@@ -189,6 +189,7 @@ final class QuerySet
 	);
 
 	$result= $this->getDataSource()->fetch();
+	PerfORMController::addSql(dibi::$sql);
 	$this->fill($this->model, $result);
 	return $result ? true : false;
     }
