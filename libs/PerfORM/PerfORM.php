@@ -46,6 +46,13 @@ abstract class PerfORM
 
 
     /**
+     * Alias index array to help to build aliases for object
+     * @var array
+     */
+    protected $aliasIndex= array();
+
+
+    /**
      * Default primary key field name used when autocreating
      * @var string
      */
@@ -186,24 +193,13 @@ abstract class PerfORM
      * Builds recursively aliases for $model
      * @param PerfORM $model
      */
-    protected function buildAliases($model, $aliases)
+    protected function buildAliases($model)
     {
 	foreach($model->getFields() as $field)
 	{
-	    if ( get_class($field) == 'ForeignKeyField') {
-		$foreignKeyTableName= $field->getReference()->getTableName();
-
-		if ( key_exists($foreignKeyTableName, $aliases))
-		{
-		    $field->getReference()->setAlias($foreignKeyTableName.$aliases[$foreignKeyTableName]);
-		    $aliases[$foreignKeyTableName]++;
-		}
-		else
-		{
-		    $field->getReference()->setAlias($foreignKeyTableName);
-		    $aliases[$foreignKeyTableName]= 2;
-		}
-		$this->buildAliases($field->getReference(), $aliases);
+	    if ( $field->getIdent() == PerfORM::ForeignKeyField) {
+		$field->getReference()->setAlias($field->getReference()->getTableName());
+		$this->buildAliases($field->getReference());
 	    }
 	}
     }
@@ -238,12 +234,8 @@ abstract class PerfORM
 	}
 
 	# aliases for model
-	$tableName= $this->getTableName();
-	$aliases= array();
-	$aliases[$tableName]= 2;
-	$this->setAlias($tableName);
-	$this->buildAliases($this, $aliases);
-
+	$this->setAlias($this->getTableName());
+	$this->buildAliases($this);
 
 	# model hashing
 	$model_hashes= array();
@@ -627,7 +619,17 @@ abstract class PerfORM
      */
     public function setAlias($alias)
     {
-	$this->alias= $alias;
+	if ( key_exists($alias, $this->aliasIndex))
+	{
+	    $this->aliasIndex[$alias]++;
+	    $aliasIndex= $this->aliasIndex[$alias];
+	}
+	else
+	{
+	    $this->aliasIndex[$alias]= 1;
+	    $aliasIndex= '';
+	}
+	$this->alias= $alias.$aliasIndex;
     }
 
 
