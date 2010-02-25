@@ -90,7 +90,10 @@ final class QuerySet
 	{
 	    if ( get_class($field) == 'ForeignKeyField')
 	    {
-		$this->joins[]= sprintf("\tINNER JOIN %s AS %s ON %s.%s = %s.%s",
+		$join_type= $field->isNullable() ? 'LEFT' : 'INNER';
+		
+		$this->joins[]= sprintf("\t%s JOIN %s AS %s ON %s.%s = %s.%s",
+		$join_type,
 		$field->getReference()->getTableName(),
 		$field->getReference()->getAlias(),
 		$field->getReference()->getAlias(),

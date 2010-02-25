@@ -103,12 +103,19 @@ final class ForeignKeyField extends Field
      */
     public function getDbValue()
     {
-	$value= $this->value->getField($this->referenceKey)->getValue();
-	if ( !is_integer($value))
+	if ( is_object($this->value) )
 	{
-	    $value= $this->value->save();
+	    $value= $this->value->getField($this->referenceKey)->getValue();
+	    if ( !is_integer($value))
+	    {
+		$value= $this->value->save();
+	    }
+	    return $value;
 	}
-	return $value;
+	else
+	{
+	    return null;
+	}
     }
 
 
