@@ -228,7 +228,7 @@ final class ForeignKeyField extends Field
 	if ( !(is_object($value) and
 		get_class($value) == get_class($this->getReference())) )
 	{
-	    throw new Exception("Value is not valid object or model type");
+	    throw new Exception(get_class($this->getModel()).'|'. $this->getName().  " - value is not valid object or model type");
 	}
 	$this->value= $value;
 	$this->modified= true;

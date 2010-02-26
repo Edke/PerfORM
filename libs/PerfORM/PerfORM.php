@@ -563,7 +563,7 @@ abstract class PerfORM
 	    }
 	    elseif( !$field->isNullable() )
 	    {
-		throw new Exception("field '$key' has no value set or default value but not null");
+		throw new Exception(get_class($this). " - field '$key' has no value set or default value but not null");
 	    }
 	}
 
