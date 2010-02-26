@@ -198,7 +198,18 @@ abstract class PerfORM
 	foreach($model->getFields() as $field)
 	{
 	    if ( $field->getIdent() == PerfORM::ForeignKeyField) {
-		$field->getReference()->setAlias($field->getReference()->getTableName());
+		$alias= $field->getReference()->getTableName();
+		if ( key_exists($alias, $this->aliasIndex))
+		{
+		    $this->aliasIndex[$alias]++;
+		    $aliasIndex= $this->aliasIndex[$alias];
+		}
+		else
+		{
+		    $this->aliasIndex[$alias]= 1;
+		    $aliasIndex= '';
+		}
+		$field->getReference()->setAlias($alias.$aliasIndex);
 		$this->buildAliases($field->getReference());
 	    }
 	}
@@ -610,17 +621,7 @@ abstract class PerfORM
      */
     public function setAlias($alias)
     {
-	if ( key_exists($alias, $this->aliasIndex))
-	{
-	    $this->aliasIndex[$alias]++;
-	    $aliasIndex= $this->aliasIndex[$alias];
-	}
-	else
-	{
-	    $this->aliasIndex[$alias]= 1;
-	    $aliasIndex= '';
-	}
-	$this->alias= $alias.$aliasIndex;
+	$this->alias= $alias;
     }
 
 
