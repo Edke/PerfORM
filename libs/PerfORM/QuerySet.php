@@ -160,7 +160,7 @@ final class QuerySet
 
 
     /**
-     * Get method to retreive results
+     * Get method to retreive single result and fill model
      * @param mixed
      * @return DibiResult
      */
@@ -174,19 +174,26 @@ final class QuerySet
 	    if ( preg_match('#^(pk|id)=([0-9]+)$#i', $option, $matches) )
 	    {
 		$primaryKeyValue = $matches[2];
+		$primaryField= $this->model->getField($this->model->getPrimaryKey());
+		$this->getDataSource()->where('%n = %'.$primaryField->getType(),
+		    $this->model->getAlias().'__'.$primaryField->getRealName(),
+		    $primaryKeyValue);
+	    }
+	    elseif( preg_match('#^([^=]+)=(.+)$#i', $option, $matches) )
+	    {
+		if ( !$this->model->hasField($matches[1]) )
+		{
+		    throw new Exception("Invalid field '$matches[1]]'");
+		}
+		$this->getDataSource()->where('%n = %'.$this->model->getField($matches[1])->getType(),
+		    $this->model->getAlias().'__'.$matches[1],
+		    $matches[2]);
 	    }
 	    else
 	    {
 		throw new Exception("unknown option '$option'");
 	    }
 	}
-	$primaryField= $this->model->getField($this->model->getPrimaryKey());
-
-	$this->getDataSource()->where(
-	'%n = %'.$primaryField->getType(),
-	$this->model->getAlias().'__'.$primaryField->getRealName(),
-	$primaryKeyValue
-	);
 
 	$result= $this->getDataSource()->fetch();
 	PerfORMController::addSql(dibi::$sql);
