@@ -99,9 +99,10 @@ final class ForeignKeyField extends Field
 
     /**
      * Getter for value of key, if key has no value, issue save() for reference model
+     * @param boolean $insert true is insert, false is update
      * @return mixed
      */
-    public function getDbValue()
+    public function getDbValue($insert)
     {
 	if ( is_object($this->value) )
 	{

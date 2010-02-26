@@ -104,7 +104,6 @@ class DateTimeField extends Field {
      */
     public function getDbValue($insert)
     {
-	//Debug::consoleDump(parent::getDbValue($insert));
 	if ( !$this->isModified() &&
 	    (
 		(($this->isAutoNow() || $this->isAutoNowAdd()) && $insert) ||
