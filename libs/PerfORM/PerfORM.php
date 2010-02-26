@@ -644,7 +644,7 @@ abstract class PerfORM
     /**
      * Set model and all it's fields to unmodified
      */
-    protected function setUnmodified()
+    public function setUnmodified()
     {
 	$this->modified= false;
 	foreach( $this->getFields() as $field)
