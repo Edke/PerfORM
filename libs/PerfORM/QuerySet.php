@@ -207,8 +207,9 @@ final class QuerySet
      * @todo actualy write method
      * @return array
      */
-    public function filter()
+    public function filter($cond)
     {
+	$this->getDataSource()->where(func_get_args());
 	return $this->prepareResult();
     }
 
