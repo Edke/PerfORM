@@ -752,47 +752,19 @@ abstract class PerfORM
 
     /**
      * Magic method for creating fields and setting it's values
-     * @param string $field
+     * @param string $fieldName
      * @param mixed $value
      */
-    public function __set($field,  $value)
+    public function __set($fieldName,  $value)
     {
-	// setting value for existing field
-	if ( key_exists($field, $this->fields) && !is_object($value) )
+	$fieldName= strtolower($fieldName);
+	if ( !$this->hasField($fieldName))
 	{
-	    $this->fields[$field]->setValue($value);
-	    $this->modified= true;
+	    throw new Exception ("Model '".get_class($this)."' does not contain field '$fieldName'.");
 	}
-	// setting new field
-	elseif ( !key_exists($field, $this->fields) && is_object($value) )
-	{
-	    $this->fields[$field]= $value;
-	    $this->fields[$field]->setName($field);
 
-	    if (get_class($value) == 'ForeignKeyField')
-	    {
-		$this->depends[]= $value->getReference();
-	    }
-
-	}
-	elseif ( key_exists($field, $this->fields) && is_object($value) )
-	{
-	    if ($this->fields[$field]->isForeignKey() && (get_class($value) == get_class($this->fields[$field]->getReference())) )
-	    {
-		$this->fields[$field]->setValue($value);
-		$this->modified= true;
-	    }
-	    else
-	    {
-		Debug::consoleDump(array($field, $value), 'invalid setting on orm object');
-		throw new Exception("column '$field' already exists");
-	    }
-	}
-	else
-	{
-	    Debug::consoleDump(array($field, $value), 'invalid setting on orm object');
-	    throw new Exception('invalid bigtime');
-	}
+	$this->getField($fieldName)->setValue($value);
+	$this->modified= true;
     }
 
 
@@ -801,24 +773,26 @@ abstract class PerfORM
      * @param string $field
      * @return mixed
      */
-    public function  __get($field)
+    public function  __get($fieldName)
     {
-	if( key_exists($field, $this->fields) &&
-	    is_object($this->fields[$field]) &&
-	    ($this->fields[$field]->getIdent() == PerfORM::DateTimeField ||
-	    $this->fields[$field]->getIdent() == PerfORM::TimeField ||
-	    $this->fields[$field]->getIdent() == PerfORM::DateField)
+	$fieldName= strtolower($fieldName);
+	if ( !$this->hasField($fieldName))
+	{
+	    throw new Exception ("Model '".get_class($this)."' does not contain field '$fieldName'.");
+	}
+
+	$field= $this->getField($fieldName);
+	if( $field->getIdent() == PerfORM::DateTimeField ||
+	    $field->getIdent() == PerfORM::TimeField ||
+	    $field->getIdent() == PerfORM::DateField
 	    )
 	{
-	    return $this->fields[$field];
+	    return $field;
 	}
-	elseif ( key_exists($field, $this->fields) && is_object($this->fields[$field]))
-	{
-	    return $this->fields[$field]->getValue();
+	else {
+	    return $field->getValue();
 	}
-	throw new Exception("invalid field name '$field'");
     }
-
 
     public function  __destruct()
     {

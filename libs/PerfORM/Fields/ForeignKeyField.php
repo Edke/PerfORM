@@ -193,6 +193,18 @@ final class ForeignKeyField extends Field
 
 
     /**
+     * Setting directly dbName fires validation error, key's dbname is created with help of mask
+     * @param string $dbName
+     * @return false
+     */
+    protected function setDbName($dbName)
+    {
+	$this->addError("forbidden to set db_column for foreign key, change mask instead");
+	return false;
+    }
+
+
+    /**
      * Sets name for fields, applies mask to dbName creation
      * @param string $name
      */
@@ -208,13 +220,17 @@ final class ForeignKeyField extends Field
 
 
     /**
-     * Setting directly dbName fires validation error, key's dbname is created with help of mask
-     * @param string $dbName
-     * @return false
+     * Sets field's value
+     * @param mixed $value
      */
-    protected function setDbName($dbName)
+    public function setValue($value)
     {
-	$this->addError("forbidden to set db_column for foreign key, change mask instead");
-	return false;
+	if ( !(is_object($value) and
+		get_class($value) == get_class($this->getReference())) )
+	{
+	    throw new Exception("Value is not valid object or model type");
+	}
+	$this->value= $value;
+	$this->modified= true;
     }
 }
