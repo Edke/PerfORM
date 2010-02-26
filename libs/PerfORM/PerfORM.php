@@ -158,12 +158,42 @@ abstract class PerfORM
 
 
     /**
+     * Adds field to model
+     * @param string $fieldName
+     * @param Field $field
+     */
+    protected function addField($fieldName, $field)
+    {
+	$fieldName= strtolower($fieldName);
+	if ( key_exists($fieldName, $this->fields ) )
+	{
+	    throw new Exception ("Field with name '$fieldName' already exists in model '".get_class($this)."'");
+	}
+
+	if ( !(is_object($field) and is_subclass_of($field, 'Field')))
+	{
+	    throw new Exception ("Invalid definition of field '$fieldName' in model '".get_class($this)."'");
+	}
+
+	$this->fields[$fieldName]= $field;
+	$this->fields[$fieldName]->setName($fieldName);
+
+
+
+	if ( $field->getIdent() == PerfORM::ForeignKeyField)
+	{
+	    $this->depends[]= $field->getReference();
+	}
+    }
+
+
+    /**
      * Adds index to model
      * @param mixed $fieldNames
      * @param string $indexName
      * @param boolean $unique
      */
-    public function addIndex($fieldNames, $indexName, $unique)
+    protected function addIndex($fieldNames, $indexName, $unique)
     {
 	$suffix= ($unique) ? '_key' : '_idx';
 	if ( !is_array($fieldNames))

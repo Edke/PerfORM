@@ -265,10 +265,13 @@ class PerfORMModelCacheBuilder
 			);
 
 			$options= trim($field[4][$field_key]);
-			$setup_fields[] = str_replace(
+
+			$setup_fields[] = sprintf("\t\$this->addField('%s', %s \$this%s%s))",
+			    $field[1][$field_key],
 			    $field[2][$field_key],
-			    $field[2][$field_key].'$this'. (empty($options) ? '' : ', '),
-			    $field[0][$field_key]);
+			    empty($options) ? '' : ', ',
+			    $options
+			);
 		    }
 		}
 
