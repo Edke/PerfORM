@@ -655,6 +655,41 @@ abstract class PerfORM
     }
 
 
+    public function setLazyLoading()
+    {
+	$paths= func_get_args();
+	if (empty($paths))
+	{
+	    foreach($this->getForeignKeys() as $field)
+	    {
+		$field->enableLazyLoading();
+	    }
+	    return;
+	}
+
+	foreach($paths as $path)
+	{
+	    $fields= explode('->', $path);
+
+	    $reference= $this;
+	    $pointer= null;
+	    foreach($fields as $field)
+	    {
+		if ($reference->hasField($field) &&
+		    $reference->getField($field)->getIdent() == PerfORM::ForeignKeyField)
+		{
+		    $pointer= $reference->getField($field);
+		    $reference= $pointer->getReference();
+		}
+		else {
+		    throw new Exception('invalid path');
+		}
+	    }
+	    $pointer->enableLazyLoading();
+	}
+    }
+
+
     /**
      * Setter for primary key field name
      * @param string $primaryKey
@@ -789,9 +824,20 @@ abstract class PerfORM
 	{
 	    return $field;
 	}
-	else {
-	    return $field->getValue();
+	elseif(
+	    $field->getIdent() == PerfORM::ForeignKeyField &&
+	    $field->isEnabledLazyLoading() &&
+	    !is_null($lazyLoadingKeyValue = $field->getValue())
+	)
+	{
+	    $referenceModel= get_class($field->getReference());
+	    $model= new $referenceModel;
+	    $model->objects()->get('id='.$lazyLoadingKeyValue);
+	    $field->setValue($model);
+	    $field->disableLazyLoading();
 	}
+	
+	return $field->getValue();
     }
 
     /**

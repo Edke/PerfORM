@@ -72,7 +72,9 @@ final class QuerySet
 	foreach( $model->getFields() as $field )
 	{
 	    $this->fields[]= sprintf("\t%s.%s as %s__%s", $model->getAlias(), $field->getRealName(), $model->getAlias(), $field->getRealName() );
-	    if ( get_class($field) == 'ForeignKeyField')
+	    if ( $field->getIdent() == PerfORM::ForeignKeyField &&
+		!$field->isEnabledLazyLoading()
+	    )
 	    {
 		$this->addFields($field->getReference());
 	    }
@@ -84,13 +86,15 @@ final class QuerySet
      * Adds joins recursively from model's definition if relation to other models exists
      * @param PerfORM $model
      */
-    protected function addJoins($model)
+    protected function addJoins($model, $inner = true)
     {
 	foreach( $model->getFields() as $field )
 	{
-	    if ( get_class($field) == 'ForeignKeyField')
+	    if ( $field->getIdent() == PerfORM::ForeignKeyField &&
+		!$field->isEnabledLazyLoading()
+	    )
 	    {
-		$join_type= $field->isNullable() ? 'LEFT' : 'INNER';
+		$join_type= !$field->isNullable() && $inner ? 'INNER' : 'LEFT' ;
 		
 		$this->joins[]= sprintf("\t%s JOIN %s AS %s ON %s.%s = %s.%s",
 		$join_type,
@@ -98,10 +102,10 @@ final class QuerySet
 		$field->getReference()->getAlias(),
 		$field->getReference()->getAlias(),
 		$field->getReferenceTableKey(),
-		$model->getTableName(),
+		$model->getAlias(),
 		$field->getRealName()
 		);
-		$this->addJoins($field->getReference());
+		$this->addJoins($field->getReference(), $join_type == 'INNER' );
 	    }
 	}
     }
@@ -141,11 +145,19 @@ final class QuerySet
 	{
 	    $key= $model->getAlias().'__'.$field->getRealName();
 
-	    if ( get_class($field) == 'ForeignKeyField')
+	    if ( $field->getIdent() == PerfORM::ForeignKeyField &&
+		!$field->isEnabledLazyLoading()
+	    )
 	    {
 		$child= clone $field->getReference();
 		$this->fill($child, $values);
 		$field->setValue($child);
+	    }
+	    elseif ( $field->getIdent() == PerfORM::ForeignKeyField &&
+		$field->isEnabledLazyLoading()
+	    )
+	    {
+		$field->setLazyLoadingKeyValue($values[$key]);
 	    }
 	    elseif ( key_exists($key, $values))
 	    {

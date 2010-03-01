@@ -24,6 +24,13 @@ final class ForeignKeyField extends Field
 
 
     /**
+     * Controls lazy loading of referenced object
+     * @var boolean
+     */
+    protected $lazyLoading= false;
+
+
+    /**
      * Datatype
      * @var string
      */
@@ -70,6 +77,24 @@ final class ForeignKeyField extends Field
 		$this->addError("unknown option '$option'");
 	    }
 	}
+    }
+
+
+    /**
+     * Disables lazy loading
+     */
+    public function disableLazyLoading()
+    {
+	$this->lazyLoading= false;
+    }
+
+
+    /**
+     * Enables lazy loading
+     */
+    public function enableLazyLoading()
+    {
+	$this->lazyLoading= true;
     }
 
 
@@ -161,6 +186,16 @@ final class ForeignKeyField extends Field
 
 
     /**
+     * Determines whether lazy loading is enabled
+     * @return boolean
+     */
+    public function isEnabledLazyLoading()
+    {
+	return $this->lazyLoading;
+    }
+
+
+    /**
      * Determines whether field is foreign key
      * @return boolean
      */
@@ -201,6 +236,16 @@ final class ForeignKeyField extends Field
     {
 	$this->addError("forbidden to set db_column for foreign key, change mask instead");
 	return false;
+    }
+
+
+    /**
+     * Sets key of reference table for lazy loading
+     * @param integer $value
+     */
+    public function setLazyLoadingKeyValue($value)
+    {
+	$this->value= $value;
     }
 
 
