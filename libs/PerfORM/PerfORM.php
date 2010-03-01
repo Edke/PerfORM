@@ -794,7 +794,13 @@ abstract class PerfORM
 	}
     }
 
-    public function  __destruct()
+    /**
+     * Model needs object to string conversion
+     * @abstract
+     */
+    abstract function  __toString();
+
+    public function __destruct()
     {
 	unset($this->fields);
     }
