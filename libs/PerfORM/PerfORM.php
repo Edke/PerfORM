@@ -35,6 +35,7 @@ abstract class PerfORM
     const IntegerField = 1;
     const IPAddessField = 12;
     const SmallIntegerField = 7;
+    const SlugField = 15;
     const TextField = 6;
     const TimeField = 11;
     const URLField = 14;
