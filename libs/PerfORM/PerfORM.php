@@ -98,17 +98,17 @@ abstract class PerfORM
 
 
     /**
+     * Prefix for table
+     * @var string
+     */
+    protected $prefix= null;
+
+
+    /**
      * Name of primary key field
      * @var string
      */
     protected $primaryKey= null;
-
-
-    /**
-     * Suffix for table
-     * @var string
-     */
-    protected $suffix= null;
 
 
     /**
@@ -502,7 +502,7 @@ abstract class PerfORM
 	{
 	    $this->tableName= strtolower(get_class($this));
 	}
-	return is_null($this->suffix) ? $this->tableName : $this->suffix . $this->tableName ;
+	return is_null($this->prefix) ? $this->tableName : $this->prefix . $this->tableName ;
     }
 
 
