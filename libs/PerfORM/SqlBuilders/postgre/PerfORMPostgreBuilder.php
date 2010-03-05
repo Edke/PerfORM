@@ -55,6 +55,7 @@ final class PerfORMPostgreBuilder extends PerfORMSqlBuilder
 
 	    case 'CharField':
 	    case 'EmailField':
+	    case 'URLField':
 		return sprintf('character varying(%d)', $field->getSize());
 
 	    case 'DateField':
@@ -97,6 +98,7 @@ final class PerfORMPostgreBuilder extends PerfORMSqlBuilder
 
 	    case 'CharField':
 	    case 'EmailField':
+	    case 'URLField':
 		return preg_match('#(VARCHAR)#i', $nativeType) ? true : false;
 
 	    case 'TextField':

@@ -37,6 +37,7 @@ abstract class PerfORM
     const SmallIntegerField = 7;
     const TextField = 6;
     const TimeField = 11;
+    const URLField = 14;
 
 
     /**
