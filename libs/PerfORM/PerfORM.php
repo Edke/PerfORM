@@ -30,6 +30,7 @@ abstract class PerfORM
     const DateField = 10;
     const DateTimeField = 9;
     const DecimalField = 8;
+    const EmailField = 13;
     const ForeignKeyField = 4;
     const IntegerField = 1;
     const IPAddessField = 12;
