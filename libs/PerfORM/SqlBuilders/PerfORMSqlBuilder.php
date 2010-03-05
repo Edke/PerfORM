@@ -216,18 +216,21 @@ abstract class PerfORMSqlBuilder {
      */
     protected function dependancySort( &$list)
     {
-	$_list= $list;
-	foreach($_list as $item)
+	for($i=0; $i<2; $i++)
 	{
-	    $min= null;
-	    foreach($item->getDependents() as $dependent)
+	    $_list= $list;
+	    foreach($_list as $item)
 	    {
-		$min= ( is_null($min )) ?  $this->model_array_search($dependent, $list) : min($min, $this->model_array_search($dependent, $list)) ;
-	    }
-	    if ( is_integer($min) && $this->model_array_search($item, $list) > $min)
-	    {
-		unset($list[$this->model_array_search($item,$list)]);
-		$list= $this->insertArrayIndex($list, $item, $min);
+		$min= null;
+		foreach($item->getDependents() as $dependent)
+		{
+		    $min= ( is_null($min )) ?  $this->model_array_search($dependent, $list) : min($min, $this->model_array_search($dependent, $list)) ;
+		}
+		if ( is_integer($min) && $this->model_array_search($item, $list) > $min)
+		{
+		    unset($list[$this->model_array_search($item,$list)]);
+		    $list= $this->insertArrayIndex($list, $item, $min);
+		}
 	    }
 	}
     }
