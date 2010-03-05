@@ -82,7 +82,7 @@ class TextField extends Field {
      * @param mixed $value
      * @return string
      */
-    final public function retype($value) {
+    public function retype($value) {
 	return (is_null($value)) ? null : (string) $value;
     }
 }

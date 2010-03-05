@@ -24,7 +24,6 @@
 abstract class PerfORM
 {
 
-
     const AutoField = 3;
     const BooleanField = 5;
     const CharField = 2;
@@ -33,6 +32,7 @@ abstract class PerfORM
     const DecimalField = 8;
     const ForeignKeyField = 4;
     const IntegerField = 1;
+    const IPAddessField = 12;
     const SmallIntegerField = 7;
     const TextField = 6;
     const TimeField = 11;

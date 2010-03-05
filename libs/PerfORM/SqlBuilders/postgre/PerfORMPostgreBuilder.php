@@ -44,6 +44,9 @@ final class PerfORMPostgreBuilder extends PerfORMSqlBuilder
 	    case 'ForeignKeyField':
 		return 'integer';
 
+	    case 'IPAddressField':
+		return 'inet';
+
 	    case 'SmallIntegerField':
 		return 'smallint';
 
@@ -87,6 +90,9 @@ final class PerfORMPostgreBuilder extends PerfORMSqlBuilder
 
 	    case 'SmallIntegerField':
 		return preg_match('#(INT2)#i', $nativeType) ? true : false;
+
+	    case 'IPAddressField':
+		return preg_match('#(INET)#i', $nativeType) ? true : false;
 
 	    case 'CharField':
 		return preg_match('#(VARCHAR)#i', $nativeType) ? true : false;
