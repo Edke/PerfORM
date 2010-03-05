@@ -88,7 +88,10 @@ final class PerfORMController
      */
     public static function addSql($sql)
     {
-	self::$sqlBuffer[]= $sql;
+	if ( !empty($sql))
+	{
+	    self::$sqlBuffer[]= $sql;
+	}
     }
 
 
@@ -225,7 +228,7 @@ final class PerfORMController
     {
 	$buffer= self::$sqlBuffer;
 	self::$sqlBuffer= array();
-	return (empty($buffer)) ? false : $buffer;
+	return ( is_array($buffer) and count($buffer)>0 ) ? $buffer : false;
     }
 
 
