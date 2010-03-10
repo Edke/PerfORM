@@ -293,6 +293,32 @@ final class PerfORMController
 	return $sql;
     }
 
+    /**
+     * Creates storage for current modelset and ignores database structure
+     * If confirm is set, sql code for storage will be executed
+     * @param boolean $confirm
+     * @return boolean
+     */
+    public static function sqlset($confirm = false)
+    {
+	$storage= new PerfORMStorage();
+	$storage->begin();
+
+	$storage->trash();
+	foreach( self::getModels() as $model)
+	{
+	    $storage->insertModel($model);
+	}
+	
+	# create index storage info
+	foreach($model->getIndexes() as $index)
+	{
+	    $storage->addIndexToModel($index);
+	}
+
+	$confirm ? $storage->commit() : $storage->rollback();
+    }
+
 
     /**
      * Models operation for syncing database structure with defined models

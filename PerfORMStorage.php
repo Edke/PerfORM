@@ -665,6 +665,17 @@ final class PerfORMStorage extends DibiConnection
 
 
     /**
+     * Cleans storage info
+     */
+    public function trash()
+    {
+	$this->query('delete from [tables]');
+	$this->query('delete from [fields]');
+	$this->query('delete from [indexes]');
+    }
+
+
+    /**
      * Update field in storage, sets hashes for field and it's model
      * @param Field $field
      */
