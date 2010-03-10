@@ -221,10 +221,10 @@ abstract class PerfORMSqlBuilder {
 	    $_list= $list;
 	    foreach($_list as $item)
 	    {
-		$min= null;
+		$min= false;
 		foreach($item->getDependents() as $dependent)
 		{
-		    $min= ( is_null($min )) ?  $this->model_array_search($dependent, $list) : min($min, $this->model_array_search($dependent, $list)) ;
+		    $min= ( $min === false ) ?  $this->model_array_search($dependent, $list) : min($min, $this->model_array_search($dependent, $list)) ;
 		}
 		if ( is_integer($min) && $this->model_array_search($item, $list) > $min)
 		{
