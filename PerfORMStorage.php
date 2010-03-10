@@ -676,6 +676,28 @@ final class PerfORMStorage extends DibiConnection
 
 
     /**
+     * Run sqls from queue
+     */
+    public function set()
+    {
+	foreach( $this->queue as $operation => $actions)
+	{
+	    foreach($actions as $key => $action)
+	    {
+		if ( is_array($action->sql))
+		{
+		    array_walk($action->sql, array($this, 'query'));
+		}
+		else
+		{
+		    $this->query($action->sql);
+		}
+	    }
+	}
+    }
+
+
+    /**
      * Update field in storage, sets hashes for field and it's model
      * @param Field $field
      */

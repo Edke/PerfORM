@@ -316,6 +316,7 @@ final class PerfORMController
 	    $storage->addIndexToModel($index);
 	}
 
+	$storage->set();
 	$confirm ? $storage->commit() : $storage->rollback();
     }
 
