@@ -84,6 +84,13 @@ abstract class PerfORM
 
 
     /**
+     * Hash of model for structure checking
+     * @var string
+     */
+    protected $hash;
+
+
+    /**
      * Array of model's indexes
      * @var array
      */
@@ -119,10 +126,10 @@ abstract class PerfORM
 
 
     /**
-     * Hash of model for structure checking
-     * @var string
+     * Determines if model is view or table, table is default
+     * @var boolean
      */
-    protected $hash;
+    protected $view= false;
 
     
     /**
@@ -259,7 +266,7 @@ abstract class PerfORM
 
 	$this->setup();
 
-	if ( !$this->getPrimaryKey())
+	if ( !$this->getPrimaryKey() && $this->isTable() )
 	{
 	    $this->fields= array($this->defaultPrimaryKey => new AutoField($this, 'primary_key=true')) + $this->fields; //unshift primary to beginning
 	    $this->fields[$this->defaultPrimaryKey]->setName($this->defaultPrimaryKey);
@@ -594,6 +601,26 @@ abstract class PerfORM
     public function isModified()
     {
 	return $this->modified;
+    }
+
+
+    /**
+     * Determines if model is table
+     * @return boolean
+     */
+    public function isTable()
+    {
+	return !$this->view;
+    }
+
+
+    /**
+     * Determines if model is view
+     * @return boolean
+     */
+    public function isView()
+    {
+	return $this->view;
     }
 
 
