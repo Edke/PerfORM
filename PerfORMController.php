@@ -276,7 +276,7 @@ final class PerfORMController
 	{
 	    if ( $storage->hasModel($model) )	    
 	    {
-		$storage->dropModel($model);
+		$model->isTable() ? $storage->dropTable($model) : $storage->dropView($model);
 	    }
 	}
 
@@ -340,7 +340,7 @@ final class PerfORMController
 	    if ( $storage->hasModel($model) )
 	    {
 		# model out of sync
-		if ( !$storage->modelHasSync($model))
+		if ( !$storage->modelHasSync($model) && $model->isTable() )
 		{
 		    # checking fields in model against storage
 		    foreach( $model->getFields() as $field)
@@ -415,7 +415,7 @@ final class PerfORMController
 		    foreach($model->getIndexes() as $index)
 		    {
 			# index does not exists
-			if ( !$storage->modelHasIndex($index))
+			if ( $model->isTable() && !$storage->modelHasIndex($index))
 			{
 			    $storage->addIndexToModel($index);
 			}
@@ -425,21 +425,29 @@ final class PerfORMController
 	    # model does not exists, create
 	    else
 	    {
-		$storage->insertModel($model);
+		$model->isTable() ? $storage->insertTable($model) : $storage->insertView($model);
 	    }
 	}
 
-	/* second run: check storage against models, finds models to drop */
-	foreach( $storage->getModels() as $storageModel)
+	/* second run: check storage against tables, finds tables to drop */
+	foreach( $storage->getTables() as $storageTable)
 	{
-	    if ( !key_exists($storageModel->name, self::getModels()))
+	    if ( !key_exists($storageTable->name, self::getModels()))
 	    {
-		$storage->dropModel($storageModel->name);
+		$storage->dropTable($storageTable->name);
+	    }
+	}
+
+	/* third run: check storage against views, finds views to drop */
+	foreach( $storage->getViews() as $storageView)
+	{
+	    if ( !key_exists($storageView->name, self::getModels()))
+	    {
+		$storage->dropView($storageView->name);
 	    }
 	}
 
 	$sql= $storage->process();
-
 	if ( !is_null($sql) && $confirm )
 	{
 	    self::execute($sql);

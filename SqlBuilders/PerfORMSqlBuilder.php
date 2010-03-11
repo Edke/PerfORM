@@ -23,27 +23,36 @@
 
 abstract class PerfORMSqlBuilder {
 
-    protected $createTables= array();
+    protected $createTablesAndViews= array();
 
     protected $dropTables= array();
 
-    protected $dropModelTables= array();
+    protected $dropViews= array();
+
+    protected $dropModelTablesAndViews= array();
 
     
     /**
      * Storage for sql dump
      * @var string
      */
-    protected $sql;
+    protected $sql= array(
+	'viewdrops' => array(),
+	'tabledrops' => array(),
+	'creates' => array(),
+	'views' => array(),
+	'alters' => array(),
+	'indexes' => array()
+    );
 
 
     /**
      * Adds sql to buffer
      * @param string $sql
      */
-    public function addToBuffer($sql)
+    public function addToBuffer($sql, $group)
     {
-	$this->sql .= $sql ."\n";
+	$this->sql[$group][] = $sql ."\n";
     }
 
 
@@ -55,7 +64,7 @@ abstract class PerfORMSqlBuilder {
     {
 	$template= $this->getTemplate('field-add');
 	$template->field= $this->getField($field);
-	$this->renderToBuffer($template);
+	$this->renderToBuffer($template, 'alters');
     }
 
     /**
@@ -66,7 +75,7 @@ abstract class PerfORMSqlBuilder {
     {
 	$template= $this->getTemplate('field-rename');
 	$template->field= $this->getField($field, $from);
-	$this->renderToBuffer($template);
+	$this->renderToBuffer($template, 'alters');
     }
 
 
@@ -78,7 +87,7 @@ abstract class PerfORMSqlBuilder {
     {
 	$template= $this->getTemplate('index-rename');
 	$template->index= $this->getIndex($index, $from);
-	$this->renderToBuffer($template);
+	$this->renderToBuffer($template, 'alters');
     }
 
 
@@ -88,9 +97,17 @@ abstract class PerfORMSqlBuilder {
      */
     public function renameTable($model, $from)
     {
-	$template= $this->getTemplate('table-rename');
-	$template->table= $this->getRenameTable($model, $from);
-	$this->renderToBuffer($template);
+	if ( $model->isTable())
+	{
+	    $template= $this->getTemplate('table-rename');
+	    $template->table= $this->getRenameTable($model, $from);
+	}
+	elseif ( $model->isView())
+	{
+	    $template= $this->getTemplate('view-rename');
+	    $template->view= $this->getRenameView($model, $from);
+	}
+	$this->renderToBuffer($template, 'alters');
     }
 
 
@@ -102,7 +119,7 @@ abstract class PerfORMSqlBuilder {
     {
 	$template= $this->getTemplate('field-drop');
 	$template->field= $this->getDropField($fieldName, $model);
-	$this->renderToBuffer($template);
+	$this->renderToBuffer($template, 'alters');
     }
 
 
@@ -114,7 +131,7 @@ abstract class PerfORMSqlBuilder {
     {
 	$template= $this->getTemplate('index-drop');
 	$template->index= $this->getDropIndex($indexName, $model);
-	$this->renderToBuffer($template);
+	$this->renderToBuffer($template, 'indexdrops');
     }
 
 
@@ -123,7 +140,15 @@ abstract class PerfORMSqlBuilder {
      */
     public function createTable($model)
     {
-	$this->createTables[]= $model;
+	$this->createTablesAndViews[]= $model;
+    }
+
+    /**
+     * @param PerfORM $model
+     */
+    public function createView($model)
+    {
+	$this->createTable($model);
     }
 
 
@@ -134,7 +159,7 @@ abstract class PerfORMSqlBuilder {
     {
 	$template= $this->getTemplate('index-create');
 	$template->index= $this->getIndex($index);
-	$this->renderToBuffer($template);
+	$this->renderToBuffer($template, 'indexes');
     }
 
 
@@ -145,10 +170,24 @@ abstract class PerfORMSqlBuilder {
     {
 	if ( is_object($model))
 	{
-	    $this->dropModelTables[]= $model;
+	    $this->dropModelTablesAndViews[]= $model;
 	}
 	else {
 	    $this->dropTables[]= $model;
+	}
+    }
+
+    /**
+     * @param PerfORM|string $model
+     */
+    public function dropView($model)
+    {
+	if ( is_object($model))
+	{
+	    $this->dropModelTablesAndViews[]= $model;
+	}
+	else {
+	    $this->dropViews[]= $model;
 	}
     }
 
@@ -157,7 +196,7 @@ abstract class PerfORMSqlBuilder {
     {
 	$template= $this->getTemplate('field-change-nullable');
 	$template->field= $this->getField($field);
-	$this->renderToBuffer($template);
+	$this->renderToBuffer($template, 'alters');
     }
     
 
@@ -165,7 +204,7 @@ abstract class PerfORMSqlBuilder {
     {
 	$template= $this->getTemplate('field-change-default');
 	$template->field= $this->getField($field);
-	$this->renderToBuffer($template);
+	$this->renderToBuffer($template, 'alters');
     }
 
     abstract protected function getDriver();
@@ -187,14 +226,8 @@ abstract class PerfORMSqlBuilder {
      * @param Template $template
      * @return string
      */
-    public function renderToBuffer($template, $atBeginning= false) {
-	if ( $atBeginning)
-	{
-	    $this->sql = $this->renderTemplate($template). "\n" . $this->sql;
-	}
-	else {
-	    $this->sql .= $this->renderTemplate($template). "\n";
-	}
+    public function renderToBuffer($template, $group) {
+	$this->sql[$group][] =$this->renderTemplate($template);
     }
 
 
@@ -282,37 +315,72 @@ abstract class PerfORMSqlBuilder {
 
     public function getSql()
     {
-	# dependancy solving for create tables
-	if ( count($this->createTables)>0)
+	# creating tables and views
+	if ( count($this->createTablesAndViews)>0)
 	{
-	    $template= $this->getTemplate('tables-create');
-	    $template->tables= array();
-	    self::dependancySortReverse($this->createTables);
-	    foreach($this->createTables as $model)
+	    # dependancy solving for create tables and views
+	    self::dependancySortReverse($this->createTablesAndViews);
+	    foreach($this->createTablesAndViews as $model)
 	    {
-		$template->tables[]= $this->getCreateTable($model);
+		if ( $model->isTable())
+		{
+		    $template= $this->getTemplate('table-create');
+		    $template->table= $this->getCreateTable($model);
+		    $this->renderToBuffer($template, 'creates');
+		}
+		elseif( $model->isView())
+		{
+		    $template= $this->getTemplate('view-create');
+		    $template->view= $this->getCreateView($model);
+		    $this->renderToBuffer($template, 'views');
+		}
+		
 	    }
-	    $this->renderToBuffer($template, true);
 	}
 
-	# dependancy solving for drop tables
-	if ( count($this->dropModelTables)>0 or count($this->dropTables)>0)
+	# dropping tables and views
+	if ( count($this->dropModelTablesAndViews)>0 or count($this->dropTables)>0 or count($this->dropViews)>0)
 	{
-	    $template= $this->getTemplate('tables-drop');
+	    
 	    $template->tables= array();
-	    self::dependancySort($this->dropModelTables);
-	    foreach($this->dropModelTables as $model)
+	    # dependancy solving for drop tables
+	    self::dependancySort($this->dropModelTablesAndViews);
+	    foreach($this->dropModelTablesAndViews as $model)
 	    {
-		$template->tables[]= $model->getTableName();
+		if ( $model->isTable())
+		{
+		    $template= $this->getTemplate('table-drop');
+		    $template->table= $model->getTableName();
+		    $this->renderToBuffer($template, 'tabledrops' );
+		}
+		elseif ( $model->isView())
+		{
+		    $template= $this->getTemplate('view-drop');
+		    $template->view= $model->getTableName();
+		    $this->renderToBuffer($template, 'viewdrops' );
+		}
+		
 	    }
 	    foreach($this->dropTables as $table)
 	    {
-		$template->tables[]= $table;
+		$template= $this->getTemplate('table-drop');
+		$template->table= $table;
+		$this->renderToBuffer($template, 'tabledrops' );
 	    }
-	    $this->renderToBuffer($template, true );
+	    foreach($this->dropViews as $view)
+	    {
+		$template= $this->getTemplate('view-drop');
+		$template->view= $view;
+		$this->renderToBuffer($template, 'viewdrops' );
+	    }
 	}
-	
-	return $this->sql;
+
+	$sql= null;
+	foreach($this->sql as $part)
+	{
+	    $sql .= implode("\n\n", $part) ."\n";
+	}
+	return trim($sql);
     }
 }
 

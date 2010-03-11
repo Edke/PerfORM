@@ -290,17 +290,26 @@ abstract class PerfORM
 
 	# model hashing
 	$model_hashes= array();
-	foreach( $this->getFields() as $field)
+	if ( $this->isTable())
 	{
-	    $model_hashes[]= md5($field->getName().'|'.$field->getHash());
+	    foreach( $this->getFields() as $field)
+	    {
+		$model_hashes[]= md5($field->getName().'|'.$field->getHash());
+	    }
+	    foreach( $this->getIndexes() as $index)
+	    {
+		$model_hashes[]= md5($index->getName().'|'.$index->getHash());
+	    }
+	    sort($model_hashes);
+	    $this->hash= md5(implode('|', $model_hashes));
 	}
-	foreach( $this->getIndexes() as $index)
+	elseif ( $this->isView())
 	{
-	    $model_hashes[]= md5($index->getName().'|'.$index->getHash());
+	    $view= $this->getViewSetup();
+	    $view= trim(preg_replace('#\s{2,}#m',' ', $view));
+	    $this->hash= md5($view);
 	}
-	sort($model_hashes);
-	$this->hash= md5(implode('|', $model_hashes));
-
+	
 	if (PerfORMController::useModelCaching())
 	{
 	    $cache= PerfORMController::getCache();
@@ -808,6 +817,12 @@ abstract class PerfORM
 	{
 	    $this->errors= array_merge($this->errors, $field->validate());
 	}
+	
+	if ( $this->isView() && !(method_exists($this,'getViewSetup') and is_string($this->getViewSetup())) )
+	{
+	    $this->addError('%s - invalid view definition');
+	}
+
 	if (count($this->errors)>0)
 	{
 	    throw new Exception(implode("; ", $this->errors));

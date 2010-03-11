@@ -1,7 +1,4 @@
-{if isset($tables)}
-{foreach $tables as $table}
+{if isset($table)}
 -- Dropping table "{$table}"
 DROP TABLE {$table} CASCADE;
-
-{/foreach}
 {/if}

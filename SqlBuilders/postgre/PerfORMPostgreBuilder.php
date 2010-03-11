@@ -185,7 +185,19 @@ final class PerfORMPostgreBuilder extends PerfORMSqlBuilder
 	    'keys' => $keys
 	);
     }
-    
+
+
+    /**
+     * @param PerfORM $model
+     * @return stdClass
+     */
+    public function getCreateView($model)
+    {
+	return (object) array(
+	    'view' => $model->getTableName(),
+	    'definition' => $model->getViewSetup(),
+	);
+    }
 
     /**
      * @param PerfORM $model
@@ -231,6 +243,19 @@ final class PerfORMPostgreBuilder extends PerfORMSqlBuilder
 	);
     }
 
+
+    /**
+     * @param PerfORM $model
+     * @param string $from
+     * @return stdClass
+     */
+    public function getRenameView($model, $from)
+    {
+	return (object) array(
+	    'view' => $model->getTableName(),
+	    'from' => $from,
+	);
+    }
 
 
     public function getField($field, $renameFrom = null)

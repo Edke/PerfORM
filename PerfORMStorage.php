@@ -28,9 +28,12 @@ final class PerfORMStorage extends DibiConnection
     const TABLE_DROP = 2;
     const FIELD_ADD = 3;
     const FIELD_DROP = 4;
+    const VIEW_ADD = 5;
+    const VIEW_DROP = 6;
 
     protected $queue= array();
-    protected $renamedModels= array();
+    protected $renamedTables= array();
+    protected $renamedViews= array();
     protected $renamedFields= array();
 
 
@@ -52,6 +55,12 @@ final class PerfORMStorage extends DibiConnection
 	if ( !$this->getDatabaseInfo()->hasTable('tables'))
 	{
 	    $this->query('CREATE TABLE [tables] ( [id] INTEGER NOT NULL PRIMARY KEY,
+		[name] VARCHAR(100) NOT NULL UNIQUE, [hash] VARCHAR(32) NOT NULL);');
+	}
+
+	if ( !$this->getDatabaseInfo()->hasTable('views'))
+	{
+	    $this->query('CREATE TABLE [views] ( [id] INTEGER NOT NULL PRIMARY KEY,
 		[name] VARCHAR(100) NOT NULL UNIQUE, [hash] VARCHAR(32) NOT NULL);');
 	}
 
@@ -201,7 +210,7 @@ final class PerfORMStorage extends DibiConnection
 	$fieldInfo->name= $tmpfield;
 	$fieldInfo->nullable= true;
 	$template->field= $fieldInfo;
-	PerfORMController::getBuilder()->addToBuffer($builder->renderTemplate($template));
+	PerfORMController::getBuilder()->addToBuffer($builder->renderTemplate($template), 'alters');
 	//PerfORMController::getConnection()->nativeQuery($sql);
 
 	$result= PerfORMController::getConnection()->query('select * from %n',
@@ -232,7 +241,7 @@ final class PerfORMStorage extends DibiConnection
 		$pk,
 		$row->{$pk}
 	    );
-	    PerfORMController::getBuilder()->addToBuffer($sql);
+	    PerfORMController::getBuilder()->addToBuffer($sql, 'alters');
 	}
 
 	if (!$field->isNullable())
@@ -241,7 +250,7 @@ final class PerfORMStorage extends DibiConnection
 	    $template= $builder->getTemplate('field-change-nullable');
 	    $template->field= $fieldInfo;
 	    $sql= $builder->renderTemplate($template);
-	    PerfORMController::getBuilder()->addToBuffer($sql);
+	    PerfORMController::getBuilder()->addToBuffer($sql, 'alters');
 	    //PerfORMController::getConnection()->nativeQuery($sql);
 	}
 
@@ -314,7 +323,7 @@ final class PerfORMStorage extends DibiConnection
      * @param PerfORM|string $model
      * @return void
      */
-    public function dropModel($model)
+    public function dropTable($model)
     {
 	$modelName= is_object($model) ? $model->getTableName() : $model;
 	$hash= $this->fetchSingle('select hash from [tables] where [name] = %s ',
@@ -334,15 +343,53 @@ final class PerfORMStorage extends DibiConnection
 
 
 	$key= $hash;
-	if ( key_exists($key, $this->renamedModels))
+	if ( key_exists($key, $this->renamedTables))
 	{
-	    $array= $this->renamedModels[$key];
+	    $array= $this->renamedTables[$key];
 	    $array->counter++;
 	    $array->from= $modelName;
 	}
 	else
 	{
-	    $this->renamedModels[$key]= (object) array(
+	    $this->renamedTables[$key]= (object) array(
+	    'counter' => 1,
+	    'from' => $modelName,
+	    );
+	}
+    }
+
+    /**
+     * Drops view from database
+     * @param PerfORM|string $model
+     * @return void
+     */
+    public function dropView($model)
+    {
+	$modelName= is_object($model) ? $model->getTableName() : $model;
+	$hash= $this->fetchSingle('select hash from [views] where [name] = %s ',
+	    $modelName);
+	$sql= array();
+	$sql[] = $this->sql('delete from [views] where [name] = %s;', $modelName );
+
+	$this->queue(
+	    PerfORMStorage::VIEW_DROP,
+	    $modelName,
+	    $sql,
+	    array(
+		'model' => $model)
+	    );
+
+
+	$key= $hash;
+	if ( key_exists($key, $this->renamedViews))
+	{
+	    $array= $this->renamedViews[$key];
+	    $array->counter++;
+	    $array->from= $modelName;
+	}
+	else
+	{
+	    $this->renamedViews[$key]= (object) array(
 	    'counter' => 1,
 	    'from' => $modelName,
 	    );
@@ -391,9 +438,19 @@ final class PerfORMStorage extends DibiConnection
      * Get all models from storage
      * @return DibiResult
      */
-    public function getModels()
+    public function getTables()
     {
 	return $this->query('select [name] from [tables]');
+    }
+
+
+    /**
+     * Get all views from storage
+     * @return DibiResult
+     */
+    public function getViews()
+    {
+	return $this->query('select [name] from [views]');
     }
 
 
@@ -404,15 +461,17 @@ final class PerfORMStorage extends DibiConnection
      */
     public function hasModel($model)
     {
-	return $this->fetch('select [id] from [tables] where [name] = %s', $model->getTableName()) === false ? false : true;
+	return $this->fetch('
+	    select [id] from (select [id], [name] from [tables] union select  [id], [name] from [views])  where [name] = %s',
+	    $model->getTableName()) === false ? false : true;
     }
 
 
     /**
-     * Inserts model's name and hash into storage
+     * Inserts tables' name and hash into storage
      * @param PerfORM $model
      */
-    public function insertModel($model)
+    public function insertTable($model)
     {
 	$modelName= is_object($model) ? $model->getTableName() : $model;
 	$sql=array();
@@ -434,15 +493,51 @@ final class PerfORMStorage extends DibiConnection
 	    );
 
 	$key= $model->getHash();
-	if ( key_exists($key, $this->renamedModels))
+	if ( key_exists($key, $this->renamedTables))
 	{
-	    $array= $this->renamedModels[$key];
+	    $array= $this->renamedTables[$key];
 	    $array->counter++;
 	    $array->to= $modelName;
 	}
 	else
 	{
-	    $this->renamedModels[$key]= (object) array(
+	    $this->renamedTables[$key]= (object) array(
+	    'counter' => 1,
+	    'to' => $modelName,
+	    );
+	}
+    }
+
+
+    /**
+     * Inserts view's name and hash into storage
+     * @param PerfORM $model
+     */
+    public function insertView($model)
+    {
+	$modelName= is_object($model) ? $model->getTableName() : $model;
+	$sql=array();
+
+	$sql[] = $this->sql('insert into [views] values (null, %s, %s);', $model->getTableName(), $model->getHash() );
+
+	$this->queue(
+	    PerfORMStorage::VIEW_ADD,
+	    $modelName,
+	    $sql,
+	    array(
+		'model' => $model)
+	    );
+
+	$key= $model->getHash();
+	if ( key_exists($key, $this->renamedViews))
+	{
+	    $array= $this->renamedViews[$key];
+	    $array->counter++;
+	    $array->to= $modelName;
+	}
+	else
+	{
+	    $this->renamedViews[$key]= (object) array(
 	    'counter' => 1,
 	    'to' => $modelName,
 	    );
@@ -526,7 +621,7 @@ final class PerfORMStorage extends DibiConnection
 	}
 
 	# renamed tables, remove adds and drops
-	foreach( $this->renamedModels as $key => $array)
+	foreach( $this->renamedTables as $key => $array)
 	{
 	    if ( $array->counter == 2 and isset($array->from) and isset($array->to))
 	    {
@@ -558,6 +653,27 @@ final class PerfORMStorage extends DibiConnection
 	    }
 	}
 
+	# renamed views, remove adds and drops
+	foreach( $this->renamedViews as $key => $array)
+	{
+	    if ( $array->counter == 2 and isset($array->from) and isset($array->to))
+	    {
+		$model= $this->queue[PerfORMStorage::VIEW_ADD][$array->to]->values['model'];
+		unset($this->queue[PerfORMStorage::VIEW_ADD][$array->to]);
+		unset($this->queue[PerfORMStorage::VIEW_DROP][$array->from]);
+
+		$this->query('update [views] set [name] = %s where [name] = %s',
+		$array->to,
+		$array->from);
+
+		$this->query('update [views] set [table] = %s where [table] = %s',
+		$array->to,
+		$array->from);
+
+		PerfORMController::getBuilder()->renameView($model, $array->from);
+	    }
+	}
+
 	foreach( $this->queue as $operation => $actions)
 	{
 	    foreach($actions as $key => $action)
@@ -575,7 +691,7 @@ final class PerfORMStorage extends DibiConnection
 			$fieldInfo->nullable= true;
 			$template->field= $fieldInfo;
 
-			PerfORMController::getBuilder()->addToBuffer( $builder->renderTemplate($template) );
+			PerfORMController::getBuilder()->addToBuffer( $builder->renderTemplate($template), 'alters' );
 			//PerfORMController::getConnection()->nativeQuery($sql);
 
 			$result= PerfORMController::getConnection()->query('select * from %n',
@@ -594,7 +710,7 @@ final class PerfORMStorage extends DibiConnection
 					$default,
 					$pk,
 					$row->{$pk}
-				    ));
+				    ), 'alters');
 			    }
 			    elseif ( !$field->isNullable())
 			    {
@@ -607,7 +723,7 @@ final class PerfORMStorage extends DibiConnection
 			    $fieldInfo->nullable= false;
 			    $template= $builder->getTemplate('field-change-nullable');
 			    $template->field= $fieldInfo;
-			    PerfORMController::getBuilder()->addToBuffer( $builder->renderTemplate($template) );
+			    PerfORMController::getBuilder()->addToBuffer( $builder->renderTemplate($template), 'alters' );
 			    //PerfORMController::getConnection()->nativeQuery($sql);
 			}
 
@@ -626,11 +742,18 @@ final class PerfORMStorage extends DibiConnection
 			{
 			    $this->addIndexToModel($index);
 			}
-			//$this->updateModelSync();
 			break;
 
 		    case PerfORMStorage::TABLE_DROP:
 			PerfORMController::getBuilder()->dropTable($action->values['model']);
+			break;
+
+		    case PerfORMStorage::VIEW_ADD:
+			PerfORMController::getBuilder()->createView($action->values['model']);
+			break;
+
+		    case PerfORMStorage::VIEW_DROP:
+			PerfORMController::getBuilder()->dropView($action->values['model']);
 			break;
 		}
 

@@ -1,5 +1,4 @@
-{if isset($tables)}
-{foreach $tables as $table}
+{if isset($table)}
 -- Creating table "{$table->table}"
 CREATE TABLE {$table->table} (
 {foreach $table->fields as $field}
@@ -12,6 +11,4 @@ ALTER TABLE ONLY {$key->table}
 {if $key->type == 'primary'}    ADD CONSTRAINT {$key->constraint_name} PRIMARY KEY ({$key->field});{/if}{if $key->type == 'foreign'}    ADD CONSTRAINT {$key->constraint_name} FOREIGN KEY ({$key->key_name}) REFERENCES {$key->reference_table}({$key->reference_key_name});{/if}
 
 {/foreach}
-{/foreach}
 {/if}
-
