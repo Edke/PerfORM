@@ -221,7 +221,10 @@ final class QuerySet
      */
     public function filter($cond)
     {
-	$this->getDataSource()->where(func_get_args());
+	if ( is_array($cond))
+	{
+	    $this->getDataSource()->where(func_get_args());
+	}
 	return $this->prepareResult();
     }
 
@@ -261,6 +264,7 @@ final class QuerySet
 	    $model= new $modelName;
 	    $this->fill($model, $values);
 	    $result[]= $model;
+	    
 	}
 
 	if ( sizeof($result) > 0)
