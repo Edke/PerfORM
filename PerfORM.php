@@ -337,6 +337,46 @@ abstract class PerfORM
 
 
     /**
+     * Fill model with values from result
+     * @param PerfORM $model
+     * @param array $values
+     * @result PerfORM
+     */
+    public function fill($values)
+    {
+	if ($values === false) return;
+
+	foreach($this->getFields() as $field)
+	{
+	    $key= $this->getAlias().'__'.$field->getRealName();
+
+	    if ( $field->getIdent() == PerfORM::ForeignKeyField &&
+		!$field->isEnabledLazyLoading()
+	    )
+	    {
+		$child= clone $field->getReference();
+		$child->fill($values);
+		$field->setValue($child);
+	    }
+	    elseif ( $field->getIdent() == PerfORM::ForeignKeyField &&
+		$field->isEnabledLazyLoading()
+	    )
+	    {
+		$field->setLazyLoadingKeyValue($values[$key]);
+	    }
+	    elseif ( key_exists($key, $values))
+	    {
+		$field->setValue($values[$key]);
+	    }
+	    else
+	    {
+		throw new Exception("The is no value in result for field '$key'");
+	    }
+	}
+    }
+
+
+    /**
      * Getter for alias
      * @return string
      */

@@ -262,7 +262,7 @@ final class QuerySet
 	foreach($this->getDataSource() as $values)
 	{
 	    $model= new $modelName;
-	    $this->fill($model, $values);
+	    $model->fill($values);
 	    $result[]= $model;
 	    
 	}
