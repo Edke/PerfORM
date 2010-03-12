@@ -948,7 +948,7 @@ abstract class PerfORM
 	{
 	    $referenceModel= get_class($field->getReference());
 	    $model= new $referenceModel;
-	    $model->objects()->get('id='.$lazyLoadingKeyValue);
+	    $model->objects()->load('id=%i', $lazyLoadingKeyValue);
 	    $field->setValue($model);
 	    $field->disableLazyLoading();
 	}

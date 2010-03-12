@@ -97,13 +97,13 @@ final class QuerySet
 		$join_type= !$field->isNullable() && $inner ? 'INNER' : 'LEFT' ;
 		
 		$this->joins[]= sprintf("\t%s JOIN %s AS %s ON %s.%s = %s.%s",
-		$join_type,
-		$field->getReference()->getTableName(),
-		$field->getReference()->getAlias(),
-		$field->getReference()->getAlias(),
-		$field->getReferenceTableKey(),
-		$model->getAlias(),
-		$field->getRealName()
+		    $join_type,
+		    $field->getReference()->getTableName(),
+		    $field->getReference()->getAlias(),
+		    $field->getReference()->getAlias(),
+		    $field->getReferenceTableKey(),
+		    $model->getAlias(),
+		    $field->getRealName()
 		);
 		$this->addJoins($field->getReference(), $join_type == 'INNER' );
 	    }
@@ -131,8 +131,72 @@ final class QuerySet
     }
 
 
-    protected function applyCond($args)
+    /**
+     * Limits number of rows.
+     * @param  int limit
+     * @param  int offset
+     * @return DibiDataSource  provides a fluent interface
+     */
+    public function applyLimit($limit, $offset = null)
     {
+	$this->getDataSource()->applyLimit($limit, $offset);
+	return $this;
+    }
+
+
+    /**
+     * Selects columns to order by.
+     * @param  string|array column name or array of column names
+     * @param  string          sorting direction
+     * @return DibiDataSource  provides a fluent interface
+     *
+     */
+    public function orderBy($sourceField, $sorting = 'ASC')
+    {
+	$field= $this->fieldLookup($sourceField);
+	$row= $field->getModel()->getAlias() .'__'. $field->getRealName();
+	$this->getDataSource()->orderBy($row, $sorting);
+	return $this;
+    }
+
+
+
+    /**
+     * Finds field object from relation notation
+     * @param string $sourceField
+     * @return Field
+     */
+    protected function fieldLookup($sourceField)
+    {
+	if ( preg_match("#^(id|pk)$#i", $sourceField, $_match) )
+	{
+	    if ( $this->model->getPrimaryKey() or $this->model->hasField('id') )
+	    {
+		return $_match[1] == 'pk' ? $this->model->getField($this->getModel()->getPrimaryKey()) : $this->model->getField($_match[1]);
+	    }
+	    else
+	    {
+		throw  new Exception ('Model does not have primary key nor id field');
+	    }
+	}
+	elseif ( preg_match("#^[a-z0-9]+(__([a-z0-9]+))+$#i", $sourceField, $_match))
+	{
+	    return $this->getModel()->pathLookup($sourceField);
+	}
+	elseif( !preg_match("#__#", $sourceField) && $this->getModel()->hasField($sourceField))
+	{
+	    return $this->getModel()->getField($sourceField);
+	}
+	else
+	{
+	    throw new Exception("Unable to translate field '$sourceField'.");
+	}
+    }
+
+
+    public function where()
+    {
+	$args= func_get_args();
 	$cond= PerfORMController::getConnection()->sql($args);
 	$sql_operators=
 	    '<|>|<=|>=|=|<>|!=|'.
@@ -145,47 +209,17 @@ final class QuerySet
 	{
 	    foreach($matches[1] as $key => $originalFieldName)
 	    {
-		if ( preg_match("#^(id|pk)$#i", $originalFieldName, $_match) )
-		{
-		    if ( $this->model->getPrimaryKey() or $this->model->hasField('id') )
-		    {
-			Debug::consoleDump($this->model->getPrimaryKey(), 'pk');
-
-			$search[]= $matches[0][$key];
-			$field= $_match[1] == 'pk' ? $this->model->getField($this->getModel()->getPrimaryKey()) : $this->model->getField($_match[1]);
-			$replace[]= $this->model->getAlias().'__'.$field->getRealName(). ' ' . $matches[2][$key];
-		    }
-		    else
-		    {
-			throw  new Exception ('Model does not have primary key nor id field');
-		    }
-		}
-		elseif ( preg_match("#^[a-z0-9]+(__([a-z0-9]+))+$#i", $originalFieldName, $_match))
-		{
-		    $search[]= $matches[0][$key];
-		    $field= $this->getModel()->pathLookup($originalFieldName);
-		    $replace[]= $field->getModel()->getAlias().'__'.$field->getRealName(). ' ' . $matches[2][$key];
-		}
-		elseif( !preg_match("#__#", $originalFieldName) && $this->getModel()->hasField($originalFieldName))
-		{
-		    $search[]= $matches[0][$key];
-		    $field= $this->getModel()->getField($originalFieldName);
-		    $replace[]= $field->getModel()->getAlias().'__'.$field->getRealName(). ' ' . $matches[2][$key];
-		}
-		else
-		{
-		    //throw new Exception('invalid fieldname?');
-		}
-
+		$search[]= $matches[0][$key];
+		$field= $this->fieldLookup($originalFieldName);
+		$replace[]= $field->getModel()->getAlias().'__'.$field->getRealName(). ' ' . $matches[2][$key];
 	    }
-	    
-	    
 	}
 	//Debug::consoleDump($search,'search');
 	//Debug::consoleDump($replace,'replace');
-	$newCond= str_replace($search, $replace, $cond );
-	//Debug::consoleDump($newCond, 'result');
-	$this->getDataSource()->where($newCond);
+	$finalCond= str_replace($search, $replace, $cond );
+	//Debug::consoleDump($finalCond, 'final condition');
+	$this->getDataSource()->where($finalCond);
+	return $this;
     }
 
 
@@ -194,14 +228,32 @@ final class QuerySet
      * @param mixed
      * @return DibiResult
      */
-    public function get()
+    public function load()
     {
-	$this->applyCond(func_get_args());
+	if ( $args = func_get_args() ) $this->where($args);
 	$result= $this->getDataSource()->fetch();
+	
+	//Debug::consoleDump($result);
+	
 	PerfORMController::addSql(dibi::$sql);
 	$this->getModel()->fill($result);
-	$this->model->setUnmodified();
+	$this->getModel()->setUnmodified();
 	return $result ? true : false;
+    }
+
+
+
+    public function get()
+    {
+	if ( $args = func_get_args() ) $this->where($args);
+	$result= new QuerySetResult($this->getDataSource()->getResult(), $this->getModelName());
+	return $result;
+    }
+
+
+    protected function getModelName()
+    {
+	return get_class($this->model);
     }
 
 
@@ -212,16 +264,6 @@ final class QuerySet
     protected function getModel()
     {
 	return $this->model;
-    }
-
-
-    /**
-     * @todo actualy write method
-     * @return array
-     */
-    public function where($cond)
-    {
-	$this->applyCond(func_get_args());
     }
 
 
@@ -260,7 +302,6 @@ final class QuerySet
 	    $model= new $modelName;
 	    $model->fill($values);
 	    $result[]= $model;
-	    
 	}
 
 	if ( sizeof($result) > 0)
