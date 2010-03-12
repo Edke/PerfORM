@@ -665,6 +665,42 @@ abstract class PerfORM
 
 
     /**
+     * Finder of reference field mapped with $path
+     *
+     * @example pneumatika__dezen__nazov
+     * @param string $path
+     * @param string $delimiter
+     * @result Field
+     */
+    public function pathLookup($path, $delimiter = '__')
+    {
+	$pointer= null;
+	$reference= $this;
+	$fields= explode($delimiter, $path);
+	$iterator= count($fields);
+	foreach($fields as $field)
+	{
+	    $iterator--;
+	    if ($reference->hasField($field) &&
+		$reference->getField($field)->getIdent() == PerfORM::ForeignKeyField)
+	    {
+		$pointer= $reference->getField($field);
+		$reference= $pointer->getReference();
+	    }
+	    elseif ( $reference->hasField($field) &&
+		$iterator === 0 )
+	    {
+		$pointer= $reference->getField($field);
+	    }
+	    else {
+		throw new Exception("Invalid element '$field' in path '$path'.");
+	    }
+	}
+	return $pointer;
+    }
+
+
+    /**
      * Saving model
      *
      * When primary key is set, model will be updated otherwise inserted
@@ -708,23 +744,7 @@ abstract class PerfORM
 
 	foreach($paths as $path)
 	{
-	    $fields= explode('->', $path);
-
-	    $reference= $this;
-	    $pointer= null;
-	    foreach($fields as $field)
-	    {
-		if ($reference->hasField($field) &&
-		    $reference->getField($field)->getIdent() == PerfORM::ForeignKeyField)
-		{
-		    $pointer= $reference->getField($field);
-		    $reference= $pointer->getReference();
-		}
-		else {
-		    throw new Exception('invalid path');
-		}
-	    }
-	    $pointer->enableLazyLoading();
+	    $this->pathLookup($path, '->')->enableLazyLoading();
 	}
     }
 
