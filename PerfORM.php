@@ -250,6 +250,10 @@ abstract class PerfORM
 		    $aliasIndex= '';
 		}
 		$field->getReference()->setAlias($alias.$aliasIndex);
+		foreach( $field->getReference()->getFields() as $_field )
+		{
+		    $_field->getModel()->setAlias($alias.$aliasIndex);
+		}
 		$this->buildAliases($field->getReference());
 	    }
 	}
@@ -351,6 +355,13 @@ abstract class PerfORM
 	    $key= $this->getAlias().'__'.$field->getRealName();
 
 	    if ( $field->getIdent() == PerfORM::ForeignKeyField &&
+		!key_exists($field->getReference()->getTableName().'__'.$field->getReference()->getPrimaryKey(), $values))
+	    {
+		$field->setLazyLoadingKeyValue($values[$key]);
+		$field->enableLazyLoading();
+
+	    }
+	    elseif ( $field->getIdent() == PerfORM::ForeignKeyField &&
 		!$field->isEnabledLazyLoading()
 	    )
 	    {

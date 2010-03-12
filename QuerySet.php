@@ -131,43 +131,61 @@ final class QuerySet
     }
 
 
-    /**
-     * Fill model with values from result
-     * @param PerfORM $model
-     * @param array $values
-     * @result PerfORM
-     */
-    protected function fill($model, $values)
+    protected function applyCond($args)
     {
-	if ($values === false) return;
-
-	foreach($model->getFields() as $field)
+	$cond= PerfORMController::getConnection()->sql($args);
+	$sql_operators=
+	    '<|>|<=|>=|=|<>|!=|'.
+	    '\|\||'.
+	    '~|~~|~\*|!~|!~\*';
+	$search= array();
+	$replace= array();
+	
+	if ( preg_match_all('#[\"]?([a-z0-9_]+)[\"]?\s*('.$sql_operators.')#i', $cond, $matches) )
 	{
-	    $key= $model->getAlias().'__'.$field->getRealName();
+	    foreach($matches[1] as $key => $originalFieldName)
+	    {
+		if ( preg_match("#^(id|pk)$#i", $originalFieldName, $_match) )
+		{
+		    if ( $this->model->getPrimaryKey() or $this->model->hasField('id') )
+		    {
+			Debug::consoleDump($this->model->getPrimaryKey(), 'pk');
 
-	    if ( $field->getIdent() == PerfORM::ForeignKeyField &&
-		!$field->isEnabledLazyLoading()
-	    )
-	    {
-		$child= clone $field->getReference();
-		$this->fill($child, $values);
-		$field->setValue($child);
+			$search[]= $matches[0][$key];
+			$field= $_match[1] == 'pk' ? $this->model->getField($this->getModel()->getPrimaryKey()) : $this->model->getField($_match[1]);
+			$replace[]= $this->model->getAlias().'__'.$field->getRealName(). ' ' . $matches[2][$key];
+		    }
+		    else
+		    {
+			throw  new Exception ('Model does not have primary key nor id field');
+		    }
+		}
+		elseif ( preg_match("#^[a-z0-9]+(__([a-z0-9]+))+$#i", $originalFieldName, $_match))
+		{
+		    $search[]= $matches[0][$key];
+		    $field= $this->getModel()->pathLookup($originalFieldName);
+		    $replace[]= $field->getModel()->getAlias().'__'.$field->getRealName(). ' ' . $matches[2][$key];
+		}
+		elseif( !preg_match("#__#", $originalFieldName) && $this->getModel()->hasField($originalFieldName))
+		{
+		    $search[]= $matches[0][$key];
+		    $field= $this->getModel()->getField($originalFieldName);
+		    $replace[]= $field->getModel()->getAlias().'__'.$field->getRealName(). ' ' . $matches[2][$key];
+		}
+		else
+		{
+		    //throw new Exception('invalid fieldname?');
+		}
+
 	    }
-	    elseif ( $field->getIdent() == PerfORM::ForeignKeyField &&
-		$field->isEnabledLazyLoading()
-	    )
-	    {
-		$field->setLazyLoadingKeyValue($values[$key]);
-	    }
-	    elseif ( key_exists($key, $values))
-	    {
-		$field->setValue($values[$key]);
-	    }
-	    else
-	    {
-		throw new Exception("The is no value in result for field '$key'");
-	    }
+	    
+	    
 	}
+	//Debug::consoleDump($search,'search');
+	//Debug::consoleDump($replace,'replace');
+	$newCond= str_replace($search, $replace, $cond );
+	//Debug::consoleDump($newCond, 'result');
+	$this->getDataSource()->where($newCond);
     }
 
 
@@ -178,40 +196,22 @@ final class QuerySet
      */
     public function get()
     {
-	$options= new Set();
-	$options->import(func_get_args());
-
-	foreach ( $options as $option)
-	{
-	    if ( preg_match('#^(pk|id)=([0-9]+)$#i', $option, $matches) )
-	    {
-		$primaryKeyValue = $matches[2];
-		$primaryField= $this->model->getField($this->model->getPrimaryKey());
-		$this->getDataSource()->where('%n = %'.$primaryField->getType(),
-		    $this->model->getAlias().'__'.$primaryField->getRealName(),
-		    $primaryKeyValue);
-	    }
-	    elseif( preg_match('#^([^=]+)=(.+)$#i', $option, $matches) )
-	    {
-		if ( !$this->model->hasField($matches[1]) )
-		{
-		    throw new Exception("Invalid field '$matches[1]]'");
-		}
-		$this->getDataSource()->where('%n = %'.$this->model->getField($matches[1])->getType(),
-		    $this->model->getAlias().'__'.$matches[1],
-		    $matches[2]);
-	    }
-	    else
-	    {
-		throw new Exception("unknown option '$option'");
-	    }
-	}
-
+	$this->applyCond(func_get_args());
 	$result= $this->getDataSource()->fetch();
 	PerfORMController::addSql(dibi::$sql);
-	$this->fill($this->model, $result);
+	$this->getModel()->fill($result);
 	$this->model->setUnmodified();
 	return $result ? true : false;
+    }
+
+
+    /**
+     * Getter for QuerySet's model
+     * @return PerfORM
+     */
+    protected function getModel()
+    {
+	return $this->model;
     }
 
 
@@ -219,13 +219,9 @@ final class QuerySet
      * @todo actualy write method
      * @return array
      */
-    public function filter($cond)
+    public function where($cond)
     {
-	if ( is_array($cond))
-	{
-	    $this->getDataSource()->where(func_get_args());
-	}
-	return $this->prepareResult();
+	$this->applyCond(func_get_args());
     }
 
 
