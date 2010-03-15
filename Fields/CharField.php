@@ -22,6 +22,13 @@ class CharField extends TextField {
 
 
     /**
+     * Storage for choices
+     * @var string
+     */
+    protected $choices;
+
+
+    /**
      * Constructor, parses charfield specific options
      */
     public function  __construct()
@@ -35,6 +42,10 @@ class CharField extends TextField {
 		$this->setSize( $matches[1]);
 		$options->remove($option);
 	    }
+	    elseif ( preg_match('#^choices=(.+)$#i', $option, $matches) ) {
+		$this->setChoices( $matches[1]);
+		$options->remove($option);
+	    }
 	    elseif ( __CLASS__ == get_class($this))  {
 		$this->addError("unknown option '$option'");
 	    }
@@ -42,6 +53,28 @@ class CharField extends TextField {
 	return $options;
     }
 
+
+    public function display()
+    {
+	if ( is_null($this->value) or !isset($this->choices))
+	{
+	    return $this->getValue();
+	}
+	else
+	{
+	    return $this->choices[$this->value];
+	}
+    }
+
+
+    public function getChoices()
+    {
+	if ( isset($this->choices))
+	{
+	    return $this->choices;
+	}
+	return false;
+    }
 
     /**
      * Getter for hash, uses field's hash and adds size as additional parameter for hashing
@@ -77,6 +110,46 @@ class CharField extends TextField {
 
 
     /**
+     * Getter for field's value
+     * @return mixed
+     */
+    public function getValue()
+    {
+	if ( isset($this->choices))
+	{
+	    return $this;
+	}
+	else
+	{
+	    Debug::consoleDump(parent::getValue());
+	    return parent::getValue();
+	}
+    }
+
+
+    public function setValue($value)
+    {
+	if ( isset($this->choices) && !key_exists($value, $this->choices) )
+	{
+	    throw new Exception("Invalid value '$value', does not exists in choices.");
+	}
+	parent::setValue($value);
+    }
+
+    /**
+     * Sets choices
+     * @param array $choices
+     */
+    protected function  setChoices($choices){
+
+	if ( !method_exists($this->getModel(), $choices)) {
+	    $this->addError("invalid choices type");
+	}
+	$this->choices= call_user_func(array($this->getModel(), $choices));
+    }
+
+
+    /**
      * Sets size of varchar
      * @param integer $size 
      */
@@ -98,5 +171,11 @@ class CharField extends TextField {
 	    $this->addError("required option max_length was not set");
 	}
 	return parent::validate();
+    }
+
+
+    public function __toString()
+    {
+	return parent::getValue();
     }
 }
