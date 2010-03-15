@@ -156,7 +156,7 @@ class CharField extends TextField {
     protected function  setSize($size){
 	$size= (int) $size;
 	if ( !$size>0) {
-	    throw new Exception("invalid size '$size'");
+	    $this->addError("invalid size '$size'");
 	}
 	$this->size= $size;
     }
