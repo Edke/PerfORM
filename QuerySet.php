@@ -179,7 +179,7 @@ final class QuerySet
 		throw  new Exception ('Model does not have primary key nor id field');
 	    }
 	}
-	elseif ( preg_match("#^[a-z0-9]+(__([a-z0-9]+))+$#i", $sourceField, $_match))
+	elseif ( preg_match("#^[a-z0-9]+(__([a-z0-9_]+))+$#i", $sourceField, $_match))
 	{
 	    return $this->getModel()->pathLookup($sourceField);
 	}
