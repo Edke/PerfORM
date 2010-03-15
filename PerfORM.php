@@ -759,6 +759,11 @@ abstract class PerfORM
      */
     public function save()
     {
+	if ( $this->isView() )
+	{
+	    throw new Exception('Unable to save view.');
+	}
+
 	$pk= $this->getPrimaryKey();
 	if ( $this->fields[$pk]->getValue() )
 	{
