@@ -232,10 +232,7 @@ final class QuerySet
     {
 	if ( $args = func_get_args() ) $this->where($args);
 	$result= $this->getDataSource()->fetch();
-	
-	//Debug::consoleDump($result);
-	
-	PerfORMController::addSql(dibi::$sql);
+	if ( Environment::getConfig('perform')->profiler ) PerfORMController::addSql(dibi::$sql);
 	$this->getModel()->fill($result);
 	$this->getModel()->setUnmodified();
 	return $result ? true : false;

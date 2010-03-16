@@ -59,7 +59,9 @@ final class QuerySetResult implements IteratorAggregate, Countable
 
     final public function fetch()
     {
-	return $this->result->fetch();
+	$result= $this->result->fetch();
+	if ( $result !== false and Environment::getConfig('perform')->profiler ) PerfORMController::addSql(dibi::$sql);
+	return $result;
     }
 
     final public function getModelName()
