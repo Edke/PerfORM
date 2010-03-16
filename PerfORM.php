@@ -355,7 +355,7 @@ abstract class PerfORM
 	    $key= $this->getAlias().'__'.$field->getRealName();
 
 	    if ( $field->getIdent() == PerfORM::ForeignKeyField &&
-		!key_exists($field->getReference()->getTableName().'__'.$field->getReference()->getPrimaryKey(), $values))
+		!key_exists($field->getReference()->getAlias().'__'.$field->getReference()->getPrimaryKey(), $values))
 	    {
 		$field->setLazyLoadingKeyValue($values[$key]);
 		$field->enableLazyLoading();
