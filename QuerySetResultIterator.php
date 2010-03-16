@@ -41,12 +41,18 @@ final class QuerySetResultIterator implements Iterator, Countable
     /** @var int */
     protected $pointer;
 
+    /**
+     * @var boolean
+     */
+    protected $profiler;
+
     
     public function __construct(QuerySetResult $result, $offset = NULL, $limit = NULL)
     {
 	$this->result= $result;
 	$this->offset = (int) $offset;
 	$this->limit = $limit === NULL ? -1 : (int) $limit;
+	$this->profiler= Environment::getConfig('perform')->profiler;
     }
 
 
@@ -84,6 +90,7 @@ final class QuerySetResultIterator implements Iterator, Countable
 	$modelName= $this->result->getModelName();
 	$model = new $modelName;
 	$model->fill($this->row);
+	$this->profiler();
 	return $model;
     }
 
@@ -114,5 +121,14 @@ final class QuerySetResultIterator implements Iterator, Countable
     final public function count()
     {
 	return $this->result->count();
+    }
+
+    protected function profiler()
+    {
+	if ( $this->profiler)
+	{
+	    PerfORMController::addSql(dibi::$sql);
+	    $this->profiler= false;
+	}
     }
 }
