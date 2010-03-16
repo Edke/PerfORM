@@ -307,7 +307,7 @@ final class PerfORMController
 	$storage->trash();
 	foreach( self::getModels() as $model)
 	{
-	    $storage->insertModel($model);
+	    $model->isTable() ? $storage->insertTable($model) : $storage->insertView($model);
 	}
 	
 	# create index storage info
