@@ -121,7 +121,6 @@ class CharField extends TextField {
 	}
 	else
 	{
-	    Debug::consoleDump(parent::getValue());
 	    return parent::getValue();
 	}
     }
