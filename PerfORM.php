@@ -836,6 +836,23 @@ abstract class PerfORM
 
 
     /**
+     * Returns simplified version of model, stdClass filled with current values
+     * @return stdClass
+     */
+    public function simplify()
+    {
+	$result= new stdClass;
+
+	foreach($this->getFields() as $field)
+	{
+	    $value= $field->getIdent() == PerfORM::ForeignKeyField ? $field->simplify() : $field->getValue();
+	    $result->{$field->getName()} = $value;
+	}
+	return $result;
+    }
+
+
+    /**
      * Save (update) model to database
      *
      * Only modified fields will be updated

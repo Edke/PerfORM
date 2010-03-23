@@ -278,4 +278,15 @@ final class ForeignKeyField extends Field
 	$this->value= $value;
 	$this->modified= true;
     }
+
+
+    /**
+     * Simplifies reference model
+     * @return stdClass
+     */
+    public function simplify()
+    {
+	$value= $this->getValue();
+	return is_object($value) ? $value->simplify() : $value;
+    }
 }
