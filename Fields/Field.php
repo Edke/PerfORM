@@ -655,6 +655,16 @@ abstract class Field
 
 
     /**
+     * Simplifies field
+     * @return mixed
+     */
+    public function simplify()
+    {
+	return $this->getValue();
+    }
+
+
+    /**
      * Checks field for validation errors, inserts field name in message
      * @return array
      */

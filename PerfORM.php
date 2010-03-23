@@ -845,8 +845,7 @@ abstract class PerfORM
 
 	foreach($this->getFields() as $field)
 	{
-	    $value= $field->getIdent() == PerfORM::ForeignKeyField ? $field->simplify() : $field->getValue();
-	    $result->{$field->getName()} = $value;
+	    $result->{$field->getName()} = $field->simplify();
 	}
 	return $result;
     }
