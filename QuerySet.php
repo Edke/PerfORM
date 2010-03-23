@@ -160,6 +160,20 @@ final class QuerySet
     }
 
 
+    /**
+     * Selects columns to query.
+     * @param  string|array column name or array of column names
+     * @param  string           column alias
+     * @return DibiDataSource  provides a fluent interface
+     */
+    public function select($sourceField, $as = NULL)
+    {
+	$field= $this->fieldLookup($sourceField);
+	$row= $field->getModel()->getAlias() .'__'. $field->getRealName();
+	$this->getDataSource()->select($row, $as);
+	return $this;
+    }
+
 
     /**
      * Finds field object from relation notation
