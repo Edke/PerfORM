@@ -268,7 +268,7 @@ final class QuerySet
      * Getter for datasource
      * @return DibiDataSource
      */
-    protected function getDataSource()
+    public function getDataSource()
     {
 	if (!$this->dataSource)
 	{
