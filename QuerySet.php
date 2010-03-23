@@ -257,8 +257,22 @@ final class QuerySet
     public function get()
     {
 	if ( $args = func_get_args() ) $this->where($args);
-	$result= new QuerySetResult($this->getDataSource()->getResult(), $this->getModelName());
-	return $result;
+	return new QuerySetResult($this->getDataSource()->getResult(), $this->getModelName());
+    }
+
+    /**
+     * Returns array of simplified models of current result
+     * @return array
+     */
+    public function getSimplified()
+    {
+	$result= $this->get();
+	$simplifiedModels= array();
+	foreach($result as $model)
+	{
+	    $simplifiedModels[]= $model->simplify();
+	}
+	return $simplifiedModels;
     }
 
 
