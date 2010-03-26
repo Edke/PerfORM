@@ -63,9 +63,9 @@ class PerfORMModelCacheBuilder
     {
 	/* check if modelCacheDir valid */
 	$this->modelCacheDir= realpath(Environment::getConfig('perform')->modelCache);
-	if ( !file_exists($this->modelCacheDir))
+	if ( !file_exists($this->modelCacheDir) and !mkdir($this->modelCacheDir, 0777, true))
 	{
-	    throw new Exception("Model cache directory '$this->modelCacheDir' does not exists");
+	    throw new Exception("Unable to create model cache directory '$this->modelCacheDir'.");
 	}
 	if ( !is_writable($this->modelCacheDir) )
 	{
