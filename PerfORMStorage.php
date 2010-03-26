@@ -42,7 +42,14 @@ final class PerfORMStorage extends DibiConnection
      */
     public function  __construct()
     {
-	parent::__construct(Environment::getConfig('perform')->storage, 'storage');
+	$dibiConfig= dibi::getConnection()->getConfig();
+	$dbname= isset($dibiConfig['dbname']) ?  $dibiConfig['dbname'] : $dibiConfig['database'];
+	$config= array(
+	    'driver' => 'sqlite',
+	    'profiler' => Environment::getConfig('perform')->storage_profiler,
+	    'database' => realpath(Environment::getConfig('perform')->modelCache) . '/'. $dbname .'-storage.sdb',
+	);
+	parent::__construct($config, 'storage');
 
 	if ( !$this->getDatabaseInfo()->hasTable('fields'))
 	{
