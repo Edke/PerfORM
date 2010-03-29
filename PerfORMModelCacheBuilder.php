@@ -155,6 +155,7 @@ class PerfORMModelCacheBuilder
 	    $template= str_replace('%modelBase%', $modelInfo->extends, $template);
 	    $template= str_replace('%setup_fields%', $modelInfo->setup_fields, $template);
 	    $template= str_replace('%setup_indexes%', $modelInfo->setup_indexes, $template);
+	    $template= str_replace('%setup_extends%', $modelInfo->setup_extends, $template);
 	    $template= str_replace('%source%', $modelInfo->path, $template);
 
 	    $properties= null;
@@ -284,13 +285,21 @@ class PerfORMModelCacheBuilder
 		    }
 		}
 
+		$setup_extends= null;
+		if ( preg_match_all('#\$this\-\>extends\s*\(([^;]+)\)#i', $class[3][$key], $extends))
+		{
+		    $setup_extends= '$this->setInheritance('. $extends[1][0].')';
+		    //Debug::consoleDump($extends);
+		}
+
 		$this->addModelInfo( (object) array(
 		    'path' => $file,
 		    'extends' => $class[1][$key],
 		    'model' => $class[2][$key],
 		    'table' => strtolower($class[2][$key]),
-		    'setup_fields' => "\t". implode(";\n\t", $setup_fields). ";",
-		    'setup_indexes' => "\t". implode(";\n\t", $setup_indexes). ";",
+		    'setup_fields' => !empty($setup_fields) ? "\t". implode(";\n\t", $setup_fields). ";" : '',
+		    'setup_indexes' => !empty($setup_indexes) ? "\t". implode(";\n\t", $setup_indexes). ";" : '',
+		    'setup_extends' => $setup_extends ? "\t". $setup_extends . ";" : '',
 		    'fields' => $_fields,
 		    ));
 	    }

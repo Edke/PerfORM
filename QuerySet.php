@@ -69,6 +69,26 @@ final class QuerySet
      */
     protected function addFields($model)
     {
+	if ( $model->isExtended())
+	{
+	    $this->addFields($model->getExtend());
+	}
+/*	    $extended= $model->getExtend();
+	    foreach( $extended->getFields() as $field )
+	    {
+		if ( !$field->isPrimaryKey())
+		{
+		    $this->fields[]= sprintf("\t%s.%s as %s__%s", $extended->getAlias(), $field->getRealName(), $field->getModel()->getAlias(), $field->getRealName() );
+		    if ( $field->getIdent() == PerfORM::ForeignKeyField &&
+			!$field->isEnabledLazyLoading()
+		    )
+		    {
+			$this->addFields($field->getReference());
+		    }
+		}
+	    }
+	}*/
+
 	foreach( $model->getFields() as $field )
 	{
 	    $this->fields[]= sprintf("\t%s.%s as %s__%s", $model->getAlias(), $field->getRealName(), $model->getAlias(), $field->getRealName() );
@@ -88,6 +108,18 @@ final class QuerySet
      */
     protected function addJoins($model, $inner = true)
     {
+	if ( $model->isExtended())
+	{
+	    $this->joins[]= sprintf("\tINNER JOIN %s AS %s ON %s.%s = %s.%s",
+		    $model->getExtend()->getTableName(),
+		    $model->getExtend()->getAlias(),
+		    $model->getExtend()->getAlias(),
+		    $model->getExtend()->getPrimaryKey(),
+		    $model->getAlias(),
+		    $model->getField($model->getPrimaryKey())->getRealName()
+		);
+	}
+
 	foreach( $model->getFields() as $field )
 	{
 	    if ( $field->getIdent() == PerfORM::ForeignKeyField &&
@@ -199,7 +231,7 @@ final class QuerySet
 	}
 	elseif( !preg_match("#__#", $sourceField) && $this->getModel()->hasField($sourceField))
 	{
-	    return $this->getModel()->getField($sourceField);
+	    return $this->getModel()->getField($sourceField, true);
 	}
 	else
 	{

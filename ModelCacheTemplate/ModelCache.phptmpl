@@ -16,6 +16,7 @@ final class %modelName% extends %modelBase% {
      */
     protected function setup()
     {
+%setup_extends%
 %setup_fields%
 %setup_indexes%
     }
