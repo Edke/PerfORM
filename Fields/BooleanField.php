@@ -85,6 +85,10 @@ class BooleanField extends Field
 	{
 	    return null;
 	}
+	elseif( is_bool($value) )
+	{
+	    return $value;
+	}
 	else {
 	    if ( preg_match('#^(t|true|y|yes|1)$#i', $value))
 	    {
