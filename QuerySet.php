@@ -281,9 +281,8 @@ final class QuerySet
 	if ( Environment::getConfig('perform')->profiler ) PerfORMController::addSql(dibi::$sql);
 	$this->getModel()->fill($result);
 	$this->getModel()->setUnmodified();
-	return $result ? true : false;
+	return $result ? $this->getModel() : false;
     }
-
 
 
     public function get()
