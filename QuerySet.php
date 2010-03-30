@@ -260,6 +260,10 @@ final class QuerySet
 		$replace[]= $field->getModel()->getAlias().'__'.$field->getRealName(). ' ' . $matches[2][$key];
 	    }
 	}
+	else
+	{
+	    throw new Exception('Unable to match operator.');
+	}
 	//Debug::consoleDump($search,'search');
 	//Debug::consoleDump($replace,'replace');
 	$finalCond= str_replace($search, $replace, $cond );
