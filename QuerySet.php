@@ -164,6 +164,25 @@ final class QuerySet
 
 
     /**
+     * Deletes current datasource, including inheritated models
+     */
+    public function delete()
+    {
+	$pk= $this->model->getPrimaryKey();
+	$result= $this->select($pk, 'id')
+	    ->getDataSource();
+	$tablenames= $this->model->getAllTableNames();
+	foreach($result as $row)
+	{
+	    foreach( $tablenames as $tablename)
+	    {
+		PerfORMController::getConnection()->query("DELETE FROM %n", $tablename, 'where %n = %i', $pk, $row->{$pk} );
+		PerfORMController::addSql(dibi::$sql);
+	    }
+	}
+    }
+
+    /**
      * Limits number of rows.
      * @param  int limit
      * @param  int offset

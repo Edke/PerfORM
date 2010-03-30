@@ -627,6 +627,22 @@ abstract class PerfORM
 
 
     /**
+     * Getter for all tablenames from inheritated models
+     * @return array
+     */
+    public function getAllTableNames()
+    {
+	$result= array();
+	if ( $this->isExtended())
+	{
+	    $result= array_merge($result, $this->getExtend()->getAllTableNames());
+	}
+	$result= array_merge($result, array($this->getTableName()));
+	return $result;
+    }
+
+
+    /**
      * Getter for sql table name
      * @return string
      */
