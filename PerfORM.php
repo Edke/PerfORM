@@ -956,9 +956,9 @@ abstract class PerfORM
     {
 	$result= new stdClass;
 
-	foreach($this->getFields() as $field)
+	foreach($this->getFieldNames() as $fieldName)
 	{
-	    $result->{$field->getName()} = $field->simplify();
+	    $result->{$fieldName} = $this->getField($fieldName, true)->simplify();
 	}
 	return $result;
     }
