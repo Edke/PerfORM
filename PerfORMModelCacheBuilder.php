@@ -289,7 +289,7 @@ class PerfORMModelCacheBuilder
 		if ( preg_match_all('#\$this\-\>extends\s*\(([^;]+)\)#i', $class[3][$key], $extends))
 		{
 		    $setup_extends= '$this->setInheritance('. $extends[1][0].')';
-		    //Debug::consoleDump($extends);
+		    //Debug::barDump($extends);
 		}
 
 		$this->addModelInfo( (object) array(

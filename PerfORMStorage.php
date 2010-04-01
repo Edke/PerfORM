@@ -601,9 +601,9 @@ final class PerfORMStorage extends DibiConnection
      */
     public function process()
     {
-	#Debug::consoleDump($this->renamedFields,'renamed fields');
-	#Debug::consoleDump($this->renamedModels,'renamed models');
-	#Debug::consoleDump($this->queue,'queue');
+	#Debug::barDump($this->renamedFields,'renamed fields');
+	#Debug::barDump($this->renamedModels,'renamed models');
+	#Debug::barDump($this->queue,'queue');
 
 	# renamed fields, remove adds and drops
 	foreach( $this->renamedFields as $key => $array)

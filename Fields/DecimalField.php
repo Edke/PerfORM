@@ -150,7 +150,7 @@ class DecimalField extends Field
      */
     protected function isValidValue($value)
     {
-	//Debug::consoleDump($this->getRegex());
+	//Debug::barDump($this->getRegex());
 	return (preg_match($this->getRegex(), $value)) ? true : false;
     }
 

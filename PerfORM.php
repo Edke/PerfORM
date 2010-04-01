@@ -480,7 +480,7 @@ abstract class PerfORM
 	elseif( $this->isExtended() and $includeExtends)
 	{
 	    $result= $this->extends->getField($name, true);
-	    //Debug::consoleDump($result);
+	    //Debug::barDump($result);
 	    return $result;
 	}
 	else
@@ -727,7 +727,7 @@ abstract class PerfORM
 
 	if (count($insert)>0)
 	{
-	    //Debug::consoleDump($insert, 'insert array');
+	    Debug::barDump($insert, 'insert array');
 
 	    PerfORMController::queryAndLog('insert into %n', $this->getTableName(), $insert);
 	    $this->setUnmodified();
@@ -1000,7 +1000,7 @@ abstract class PerfORM
 
 	if (count($update)>0)
 	{
-	    #Debug::consoleDump($update, 'update array');
+	    #Debug::barDump($update, 'update array');
 	    PerfORMController::queryAndLog('update %n set', $this->getTableName(), $update, "where %n = %$primaryKeyType", $primaryKey, $primaryKeyValue);
 	    $this->setUnmodified();
 	    return $primaryKeyValue;

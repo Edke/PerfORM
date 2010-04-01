@@ -354,7 +354,7 @@ final class PerfORMController
 				#$ident= $model->getTableName().'-'.$field->getName().'-'.$field->getHash();
 				$columnInfo= self::getConnection()->getDatabaseInfo()->getTable($model->getTableName())->getColumn($field->getName());
 
-				//if (get_class($field) == 'DecimalField' ) Debug::consoleDump($columnInfo->getSize(), $ident);
+				//if (get_class($field) == 'DecimalField' ) Debug::barDump($columnInfo->getSize(), $ident);
 
 				# changing datatype
 				if ( !self::getBuilder()->hasNativeType($field, $columnInfo->getNativeType() ) or

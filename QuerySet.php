@@ -283,10 +283,10 @@ final class QuerySet
 	{
 	    throw new Exception('Unable to match operator.');
 	}
-	//Debug::consoleDump($search,'search');
-	//Debug::consoleDump($replace,'replace');
+	//Debug::barDump($search,'search');
+	//Debug::barDump($replace,'replace');
 	$finalCond= str_replace($search, $replace, $cond );
-	//Debug::consoleDump($finalCond, 'final condition');
+	//Debug::barDump($finalCond, 'final condition');
 	$this->getDataSource()->where($finalCond);
 	return $this;
     }
