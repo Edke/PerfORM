@@ -398,6 +398,7 @@ abstract class PerfORM
 		throw new Exception("The is no value in result for field '$key'");
 	    }
 	}
+	$this->setUnmodified();
 
 	if ( $this->isExtended())
 	{
