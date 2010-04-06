@@ -91,6 +91,13 @@ abstract class PerfORM
 
 
     /**
+     * Determines if model was frozen
+     * @var boolean
+     */
+    protected $freeze= false;
+
+
+    /**
      * Hash of model for structure checking
      * @var string
      */
@@ -403,6 +410,18 @@ abstract class PerfORM
 	if ( $this->isExtended())
 	{
 	    $this->extends->fill($values);
+	}
+    }
+
+    /**
+     * Freezes model's definition after building
+     */
+    protected function freeze()
+    {
+	$this->freeze= true;
+	foreach($this->getFields() as $field)
+	{
+	    $field->freeze();
 	}
     }
 
@@ -749,6 +768,16 @@ abstract class PerfORM
     public function isExtended()
     {
 	return isset($this->extends) ? true : false;
+    }
+
+
+    /**
+     * Checks if model was frozen
+     * @return boolean
+     */
+    protected function isFrozen()
+    {
+	return $this->freeze;
     }
 
 

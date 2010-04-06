@@ -52,6 +52,12 @@ abstract class Field
 
 
     /**
+     * Determined whether field was frozen
+     * @var boolean
+     */
+    protected $freeze= false;
+
+    /**
      * Hash of field for structure checking
      * @var string
      */
@@ -245,6 +251,16 @@ abstract class Field
 		'unique' => $unique,
 	    );
 	}
+    }
+
+
+    /**
+    /**
+     * Freeze curent field's definition
+     */
+    public function freeze()
+    {
+	$this->freeze= true;
     }
 
 
@@ -443,6 +459,16 @@ abstract class Field
     public function isForeignKey()
     {
 	return false;
+    }
+
+
+    /**
+     * Determines whether field was frozen
+     * @return boolean
+     */
+    public function isFrozen()
+    {
+	return $this->freeze;
     }
 
 
