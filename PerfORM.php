@@ -673,7 +673,6 @@ abstract class PerfORM
 	elseif( $this->isExtended() and $includeExtends)
 	{
 	    $result= $this->extends->getField($name, true);
-	    //Debug::barDump($result);
 	    return $result;
 	}
 	else

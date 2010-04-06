@@ -658,7 +658,6 @@ abstract class Field
 	if ( $this->default &&
 	    !$this->isValidValue($this->default))
 	{
-	    //Debug::barDump($this->default);
 	    $this->_addError("invalid datatype of default value '$this->default'");
 	}
 	elseif ($this->default)
