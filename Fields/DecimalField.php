@@ -189,17 +189,17 @@ class DecimalField extends Field
      */
     public function validate() {
 	if ( is_null($this->decimals)) {
-	    $this->addError("required option decimal_places was not set");
+	    $this->_addError("required option decimal_places was not set");
 	}
 	if ( is_null($this->digits)) {
-	    $this->addError("required option max_digits was not set");
+	    $this->_addError("required option max_digits was not set");
 	}
 
 	if ( !is_null($this->decimals) and
 	    !is_null($this->digits) and
 	    ($this->digits < $this->decimals) )
 	{
-	    $this->addError("max_digits has to be egual or bigger than decimal_places");
+	    $this->_addError("max_digits has to be egual or bigger than decimal_places");
 	}
 
 	return parent::validate();

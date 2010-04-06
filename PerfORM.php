@@ -168,7 +168,7 @@ abstract class PerfORM
      * Adds error message while validating model
      * @param string $msg
      */
-    public function addError($msg)
+    public function _addError($msg)
     {
 	$this->errors[]= str_replace('%s', get_class($this), $msg);
     }
@@ -222,7 +222,7 @@ abstract class PerfORM
 	{
 	    if ( !$this->hasField($fieldName))
 	    {
-		$this->addError(sprintf("%%s::%s (Index) field '%s' does not exists in model",$key, $fieldName));
+		$this->_addError(sprintf("%%s::%s (Index) field '%s' does not exists in model",$key, $fieldName));
 	    }
 
 	    if ( key_exists($key, $this->indexes))
@@ -1026,7 +1026,7 @@ abstract class PerfORM
 	
 	if ( $this->isView() && !(method_exists($this,'getViewSetup') and is_string($this->getViewSetup())) )
 	{
-	    $this->addError('%s - invalid view definition');
+	    $this->_addError('%s - invalid view definition');
 	}
 
 	if (count($this->errors)>0)

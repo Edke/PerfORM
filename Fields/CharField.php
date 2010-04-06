@@ -142,7 +142,7 @@ class CharField extends TextField {
     protected function setChoices($choices){
 
 	if ( !method_exists($this->getModel(), $choices)) {
-	    $this->addError("invalid choices type");
+	    $this->_addError("invalid choices type");
 	}
 	$this->choices= call_user_func(array($this->getModel(), $choices));
     }
@@ -155,7 +155,7 @@ class CharField extends TextField {
     protected function setSize($size){
 	$size= (int) $size;
 	if ( !$size>0) {
-	    $this->addError("invalid size '$size'");
+	    $this->_addError("invalid size '$size'");
 	}
 	$this->size= $size;
     }
@@ -177,7 +177,7 @@ class CharField extends TextField {
      */
     public function validate() {
 	if ( is_null($this->size)) {
-	    $this->addError("required option max_length was not set");
+	    $this->_addError("required option max_length was not set");
 	}
 	return parent::validate();
     }

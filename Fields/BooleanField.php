@@ -99,7 +99,7 @@ class BooleanField extends Field
 		return false;
 	    }
 	    else {
-		$this->addError("unable to retype value '$value' to boolean");
+		$this->_addError("unable to retype value '$value' to boolean");
 	    }
 	}
     }

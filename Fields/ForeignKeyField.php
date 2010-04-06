@@ -234,7 +234,7 @@ final class ForeignKeyField extends Field
      */
     protected function setDbName($dbName)
     {
-	$this->addError("forbidden to set db_column for foreign key, change mask instead");
+	$this->_addError("forbidden to set db_column for foreign key, change mask instead");
 	return false;
     }
 

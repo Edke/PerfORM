@@ -100,11 +100,11 @@ class SlugField extends CharField {
      */
     public function validate() {
 	if ( is_null($this->sourceField)) {
-	    $this->addError("required option auto_source was not set");
+	    $this->_addError("required option auto_source was not set");
 	}
 	elseif( !$this->getModel()->hasField($this->sourceField))
 	{
-	    $this->addError("auto_source field '$this->sourceField' does not exists");
+	    $this->_addError("auto_source field '$this->sourceField' does not exists");
 	}
 	return parent::validate();
     }

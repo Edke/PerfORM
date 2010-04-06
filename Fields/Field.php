@@ -213,7 +213,7 @@ abstract class Field
      * Adds error message while validating field's options
      * @param string $msg
      */
-    protected function addError($msg)
+    protected function _addError($msg)
     {
 	if ( $this->name )
 	{
@@ -237,7 +237,7 @@ abstract class Field
 	$key = $indexName.'_'.$suffix;
 	if ( key_exists($key, $this->indexes))
 	{
-	    $this->addError("Index '$key' already exists");
+	    $this->_addError("Index '$key' already exists");
 	}
 	else{
 	    $this->indexes[$key]= (object) array(
@@ -499,7 +499,7 @@ abstract class Field
     {
 	if( !is_null($this->isNullable) )
 	{
-	    $this->addError("has already null/notnull");
+	    $this->_addError("has already null/notnull");
 	    return false;
 	}
 	$this->isNullable= false;
@@ -513,7 +513,7 @@ abstract class Field
     {
 	if( !is_null($this->isNullable) )
 	{
-	    $this->addError("has already null/notnull");
+	    $this->_addError("has already null/notnull");
 	    return false;
 	}
 	$this->isNullable= true;
@@ -528,7 +528,7 @@ abstract class Field
     {
 	if( !is_null($this->default) )
 	{
-	    $this->addError("has already default value '$this->default'");
+	    $this->_addError("has already default value '$this->default'");
 	    return false;
 	}
 	$this->default= $default;
@@ -543,7 +543,7 @@ abstract class Field
     {
 	if( !is_callable(array($this->getModel(), $callback)) )
 	{
-	    $this->addError("callback '$callback' not callable on field's model");
+	    $this->_addError("callback '$callback' not callable on field's model");
 	    return false;
 	}
 	$this->defaultCallback= array($this->getModel(), $callback);
@@ -558,7 +558,7 @@ abstract class Field
     {
 	if( !is_null($this->dbName) )
 	{
-	    $this->addError("has already set db_column '$this->dbName'");
+	    $this->_addError("has already set db_column '$this->dbName'");
 	    return false;
 	}
 	$this->dbName= $dbName;
@@ -593,7 +593,7 @@ abstract class Field
     {
 	if( !is_callable(array($this->getModel(), $callback)) )
 	{
-	    $this->addError("callback '$callback' not callable on field's model");
+	    $this->_addError("callback '$callback' not callable on field's model");
 	    return false;
 	}
 	$this->recastCallback= array($this->getModel(), $callback);
@@ -608,7 +608,7 @@ abstract class Field
     {
 	if( !is_callable(array($this->getModel(), $callback)) )
 	{
-	    $this->addError("callback '$callback' not callable on field's model");
+	    $this->_addError("callback '$callback' not callable on field's model");
 	    return false;
 	}
 	$this->nullCallback= array($this->getModel(), $callback);
@@ -674,8 +674,8 @@ abstract class Field
 	if ( $this->default &&
 	    !$this->isValidValue($this->default))
 	{
-	    Debug::barDump($this->default);
-	    $this->addError("invalid datatype of default value '$this->default'");
+	    //Debug::barDump($this->default);
+	    $this->_addError("invalid datatype of default value '$this->default'");
 	}
 	elseif ($this->default)
 	{
