@@ -54,6 +54,10 @@ class CharField extends TextField {
     }
 
 
+    /**
+     * Displays human readable value of choices
+     * @return mixed
+     */
     public function display()
     {
 	if ( is_null($this->value) or !isset($this->choices))
@@ -67,6 +71,10 @@ class CharField extends TextField {
     }
 
 
+    /**
+     * Getter for all choices of field
+     * @return array
+     */
     public function getChoices()
     {
 	if ( isset($this->choices))

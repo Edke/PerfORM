@@ -89,10 +89,16 @@ class SlugField extends CharField {
 	return is_null($value) ? null : String::webalize($value);
     }
 
+
+    /**
+     * Sets source field to build slug from
+     * @param string $field
+     */
     protected function setSourceField($field)
     {
 	$this->sourceField= $field;
     }
+
 
     /**
      * Validates field's errors and returns them as array
