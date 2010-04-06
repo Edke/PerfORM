@@ -153,8 +153,8 @@ class PerfORMModelCacheBuilder
 	    $template= str_replace('%lastModification%', time(), $template);
 	    $template= str_replace('%modelName%', $modelInfo->model, $template);
 	    $template= str_replace('%modelBase%', $modelInfo->extends, $template);
-	    $template= str_replace('%setup_fields%', $modelInfo->setup_fields, $template);
-	    $template= str_replace('%setup_indexes%', $modelInfo->setup_indexes, $template);
+/*	    $template= str_replace('%setup_fields%', $modelInfo->setup_fields, $template);
+	    $template= str_replace('%setup_indexes%', $modelInfo->setup_indexes, $template);*/
 	    $template= str_replace('%setup_extends%', $modelInfo->setup_extends, $template);
 	    $template= str_replace('%source%', $modelInfo->path, $template);
 
@@ -243,53 +243,29 @@ class PerfORMModelCacheBuilder
 	$buffer= preg_replace('#/\*.*\*/#msU', '', $buffer);
 
 
-	if ( preg_match_all('#abstract\s*class\s*(PerfORM([^ ]+))\s*extends\s*(?:PerfORM)\s*{.*protected\s*function\s*setup\s*\(\s*\)\s*{(.*)}#imsU', $buffer, $class))
+	if ( preg_match_all('#abstract\s*class\s*(PerfORM([^ ]+))\s*extends\s*(PerfORM([^ ]*))\s*{.*protected\s*function\s*setup\s*\(\s*\)\s*{(.*)}#imsU', $buffer, $class))
 	{
 	    foreach($class[0] as $key => $value)
 	    {
-		$setup_fields= array();
+
 		$_fields= array();
-		if ( preg_match_all('#\$this\-\>([^= ]+)\s*=\s*(new\s*([a-z]+)\s*\()(.*)\)#i', $class[3][$key], $field))
+		if ( preg_match_all('#\$this\-\>add(.+Field)\s*\(\s*[\'\"]([^\'\"]+)[\'\"](?:\s*,\s*new\s*([^ ]+)\s*\)){0,1}#i', $class[5][$key], $field))
 		{
+
 		    foreach($field[0] as $field_key => $field_value)
 		    {
 			$reference= null;
-			if ( $field[3][$field_key] == 'ForeignKeyField' && preg_match('#new\s*([^ ,]+)#i', $field[4][$field_key], $ref) )
+			if ( $field[1][$field_key] == 'ForeignKeyField' && !empty ($field[3][$field_key]) )
 			{
-			    $reference= $ref[1];
+			    $reference= $field[3][$field_key];
 			}
 
-			$_fields[$field[1][$field_key]]= (object) array(
-			    'name' => $field[1][$field_key],
-			    'type' => $field[3][$field_key],
+			$_fields[$field[2][$field_key]]= (object) array(
+			    'name' => $field[2][$field_key],
+			    'type' => $field[1][$field_key],
 			    'reference' => $reference,
 			);
-
-			$options= trim($field[4][$field_key]);
-
-			$setup_fields[] = sprintf("\t\$this->addField('%s', %s \$this%s%s))",
-			    $field[1][$field_key],
-			    $field[2][$field_key],
-			    empty($options) ? '' : ', ',
-			    $options
-			);
 		    }
-		}
-
-		$setup_indexes= array();
-		if ( preg_match_all('#\$this\-\>addIndex\s*\([^;]+\)#i', $class[3][$key], $index))
-		{
-		    foreach($index[0] as $index_key => $index_value)
-		    {
-			$setup_indexes[] = $index_value;
-		    }
-		}
-
-		$setup_extends= null;
-		if ( preg_match_all('#\$this\-\>extends\s*\(([^;]+)\)#i', $class[3][$key], $extends))
-		{
-		    $setup_extends= '$this->setInheritance('. $extends[1][0].')';
-		    //Debug::barDump($extends);
 		}
 
 		$this->addModelInfo( (object) array(
@@ -297,9 +273,7 @@ class PerfORMModelCacheBuilder
 		    'extends' => $class[1][$key],
 		    'model' => $class[2][$key],
 		    'table' => strtolower($class[2][$key]),
-		    'setup_fields' => !empty($setup_fields) ? "\t". implode(";\n\t", $setup_fields). ";" : '',
-		    'setup_indexes' => !empty($setup_indexes) ? "\t". implode(";\n\t", $setup_indexes). ";" : '',
-		    'setup_extends' => $setup_extends ? "\t". $setup_extends . ";" : '',
+		    'setup_extends' => empty($class[4][$key]) ? '' : "\t\$this->setInheritance( new ". $class[4][$key].");",
 		    'fields' => $_fields,
 		    ));
 	    }

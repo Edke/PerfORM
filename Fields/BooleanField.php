@@ -30,20 +30,6 @@ class BooleanField extends Field
 
 
     /**
-     * Constructor, adds error on unknown options
-     */
-    public function __construct()
-    {
-	$options= parent::__construct(func_get_args());
-
-	foreach ( $options as $option)
-	{
-	    $this->addError("unknown option '$option'");
-	}
-    }
-
-
-    /**
      * Returns identification integer of field
      * @return integer
      */

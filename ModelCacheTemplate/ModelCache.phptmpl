@@ -10,15 +10,14 @@
  */
 final class %modelName% extends %modelBase% {
 
-
+    
     /**
-     * Overloaded setup of BaseModel
+     * Setup of BaseModel
      */
     protected function setup()
     {
-%setup_extends%
-%setup_fields%
-%setup_indexes%
+	parent::setup();
+	%setup_extends%
     }
 
 

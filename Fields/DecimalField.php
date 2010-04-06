@@ -45,29 +45,16 @@ class DecimalField extends Field
 
     /**
      * Constructor, parses charfield specific options
+     * @var string $name
+     * @var integer $maxDigits
+     * @var integer $decimalPlaces
      */
-    public function  __construct()
+    public function  __construct($name, $maxDigits, $decimalPlaces)
     {
-	$args= func_get_args();
-	$args= ( is_array($args) && count($args) == 1 && isset($args[0]) ) ? $args[0] : $args;
-	$options= parent::__construct($args);
-
-	foreach ( $options as $option){
-	    if ( preg_match('#^max_digits=([0-9]+)$#i', $option, $matches) ) {
-		$this->setDigits( $matches[1]);
-		$options->remove($option);
-	    }
-	    elseif ( preg_match('#^decimal_places=([0-9]+)$#i', $option, $matches) ) {
-		$this->setDecimals( $matches[1]);
-		$options->remove($option);
-	    }
-	    elseif ( __CLASS__ == get_class($this))  {
-		$this->addError("unknown option ! '$option'");
-	    }
-	}
-	return $options;
+	parent::__construct($name);
+	$this->setDigits($maxDigits);
+	$this->setDecimals($decimalPlaces);
     }
-
 
 
     /**
@@ -137,7 +124,7 @@ class DecimalField extends Field
      * Setter for decimal places
      * @param integer $decimals
      */
-    final protected function setDecimals($decimals)
+    protected function setDecimals($decimals)
     {
 	$this->decimals= (int) $decimals;
     }
@@ -177,7 +164,7 @@ class DecimalField extends Field
      * Setter for maximal digits
      * @param integer $digits
      */
-    final protected function setDigits($digits)
+    protected function setDigits($digits)
     {
 	$this->digits= (int) $digits;
     }

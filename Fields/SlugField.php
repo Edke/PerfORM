@@ -28,22 +28,14 @@ class SlugField extends CharField {
 
     /**
      * Constructor, parses charfield specific options
+     * @var string $name
+     * @var string $maxLenght
+     * @var string $autoSource
      */
-    public function  __construct()
+    public function  __construct($name, $maxLength, $autoSource)
     {
-	$args= func_get_args();
-	$args= ( is_array($args) && count($args) == 1 && isset($args[0]) ) ? $args[0] : $args;
-	$options= parent::__construct($args);
-	foreach ( $options as $option){
-	    if ( preg_match('#^auto_source=(.+)$#i', $option, $matches) ) {
-		$this->setSourceField( $matches[1]);
-		$options->remove($option);
-	    }
-	    elseif ( __CLASS__ == get_class($this))  {
-		$this->addError("unknown option '$option'");
-	    }
-	}
-	return $options;
+	parent::__construct($name, $maxLength);
+	$this->setSourceField($autoSource);
     }
 
 

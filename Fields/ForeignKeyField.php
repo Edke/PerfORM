@@ -60,23 +60,13 @@ final class ForeignKeyField extends Field
 
     /**
      * Constructor, parses foreignkey specific options
+     * @var string $name
+     * @var PerfORM $reference
      */
-    public function  __construct()
+    public function  __construct($name, $reference)
     {
-	$options= parent::__construct(func_get_args());
-
-	foreach ( $options as $option)
-	{
-	    if ( is_object($option) && is_subclass_of($option, 'PerfORM'))
-	    {
-		$this->reference= $option;
-		$options->remove($option);
-	    }
-	    else
-	    {
-		$this->addError("unknown option '$option'");
-	    }
-	}
+	$this->reference= $reference;
+	parent::__construct($name);
     }
 
 
@@ -232,7 +222,7 @@ final class ForeignKeyField extends Field
      * @param string $dbName
      * @return false
      */
-    protected function setDbName($dbName)
+    public function setDbName($dbName)
     {
 	$this->_addError("forbidden to set db_column for foreign key, change mask instead");
 	return false;
@@ -260,7 +250,8 @@ final class ForeignKeyField extends Field
 	$this->referenceKey= $this->reference->getPrimaryKey();
 	$dbName=str_replace('%ownName', $name, $this->nameMask);
 	$dbName=str_replace('%foreignKeyName', $this->referenceKey, $dbName);
-	parent::setDbName($dbName);
+	$this->dbName= $dbName;
+	//parent::setDbName($dbName);
     }
 
 

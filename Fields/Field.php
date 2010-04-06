@@ -147,71 +147,13 @@ abstract class Field
      * @param array $_options
      * @return Set
      */
-    public function __construct($_options)
+    public function  __construct($name)
     {
-	if (!is_object($_options[0]) and !is_subclass_of($_options[0], 'PerfORM'))
+	if (empty($name))
 	{
-	    throw new Exception('First parameter of Field has to be parent Model');
+	    $this->_addError("Name was not set");
 	}
-	$this->setModel($_options[0]);
-	unset($_options[0]);
-
-	$options= new Set();
-	$options->import($_options);
-
-	foreach ( $options as $option)
-	{
-	    if (is_object($option))
-	    {
-	    }
-	    elseif ( strtolower($option) == 'null' )
-	    {
-		$this->setNullable();
-		$options->remove($option);
-	    }
-	    elseif ( strtolower($option) == 'notnull' )
-	    {
-		$this->setNotNullable();
-		$options->remove($option);
-	    }
-	    elseif ( preg_match('#^default=(.+)$#i', $option, $matches) )
-	    {
-		$this->setDefault( $matches[1]);
-		$options->remove($option);
-	    }
-	    elseif ( preg_match('#^default_callback=(.+)$#i', $option, $matches) )
-	    {
-		$this->setDefaultCallback( $matches[1]);
-		$options->remove($option);
-	    }
-	    elseif ( preg_match('#^recast_callback=(.+)$#i', $option, $matches) )
-	    {
-		$this->setRecastCallback( $matches[1]);
-		$options->remove($option);
-	    }
-	    elseif ( preg_match('#^null_callback=(.+)$#i', $option, $matches) )
-	    {
-		$this->setNullCallback( $matches[1]);
-		$options->remove($option);
-	    }
-	    elseif ( preg_match('#^(unique|index)(=(.+))*$#i', $option, $matches) )
-	    {
-		$this->addIndex(isset($matches[3]) ?  $matches[3] : null, $matches[1] == 'unique' ? true: false);
-		$options->remove($option);
-	    }
-	    elseif ( preg_match('#^db_column=(.+)$#i', $option, $matches) )
-	    {
-		trigger_error("Option db_column has been disabled as there is no support for advanced operations as rename column when it's set", E_USER_NOTICE);
-		#$this->setDbName( $matches[1]);
-		$options->remove($option);
-	    }
-	    elseif ( strtolower($option) == 'primary_key=true' )
-	    {
-		$this->setPrimaryKey();
-		$options->remove($option);
-	    }
-	}
-	return $options;
+	$this->setName($name);
     }
 
 
@@ -237,17 +179,19 @@ abstract class Field
      * @param string $indexName
      * @param boolean $unique
      */
-    public function addIndex($indexName = null, $unique = false)
+    public function addIndex($name = null, $unique = false)
     {
+	if ( $this->isFrozen()) throw new FreezeException();
+	
 	$suffix= ( $unique) ? 'key' : 'idx';
-	$key = $indexName.'_'.$suffix;
+	$key = $name.'_'.$suffix;
 	if ( key_exists($key, $this->indexes))
 	{
 	    $this->_addError("Index '$key' already exists");
 	}
 	else{
 	    $this->indexes[$key]= (object) array(
-		'name' => $indexName,
+		'name' => $name,
 		'unique' => $unique,
 	    );
 	}
@@ -255,6 +199,15 @@ abstract class Field
 
 
     /**
+     * Adds unique index
+     * @param string
+     */
+    public function addUnique($name = null)
+    {
+	$this->addIndex($name, true);
+    }
+
+
     /**
      * Freeze curent field's definition
      */
@@ -518,46 +471,61 @@ abstract class Field
     abstract function retype($value);
 
 
+    protected function setName($name)
+    {
+	$this->name= strtolower($name);
+    }
+
+
     /**
      * Sets field as required, not null
+     * @return this
      */
-    protected function setNotNullable()
+    public function setNotNullable()
     {
+	if ( $this->isFrozen()) throw new FreezeException();
 	if( !is_null($this->isNullable) )
 	{
 	    $this->_addError("has already null/notnull");
 	    return false;
 	}
 	$this->isNullable= false;
+	return $this;
     }
 
 
     /**
      * Sets field as mandatory, is null
+     * @return this
      */
-    protected function setNullable()
+    public function setNullable()
     {
+	if ( $this->isFrozen()) throw new FreezeException();
 	if( !is_null($this->isNullable) )
 	{
 	    $this->_addError("has already null/notnull");
 	    return false;
 	}
 	$this->isNullable= true;
+	return $this;
     }
 
 
     /**
      * Sets field's default value
      * @param miexd $default
+     * @return this
      */
-    protected function setDefault($default)
+    public function setDefault($default)
     {
+	if ( $this->isFrozen()) throw new FreezeException();
 	if( !is_null($this->default) )
 	{
 	    $this->_addError("has already default value '$this->default'");
 	    return false;
 	}
 	$this->default= $default;
+	return $this;
     }
 
 
@@ -565,8 +533,9 @@ abstract class Field
      * Sets field's callback for setting default value
      * @param array $callback
      */
-    final public function setDefaultCallback($callback)
+    public function setDefaultCallback($callback)
     {
+	if ( $this->isFrozen()) throw new FreezeException();
 	if( !is_callable(array($this->getModel(), $callback)) )
 	{
 	    $this->_addError("callback '$callback' not callable on field's model");
@@ -580,14 +549,17 @@ abstract class Field
      * Sets name for field to be used in sql table
      * @param string $dbName
      */
-    protected function setDbName($dbName)
+    public function setDbName($dbName)
     {
-	if( !is_null($this->dbName) )
+	if ( $this->isFrozen()) throw new FreezeException();
+	trigger_error("Option db_column has been disabled as there is no support for advanced operations as rename column when it's set", E_USER_NOTICE);
+	
+	/*if( !is_null($this->dbName) )
 	{
 	    $this->_addError("has already set db_column '$this->dbName'");
 	    return false;
 	}
-	$this->dbName= $dbName;
+	$this->dbName= $dbName;*/
     }
 
 
@@ -595,34 +567,28 @@ abstract class Field
      * Sets parent model
      * @param PerfORM $model
      */
-    protected function setModel($model)
+    public function setModel($model)
     {
+	if ( $this->isFrozen()) throw new FreezeException();
 	$this->model= $model;
-    }
-
-
-    /**
-     * Sets field's name
-     * @param string $name
-     */
-    public function setName($name)
-    {
-	$this->name= $name;
     }
 
 
     /**
      * Sets field's callback for recasting datatype
      * @param array $callback
+     * @return this
      */
     final public function setRecastCallback($callback)
     {
+	if ( $this->isFrozen()) throw new FreezeException();
 	if( !is_callable(array($this->getModel(), $callback)) )
 	{
 	    $this->_addError("callback '$callback' not callable on field's model");
 	    return false;
 	}
 	$this->recastCallback= array($this->getModel(), $callback);
+	return $this;
     }
 
 
@@ -632,22 +598,13 @@ abstract class Field
      */
     final public function setNullCallback($callback)
     {
+	if ( $this->isFrozen()) throw new FreezeException();
 	if( !is_callable(array($this->getModel(), $callback)) )
 	{
 	    $this->_addError("callback '$callback' not callable on field's model");
 	    return false;
 	}
 	$this->nullCallback= array($this->getModel(), $callback);
-    }
-
-
-    /**
-     * Sets size of field
-     * @param integer $size 
-     */
-    protected function  setSize($size){
-	$this->addError("size is not supported");
-	return false;
     }
 
 
@@ -667,6 +624,7 @@ abstract class Field
      */
     public function setPrimaryKey()
     {
+	if ( $this->isFrozen()) throw new FreezeException();
 	$this->primaryKey= true;
     }
 

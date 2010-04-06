@@ -36,23 +36,6 @@ class TimeField extends DateTimeField {
 
 
     /**
-     * Constructor, parses charfield specific options
-     */
-    public function  __construct()
-    {
-	$args= func_get_args();
-	$args= ( is_array($args) && count($args) == 1 && isset($args[0]) ) ? $args[0] : $args;
-	$options= parent::__construct($args);
-	foreach ( $options as $option){
-	    if ( __CLASS__ == get_class($this))  {
-
-		$this->addError("unknown option '$option'");
-	    }
-	}
-	return $options;
-    }
-
-    /**
      * Returns identification integer of field
      * @return integer
      */

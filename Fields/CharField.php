@@ -31,26 +31,10 @@ class CharField extends TextField {
     /**
      * Constructor, parses charfield specific options
      */
-    public function  __construct()
+    public function  __construct($name, $maxLength)
     {
-	$args= func_get_args();
-	$args= ( is_array($args) && count($args) == 1 && isset($args[0]) ) ? $args[0] : $args;
-	$options= parent::__construct($args);
-
-	foreach ( $options as $option){
-	    if ( preg_match('#^max_length=([0-9]+)$#i', $option, $matches) ) {
-		$this->setSize( $matches[1]);
-		$options->remove($option);
-	    }
-	    elseif ( preg_match('#^choices=(.+)$#i', $option, $matches) ) {
-		$this->setChoices( $matches[1]);
-		$options->remove($option);
-	    }
-	    elseif ( __CLASS__ == get_class($this))  {
-		$this->addError("unknown option '$option'");
-	    }
-	}
-	return $options;
+	parent::__construct($name);
+	$this->setSize($maxLength);
     }
 
 
@@ -147,8 +131,9 @@ class CharField extends TextField {
      * Sets choices
      * @param array $choices
      */
-    protected function setChoices($choices){
-
+    public function setChoices($choices)
+    {
+	if ( $this->isFrozen()) throw new FreezeException();
 	if ( !method_exists($this->getModel(), $choices)) {
 	    $this->_addError("invalid choices type");
 	}
@@ -160,7 +145,8 @@ class CharField extends TextField {
      * Sets size of varchar
      * @param integer $size 
      */
-    protected function setSize($size){
+    protected function setSize($size)
+    {
 	$size= (int) $size;
 	if ( !$size>0) {
 	    $this->_addError("invalid size '$size'");

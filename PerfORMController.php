@@ -352,7 +352,7 @@ final class PerfORMController
 			    if ( !$storage->fieldHasSync($field))
 			    {
 				#$ident= $model->getTableName().'-'.$field->getName().'-'.$field->getHash();
-				$columnInfo= self::getConnection()->getDatabaseInfo()->getTable($model->getTableName())->getColumn($field->getName());
+				$columnInfo= self::getConnection()->getDatabaseInfo()->getTable($model->getTableName())->getColumn($field->getRealName());
 
 				//if (get_class($field) == 'DecimalField' ) Debug::barDump($columnInfo->getSize(), $ident);
 

@@ -182,32 +182,206 @@ abstract class PerfORM
 
 
     /**
+     * Adds new AutoField to model
+     * @param string $name
+     * @return AutoField
+     */
+    protected function addAutoField($name)
+    {
+	return $this->attachField(new AutoField($name));
+    }
+
+
+    /**
+     * Adds new BooleanField to model
+     * @param string $name
+     * @return BooleanField
+     */
+    protected function addBooleanField($name)
+    {
+	return $this->attachField(new BooleanField($name));
+    }
+
+
+    /**
+     * Adds new CharField to model
+     * @param string $name
+     * @param integer $maxLength
+     * @return CharField
+     */
+    protected function addCharField($name, $maxLength)
+    {
+	return $this->attachField(new CharField($name, $maxLength));
+    }
+
+
+    /**
+     * Adds new DateField to model
+     * @param string $name
+     * @return DateField
+     */
+    protected function addDateField($name)
+    {
+	return $this->attachField(new DateField($name));
+    }
+
+
+    /**
+     * Adds new DateTimeField to model
+     * @param string $name
+     * @return DateTimeField
+     */
+    protected function addDateTimeField($name)
+    {
+	return $this->attachField(new DateField($name));
+    }
+
+
+    /**
+     * Adds new DecimalField to model
+     * @param string $name
+     * @param integer $maxDigits
+     * @param integer $decimalPlaces
+     * @return DecimalField
+     */
+    protected function addDecimalField($name, $maxDigits, $decimalPlaces)
+    {
+	return $this->attachField(new DecimalField($name, $maxDigits, $decimalPlaces));
+    }
+
+
+    /**
+     * Adds new EmailField to model
+     * @param string $name
+     * @param integer $maxLength
+     * @return EmailField
+     */
+    protected function addEmailField($name, $maxLength)
+    {
+	return $this->attachField(new EmailField($name, $maxLength));
+    }
+
+
+    /**
+     * Adds new ForeignKeyField to model
+     * @param string $name
+     * @param PerfORM $reference
+     * @return ForeignKeyField
+     */
+    protected function addForeignKeyField($name, $reference)
+    {
+	$field= $this->attachField(new ForeignKeyField($name, $reference));
+	$this->depends[]= $field->getReference();
+	return $field;
+    }
+
+
+    /**
+     * Adds new IPAddressField to model
+     * @param string $name
+     * @return IPAddressField
+     */
+    protected function addIPAddressField($name)
+    {
+	return $this->attachField(new IPAddressField($name));
+    }
+
+
+    /**
+     * Adds new IntegerField to model
+     * @param string $name
+     * @return IntegerField
+     */
+    protected function addIntegerField($name)
+    {
+	return $this->attachField(new IntegerField($name));
+    }
+
+
+    /**
+     * Adds new SlugField to model
+     * @param string $name
+     * @param integer $maxLength
+     * @param string $autoSource
+     * @return SlugField
+     */
+    protected function addSlugField($name, $maxLength, $autoSource)
+    {
+	return $this->attachField(new SlugField($name, $maxLength, $autoSource));
+    }
+
+
+    /**
+     * Adds new SmallIntegerField to model
+     * @param string $name
+     * @return SmallIntegerField
+     */
+    protected function addSmallIntegerField($name)
+    {
+	return $this->attachField(new SmallIntegerField($name));
+    }
+
+
+    /**
+     * Adds new TextField to model
+     * @param string $name
+     * @return TextField
+     */
+    protected function addTextField($name)
+    {
+	return $this->attachField(new TextField($name));
+    }
+
+
+    /**
+     * Adds new TimeField to model
+     * @param string $name
+     * @return TimeField
+     */
+    protected function addTimeField($name)
+    {
+	return $this->attachField(new TimeField($name));
+    }
+
+
+    /**
+     * Adds new URLField to model
+     * @param string $name
+     * @param integer $maxLength
+     * @return URLField
+     */
+    protected function addURLField($name, $maxLength)
+    {
+	return $this->attachField(new URLField($name, $maxLength));
+    }
+
+
+    /**
      * Adds field to model
      * @param string $fieldName
      * @param Field $field
      */
-    protected function addField($fieldName, $field)
+    protected function attachField($field, $toBeginning= false)
     {
-	$fieldName= strtolower($fieldName);
-	if ( key_exists($fieldName, $this->fields ) )
+	if ( $this->isFrozen() )
 	{
-	    throw new Exception ("Field with name '$fieldName' already exists in model '".get_class($this)."'");
+	    throw new Exception("Unable to attach field '".$field->getName()."' to frozen model.");
+	}
+	
+	if ( key_exists($field->getName(), $this->fields ) )
+	{
+	    throw new Exception ("Field with name '".$field->getName()."' already exists in model '".get_class($this)."'");
 	}
 
-	if ( !(is_object($field) and is_subclass_of($field, 'Field')))
+	if ( $toBeginning)
 	{
-	    throw new Exception ("Invalid definition of field '$fieldName' in model '".get_class($this)."'");
+	    $this->fields= array($field->getName() => $field) + $this->fields;
 	}
-
-	$this->fields[$fieldName]= $field;
-	$this->fields[$fieldName]->setName($fieldName);
-
-
-
-	if ( $field->getIdent() == PerfORM::ForeignKeyField)
-	{
-	    $this->depends[]= $field->getReference();
+	else {
+	    $this->fields[$field->getName()]= $field;
 	}
+	$this->fields[$field->getName()]->setModel($this);
+	return $field;
     }
 
 
@@ -281,20 +455,20 @@ abstract class PerfORM
      */
     protected function buildDefinition()
     {
-
 	$this->setup();
 
-
-	if ( !$this->getPrimaryKey() && $this->isTable() && $this->extends )
+	if ( !$this->getPrimaryKey() && $this->isTable() && $this->isExtended() )
 	{
-	    $this->fields= array($this->defaultPrimaryKey => new IntegerField($this, 'primary_key=true')) + $this->fields; //unshift primary to beginning
-	    $this->fields[$this->defaultPrimaryKey]->setName($this->defaultPrimaryKey);
+	    $field= new IntegerField($this->defaultPrimaryKey);
+	    $field->setPrimaryKey();
+	    $this->attachField($field, true);
 	    $this->setPrimaryKey($this->defaultPrimaryKey);
 	}
 	elseif ( !$this->getPrimaryKey() && $this->isTable() )
 	{
-	    $this->fields= array($this->defaultPrimaryKey => new AutoField($this, 'primary_key=true')) + $this->fields; //unshift primary to beginning
-	    $this->fields[$this->defaultPrimaryKey]->setName($this->defaultPrimaryKey);
+	    $field= new AutoField($this->defaultPrimaryKey);
+	    $field->setPrimaryKey();
+	    $this->attachField($field, true);
 	    $this->setPrimaryKey($this->defaultPrimaryKey);
 	}
 	
@@ -746,8 +920,7 @@ abstract class PerfORM
 
 	if (count($insert)>0)
 	{
-	    Debug::barDump($insert, 'insert array');
-
+	    #Debug::barDump($insert, 'insert array');
 	    PerfORMController::queryAndLog('insert into %n', $this->getTableName(), $insert);
 	    $this->setUnmodified();
 	    $insertId= $this->getConnection()->insertId();

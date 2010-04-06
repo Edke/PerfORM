@@ -50,50 +50,26 @@ class DateTimeField extends Field {
 
 
     /**
-     * Constructor, parses charfield specific options
-     */
-    public function  __construct()
-    {
-	$args= func_get_args();
-	$args= ( is_array($args) && count($args) == 1 && isset($args[0]) ) ? $args[0] : $args;
-	$options= parent::__construct($args);
-	foreach ( $options as $option){
-	    if ( preg_match('#^output_format=(.+)$#i', $option, $matches) ) {
-		$this->setOutputFormat( $matches[1]);
-		$options->remove($option);
-	    }
-	    elseif ( preg_match('#^auto_now$#i', $option) ) {
-		$this->enableAutoNow();
-		$options->remove($option);
-	    }
-	    elseif ( preg_match('#^auto_now_add#i', $option) ) {
-		$this->enableAutoNowAdd();
-		$options->remove($option);
-	    }
-	    elseif ( __CLASS__ == get_class($this))  {
-
-		$this->addError("unknown option '$option'");
-	    }
-	}
-	return $options;
-    }
-
-
-    /**
      * Enables auto_now functiononality
+     * @return this
      */
-    protected function enableAutoNow()
+    public function enableAutoNow()
     {
+	if ( $this->isFrozen()) throw new FreezeException();
 	$this->autoNow= true;
+	return $this;
     }
 
 
     /**
      * Enables auto_now_add functiononality
+     * @return this
      */
-    protected function enableAutoNowAdd()
+    public function enableAutoNowAdd()
     {
+	if ( $this->isFrozen()) throw new FreezeException();
 	$this->autoNowAdd= true;
+	return $this;
     }
 
 
@@ -216,8 +192,9 @@ class DateTimeField extends Field {
      * @see http://sk.php.net/manual/en/function.date.php
      * @param string $format
      */
-    protected function setOutputFormat($format)
+    public function setOutputFormat($format)
     {
+	if ( $this->isFrozen()) throw new FreezeException();
 	$this->outputFormat= $format;
     }
 
