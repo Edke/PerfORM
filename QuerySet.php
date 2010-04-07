@@ -303,7 +303,6 @@ final class QuerySet
 	$result= $this->getDataSource()->fetch();
 	if ( Environment::getConfig('perform')->profiler ) PerfORMController::addSql(dibi::$sql);
 	$this->getModel()->fill($result);
-	$this->getModel()->setUnmodified();
 	return $result ? $this->getModel() : false;
     }
 
