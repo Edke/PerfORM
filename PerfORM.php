@@ -1242,44 +1242,44 @@ abstract class PerfORM extends Object
 
     /**
      * Magic method for creating fields and setting it's values
-     * @param string $fieldName
+     * @param string $name
      * @param mixed $value
      */
-    public function __set($fieldName,  $value)
+    public function __set($name, $value)
     {
-	$fieldName= strtolower($fieldName);
-	if ($this->hasField($fieldName))
+	$name= strtolower($name);
+	if ($this->hasField($name))
 	{
-	    if (key_exists($fieldName, $this->fields))
+	    if (key_exists($name, $this->fields))
 	    {
 		$valid= true;
-		$this->getField($fieldName)->setValue($value);
+		$this->getField($name)->setValue($value);
 		$this->modified= true;
 	    }
-	    if( $this->isExtended() and $this->extends->hasField($fieldName))
+	    if( $this->isExtended() and $this->extends->hasField($name))
 	    {
 		$this->extends->{$fieldName}= $value;
 	    }
 	}
 	else
 	{
-	    throw new Exception ("Model '".get_class($this)."' does not contain field '$fieldName'.");
+	    throw new Exception ("Model '".get_class($this)."' does not contain field '$name'.");
 	}
     }
 
 
     /**
      * Magic method for getting field's values
-     * @param string $field
+     * @param string $name
      * @return mixed
      */
-    public function __get($fieldName)
+    public function &__get($name)
     {
-	$fieldName= strtolower($fieldName);
-	if ($this->hasField($fieldName))
+	$name= strtolower($name);
+	if ($this->hasField($name))
 	{
-	    if (key_exists($fieldName, $this->fields)){
-		$field= $this->getField($fieldName);
+	    if (key_exists($name, $this->fields)){
+		$field= $this->getField($name);
 		if( $field->getIdent() == PerfORM::DateTimeField ||
 		    $field->getIdent() == PerfORM::TimeField ||
 		    $field->getIdent() == PerfORM::DateField
@@ -1299,11 +1299,12 @@ abstract class PerfORM extends Object
 		    $field->setValue($model);
 		    $field->disableLazyLoading();
 		}
-		return $field->getValue();
+		$result= $field->getValue();
+		return $result;
 	    }
 	    elseif( $this->isExtended())
 	    {
-		return $this->extends->{$fieldName};
+		return $this->extends->{$name};
 	    }
 	    else
 	    {
@@ -1312,7 +1313,7 @@ abstract class PerfORM extends Object
 	}
 	else
 	{
-	    throw new Exception ("Model '".get_class($this)."' does not contain field '$fieldName'.");
+	    throw new Exception ("Model '".get_class($this)."' does not contain field '$name'.");
 	}
     }
 
