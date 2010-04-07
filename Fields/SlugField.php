@@ -85,10 +85,12 @@ class SlugField extends CharField {
     /**
      * Sets source field to build slug from
      * @param string $field
+     * @return this
      */
-    protected function setSourceField($field)
+    public function setSourceField($field)
     {
 	$this->sourceField= $field;
+	return $this;
     }
 
 
