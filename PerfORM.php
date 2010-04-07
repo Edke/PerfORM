@@ -843,7 +843,10 @@ abstract class PerfORM extends Object
     {
 	if ( is_null($this->tableName))
 	{
-	    $this->tableName= strtolower(get_class($this));
+	    $className= get_class($this);
+	    $className[0] = strtolower($className[0]);
+	    $func = create_function('$c', 'return "_" . strtolower($c[1]);');
+	    $this->tableName= preg_replace_callback('/([A-Z])/', $func, $className);
 	}
 	return is_null($this->prefix) ? $this->tableName : $this->prefix . $this->tableName ;
     }
