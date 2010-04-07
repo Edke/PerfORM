@@ -233,7 +233,7 @@ abstract class PerfORM extends Object
      */
     protected function addDateTimeField($name)
     {
-	return $this->attachField(new DateField($name));
+	return $this->attachField(new DateTimeField($name));
     }
 
 
