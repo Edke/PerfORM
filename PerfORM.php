@@ -21,7 +21,7 @@
  * @package PerfORM
  */
 
-abstract class PerfORM
+abstract class PerfORM extends Object
 {
 
     const AutoField = 3;
