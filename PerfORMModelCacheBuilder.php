@@ -162,7 +162,7 @@ class PerfORMModelCacheBuilder
 	    foreach( $modelInfo->fields as $field)
 	    {
 		$propertyType= $field->reference ? $field->reference : call_user_func($field->type . '::getPhpDocProperty');
-		$properties .= sprintf("\n * @property-write %s \$%s", $propertyType , $field->name);
+		$properties .= sprintf("\n * @property %s \$%s", $propertyType , $field->name);
 	    }
 	    $template= str_replace('%properties%', $properties, $template);
 	    file_put_contents($this->modelCacheDir . DIRECTORY_SEPARATOR . $modelInfo->model.'.php', $template);
@@ -249,7 +249,7 @@ class PerfORMModelCacheBuilder
 	    {
 
 		$_fields= array();
-		if ( preg_match_all('#\$this\-\>add(.+Field)\s*\(\s*[\'\"]([^\'\"]+)[\'\"](?:\s*,\s*new\s*([^ ]+)\s*\)){0,1}#i', $class[5][$key], $field))
+		if ( preg_match_all('#\$this\-\>add(.+Field)\s*\(\s*[\'\"]([^\'\"]+)[\'\"](?:\s*,\s*new\s*([^ \)]+)\s*\)){0,1}#i', $class[5][$key], $field))
 		{
 
 		    foreach($field[0] as $field_key => $field_value)
