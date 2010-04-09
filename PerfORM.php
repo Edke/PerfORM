@@ -572,7 +572,7 @@ abstract class PerfORM extends Object
 	    }
 	    elseif ( key_exists($key, $values))
 	    {
-		$this->{$field->getName()}= $values[$key];
+		$this->__set($field->getName(), $values[$key]);
 	    }
 	    else
 	    {
@@ -1258,7 +1258,7 @@ abstract class PerfORM extends Object
 	    }
 	    if( $this->isExtended() and $this->extends->hasField($name))
 	    {
-		$this->extends->{$fieldName}= $value;
+		$this->extends->{$name}= $value;
 	    }
 	}
 	else
@@ -1304,7 +1304,8 @@ abstract class PerfORM extends Object
 	    }
 	    elseif( $this->isExtended())
 	    {
-		return $this->extends->{$name};
+		$result= $this->extends->__get($name);
+		return $result;
 	    }
 	    else
 	    {
