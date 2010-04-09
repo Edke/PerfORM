@@ -289,8 +289,10 @@ final class QuerySet
 	#Debug::barDump($replace,'replace');
 	#Debug::barDump($fields, 'fields');
 	$finalCond= str_replace($search, $replace, $cond );
-	//Debug::barDump($finalCond, 'final condition');
-	$this->getDataSource()->where($finalCond, $fields);
+	#Debug::barDump($finalCond, 'final condition');
+	#Debug::barDump($fields);
+	$args= array_merge( array($finalCond), $fields);
+	$this->getDataSource()->where($args);
 	return $this;
     }
 
