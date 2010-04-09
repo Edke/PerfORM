@@ -91,7 +91,7 @@ final class QuerySet
 
 	foreach( $model->getFields() as $field )
 	{
-	    $this->fields[]= sprintf("\t%s.%s as %s__%s", $model->getAlias(), $field->getRealName(), $model->getAlias(), $field->getRealName() );
+	    $this->fields[]= sprintf("\t\"%s\".\"%s\" as \"%s__%s\"", $model->getAlias(), $field->getRealName(), $model->getAlias(), $field->getRealName() );
 	    if ( $field->getIdent() == PerfORM::ForeignKeyField &&
 		!$field->isEnabledLazyLoading()
 	    )
@@ -110,7 +110,7 @@ final class QuerySet
     {
 	if ( $model->isExtended())
 	{
-	    $this->joins[]= sprintf("\tINNER JOIN %s AS %s ON %s.%s = %s.%s",
+	    $this->joins[]= sprintf("\tINNER JOIN \"%s\" AS \"%s\" ON \"%s\".\"%s\" = \"%s\".\"%s\"",
 		    $model->getExtend()->getTableName(),
 		    $model->getExtend()->getAlias(),
 		    $model->getExtend()->getAlias(),
@@ -128,7 +128,7 @@ final class QuerySet
 	    {
 		$join_type= !$field->isNullable() && $inner ? 'INNER' : 'LEFT' ;
 		
-		$this->joins[]= sprintf("\t%s JOIN %s AS %s ON %s.%s = %s.%s",
+		$this->joins[]= sprintf("\t%s JOIN \"%s\" AS \"%s\" ON \"%s\".\"%s\" = \"%s\".\"%s\"",
 		    $join_type,
 		    $field->getReference()->getTableName(),
 		    $field->getReference()->getAlias(),
@@ -269,6 +269,7 @@ final class QuerySet
 	    '~|~~|~\*|!~|!~\*';
 	$search= array();
 	$replace= array();
+	$fields= array();
 	
 	if ( preg_match_all('#[\"]?([a-z0-9_]+)[\"]?\s*('.$sql_operators.')#i', $cond, $matches) )
 	{
@@ -276,18 +277,20 @@ final class QuerySet
 	    {
 		$search[]= $matches[0][$key];
 		$field= $this->fieldLookup($originalFieldName);
-		$replace[]= $field->getModel()->getAlias().'__'.$field->getRealName(). ' ' . $matches[2][$key];
+		$replace[]= '%n '.$matches[2][$key];
+		$fields[]= $field->getModel()->getAlias().'__'.$field->getRealName();
 	    }
 	}
 	else
 	{
 	    throw new Exception('Unable to match operator.');
 	}
-	//Debug::barDump($search,'search');
-	//Debug::barDump($replace,'replace');
+	#Debug::barDump($search,'search');
+	#Debug::barDump($replace,'replace');
+	#Debug::barDump($fields, 'fields');
 	$finalCond= str_replace($search, $replace, $cond );
 	//Debug::barDump($finalCond, 'final condition');
-	$this->getDataSource()->where($finalCond);
+	$this->getDataSource()->where($finalCond, $fields);
 	return $this;
     }
 
@@ -358,7 +361,7 @@ final class QuerySet
 	    $query[]= "\nSELECT";
 	    $this->addFields($this->model);
 	    $query[]= implode(",\n",$this->fields);
-	    $query[]= sprintf("FROM %s", $this->model->getTableName() );
+	    $query[]= sprintf("FROM \"%s\"", $this->model->getTableName() );
 	    $this->addJoins($this->model);
 	    $query[]= implode("\n",$this->joins);
 	    $this->dataSource= new DibiDataSource(implode("\n", $query), PerfORMController::getConnection());

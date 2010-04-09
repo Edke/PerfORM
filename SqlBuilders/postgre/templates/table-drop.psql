@@ -1,4 +1,4 @@
 {if isset($table)}
 -- Dropping table "{$table}"
-DROP TABLE {$table} CASCADE;
+DROP TABLE "{$table}" CASCADE;
 {/if}

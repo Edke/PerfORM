@@ -1,5 +1,5 @@
 {if isset($view)}
 -- Renaming view "{$view->from}" to "{$view->view}"
-ALTER VIEW {$view->from}
-    RENAME TO {$view->view};
+ALTER VIEW "{$view->from}"
+    RENAME TO "{$view->view}";
 {/if}

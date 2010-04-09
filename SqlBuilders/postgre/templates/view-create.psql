@@ -1,7 +1,7 @@
 {if isset($view)}
 
 -- Creating view "{$view->view}"
-CREATE VIEW {$view->view}
+CREATE VIEW "{$view->view}"
     AS  {!$view->definition};
 {/if}
 

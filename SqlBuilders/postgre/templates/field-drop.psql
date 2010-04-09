@@ -1,6 +1,6 @@
 {if isset($field)}
 -- Dropping field "{$field->table}"
-ALTER TABLE {$field->table}
-    DROP COLUMN {$field->name};
+ALTER TABLE "{$field->table}"
+    DROP COLUMN "{$field->name}";
 {/if}
 

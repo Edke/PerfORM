@@ -2,7 +2,7 @@
 
 {if isset($index)}
 -- Adding index  "{$index->name}"
-CREATE {if $index->unique}UNIQUE {/if}INDEX {$index->name} ON {$index->table}
-    USING btree ({foreach $index->fields as $field}{if !$iterator->isFirst()}, {/if}{$field}{/foreach});
+CREATE {if $index->unique}UNIQUE {/if}INDEX "{$index->name}" ON "{$index->table}"
+    USING btree ({foreach $index->fields as $field}{if !$iterator->isFirst()}, {/if}"{$field}"{/foreach});
 {/if}
 

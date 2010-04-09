@@ -1,5 +1,5 @@
 {if isset($view)}
 -- Dropping view "{$view}"
-DROP VIEW {$view};
+DROP VIEW "{$view}";
 
 {/if}

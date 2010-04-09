@@ -1,6 +1,6 @@
 {if isset($field)}
 -- Renaming field "{$field->from}" to "{$field->name}"
-ALTER TABLE {$field->table}
-    RENAME COLUMN {$field->from} TO {$field->name};
+ALTER TABLE "{$field->table}"
+    RENAME COLUMN "{$field->from}" TO "{$field->name}';
 {/if}
 

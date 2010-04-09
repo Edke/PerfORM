@@ -1,5 +1,5 @@
 {if isset($index)}
 -- Renaming index "{$index->from}" to "{$index->name}"
-ALTER INDEX {$index->from}
-    RENAME TO {$index->name};
+ALTER INDEX "{$index->from}"
+    RENAME TO "{$index->name}";
 {/if}

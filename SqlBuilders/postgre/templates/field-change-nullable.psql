@@ -1,6 +1,6 @@
 {if isset($field)}
 -- Changing null/not null of field "{$field->name}"
-ALTER TABLE {$field->table}
-    ALTER COLUMN {$field->name} {if $field->nullable}DROP NOT NULL{else}SET NOT NULL{/if};
+ALTER TABLE "{$field->table}"
+    ALTER COLUMN "{$field->name}" {if $field->nullable}DROP NOT NULL{else}SET NOT NULL{/if};
 
 {/if}
