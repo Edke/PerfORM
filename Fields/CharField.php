@@ -68,6 +68,34 @@ class CharField extends TextField {
 	return false;
     }
 
+
+    /**
+     * Getter for field's value
+     * @param boolean $insert true is insert, false is update
+     * @return mixed
+     */
+    public function getDbValue($insert)
+    {
+	if ( !is_bool($insert) )
+	{
+	    throw new Exception("Mode is not set");
+	}
+
+	if ( !is_null($this->value) ) {
+	    return $this->value;
+	}
+	elseif( !is_null($default = $this->getDefault()) && $insert )
+	{
+	    return $default;
+	}
+	elseif( !is_null($callback = $this->getNullCallback())  )
+	{
+	    return call_user_func($callback);
+	}
+	return null;
+    }
+
+
     /**
      * Getter for hash, uses field's hash and adds size as additional parameter for hashing
      * @return string

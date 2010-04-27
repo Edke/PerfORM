@@ -230,7 +230,7 @@ abstract class Field
 	}
 
 	if ( !is_null($value = $this->getValue() ) ) {
-	    return $value;
+	    return (string) $value;
 	}
 	elseif( !is_null($default = $this->getDefault()) && $insert )
 	{
