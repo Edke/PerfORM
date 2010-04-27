@@ -157,11 +157,12 @@ class CharField extends TextField {
 
     /**
      * Simplifies field
+     * @param boolean $flat
      * @return mixed
      */
-    public function simplify()
+    public function simplify($flat)
     {
-	return $this->getChoices() ? new CharFieldSimplified($this) : parent::getValue();
+	return $this->getChoices() && !$flat ? new CharFieldSimplified($this) : parent::getValue();
     }
 
 

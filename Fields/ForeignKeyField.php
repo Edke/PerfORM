@@ -273,9 +273,10 @@ final class ForeignKeyField extends Field
 
     /**
      * Simplifies reference model
+     * @param boolean $flat
      * @return stdClass
      */
-    public function simplify()
+    public function simplify($flat)
     {
 	$value= $this->getValue();
 	return is_object($value) ? $value->simplify() : $value;

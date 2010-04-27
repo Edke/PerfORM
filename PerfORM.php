@@ -1155,15 +1155,16 @@ abstract class PerfORM extends Object
 
     /**
      * Returns simplified version of model, stdClass filled with current values
+     * @param boolean $flat
      * @return stdClass
      */
-    public function simplify()
+    public function simplify($flat = false)
     {
 	$result= new stdClass;
 
 	foreach($this->getFieldNames() as $fieldName)
 	{
-	    $result->{$fieldName} = $this->getField($fieldName, true)->simplify();
+	    $result->{$fieldName} = $this->getField($fieldName, true)->simplify($flat);
 	}
 	return $result;
     }

@@ -640,9 +640,10 @@ abstract class Field
 
     /**
      * Simplifies field
+     * @param boolean $flat
      * @return mixed
      */
-    public function simplify()
+    public function simplify($flat)
     {
 	return $this->getValue();
     }
