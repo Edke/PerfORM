@@ -542,6 +542,7 @@ abstract class Field
 	    return false;
 	}
 	$this->defaultCallback= array($this->getModel(), $callback);
+	return $this;
     }
 
 
