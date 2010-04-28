@@ -119,7 +119,10 @@ final class ForeignKeyField extends Field
      */
     public function getDbValue($insert)
     {
-	if ( is_object($this->value) )
+	if ( !is_object($this->value) && $this->isEnabledLazyLoading() ) {
+	    return $this->value;
+	}
+	elseif ( is_object($this->value) )
 	{
 	    $value= $this->value->getField($this->referenceKey)->getValue();
 	    if ( !is_integer($value))
