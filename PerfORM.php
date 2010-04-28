@@ -885,9 +885,17 @@ abstract class PerfORM extends Object
 	    throw new Exception("invalid datatype of import values, array expected");
 	}
 
-	foreach($values as $field => $value)
+	foreach($values as $path => $value)
 	{
-	    $this->{$field}= $value;
+	    $field= $this->pathLookup($path);
+
+	    if ( $field->getIdent() == PerfORM::ForeignKeyField && !is_object($value) ) {
+		$field->setLazyLoadingKeyValue($value);
+		$field->enableLazyLoading();
+	    }
+	    else {
+		$field->getModel()->__set($field->getName(), $value);
+	    }
 	}
     }
 
