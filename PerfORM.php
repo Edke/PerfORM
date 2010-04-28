@@ -1043,15 +1043,15 @@ abstract class PerfORM extends Object
 	{
 	    $iterator--;
 	    if ($reference->hasField($field) &&
-		$reference->getField($field)->getIdent() == PerfORM::ForeignKeyField)
+		$reference->getField($field, true)->getIdent() == PerfORM::ForeignKeyField)
 	    {
-		$pointer= $reference->getField($field);
+		$pointer= $reference->getField($field, true);
 		$reference= $pointer->getReference();
 	    }
 	    elseif ( $reference->hasField($field) &&
 		$iterator === 0 )
 	    {
-		$pointer= $reference->getField($field);
+		$pointer= $reference->getField($field, true);
 	    }
 	    else {
 		throw new Exception("Invalid element '$field' in path '$path'.");
