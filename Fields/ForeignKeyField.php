@@ -283,6 +283,6 @@ final class ForeignKeyField extends Field
     public function simplify($flat)
     {
 	$value= $this->getValue();
-	return is_object($value) ? $value->simplify() : $value;
+	return is_object($value) ? $value->simplify($flat) : $value;
     }
 }

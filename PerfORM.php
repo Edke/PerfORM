@@ -1164,7 +1164,17 @@ abstract class PerfORM extends Object
 
 	foreach($this->getFieldNames() as $fieldName)
 	{
-	    $result->{$fieldName} = $this->getField($fieldName, true)->simplify($flat);
+	    if ( $flat && $this->getField($fieldName, true)->getIdent() == PerfORM::ForeignKeyField ) {
+		$_result= $this->getField($fieldName, true)->simplify($flat);
+		foreach($_result as $key => $value) {
+		    $result->{$fieldName.'__'.$key} = $value;
+		    $result->{$fieldName} = $this->getField($fieldName, true)->getDbValue(true);
+		}
+	    }
+	    else {
+		$result->{$fieldName} = $this->getField($fieldName, true)->simplify($flat);
+	    }
+	    
 	}
 	return $result;
     }
