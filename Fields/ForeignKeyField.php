@@ -239,6 +239,7 @@ final class ForeignKeyField extends Field
     public function setLazyLoadingKeyValue($value)
     {
 	$this->value= $value;
+	$this->modified= true;
     }
 
 
