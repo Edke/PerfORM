@@ -227,6 +227,16 @@ final class QuerySet
 
 
     /**
+     * Returns data source wrapped in DibiFluent
+     * @return DibiFluent
+     */
+    public function toFluent()
+    {
+	return $this->getDataSource()->toFluent();
+    }
+
+
+    /**
      * Finds field object from relation notation
      * @param string $sourceField
      * @return Field
