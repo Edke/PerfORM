@@ -421,20 +421,19 @@ abstract class PerfORM extends Object
      * Builds recursively aliases for $model
      * @param PerfORM $model
      */
-    protected function buildAliases($model)
-    {
+    protected function buildAliases($model, & $aliases = array()  ) {
 	foreach($model->getFields() as $field)
 	{
 	    if ( $field->getIdent() == PerfORM::ForeignKeyField) {
 		$alias= $field->getReference()->getTableName();
-		if ( key_exists($alias, $this->aliasIndex))
+		if ( key_exists($alias, $aliases))
 		{
-		    $this->aliasIndex[$alias]++;
-		    $aliasIndex= $this->aliasIndex[$alias];
+		    $aliases[$alias]++;
+		    $aliasIndex= $aliases[$alias];
 		}
 		else
 		{
-		    $this->aliasIndex[$alias]= 1;
+		    $aliases[$alias]= 1;
 		    $aliasIndex= '';
 		}
 		$field->getReference()->setAlias($alias.$aliasIndex);
@@ -442,7 +441,7 @@ abstract class PerfORM extends Object
 		{
 		    $_field->getModel()->setAlias($alias.$aliasIndex);
 		}
-		$this->buildAliases($field->getReference());
+		$this->buildAliases($field->getReference(), $aliases );
 	    }
 	}
     }
