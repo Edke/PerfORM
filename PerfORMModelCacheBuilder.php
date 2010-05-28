@@ -243,7 +243,7 @@ class PerfORMModelCacheBuilder
 	$buffer= preg_replace('#/\*.*\*/#msU', '', $buffer);
 
 
-	if ( preg_match_all('#abstract\s*class\s*(PerfORM([^ ]+))\s*extends\s*(PerfORM([^ ]*))\s*{.*protected\s*function\s*setup\s*\(\s*\)\s*{(.*)}#imsU', $buffer, $class))
+	if ( preg_match_all('#abstract\s*class\s*(PerfORM([^ ]+))\s*extends\s*(PerfORM([^ ]*))\s*(?:implements\s*[a-zA-Z0-9, ]+\s*)*{.*protected\s*function\s*setup\s*\(\s*\)\s*{(.*)}#imsU', $buffer, $class))
 	{
 	    foreach($class[0] as $key => $value)
 	    {
