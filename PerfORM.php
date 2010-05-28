@@ -155,14 +155,16 @@ abstract class PerfORM extends Object
      */
     public function  __construct($importValues = null)
     {
-	if ( PerfORMController::useModelCaching() )
+	$this->buildDefinition();
+
+/*	if ( PerfORMController::useModelCaching() )
 	{
 	    $this->loadDefinition();
 	}
 	else
 	{
 	    $this->buildDefinition();
-	}
+	}*/
 
 	if ( !is_null($importValues))
 	{
