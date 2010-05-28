@@ -511,7 +511,9 @@ abstract class PerfORM extends Object
 	if (PerfORMController::useModelCaching())
 	{
 	    $cache= PerfORMController::getCache();
-	    $cache[$this->getCacheKey()]= $this;
+	    $cache->save($this->getCacheKey(), $this, array(
+		Cache::FILES => array( __FILE__ ),
+	    ));
 	}
     }
 
