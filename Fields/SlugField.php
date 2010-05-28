@@ -32,9 +32,9 @@ class SlugField extends CharField {
      * @var string $maxLenght
      * @var string $autoSource
      */
-    public function  __construct($name, $maxLength, $autoSource)
+    public function  __construct($model, $name, $maxLength, $autoSource)
     {
-	parent::__construct($name, $maxLength);
+	parent::__construct($model, $name, $maxLength);
 	$this->setSourceField($autoSource);
     }
 

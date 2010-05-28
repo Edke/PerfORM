@@ -188,7 +188,7 @@ abstract class PerfORM extends Object
      */
     protected function addAutoField($name)
     {
-	return $this->attachField(new AutoField($name));
+	return $this->attachField(new AutoField($this, $name));
     }
 
 
@@ -199,7 +199,7 @@ abstract class PerfORM extends Object
      */
     protected function addBooleanField($name)
     {
-	return $this->attachField(new BooleanField($name));
+	return $this->attachField(new BooleanField($this, $name));
     }
 
 
@@ -211,7 +211,7 @@ abstract class PerfORM extends Object
      */
     protected function addCharField($name, $maxLength)
     {
-	return $this->attachField(new CharField($name, $maxLength));
+	return $this->attachField(new CharField($this, $name, $maxLength));
     }
 
 
@@ -222,7 +222,7 @@ abstract class PerfORM extends Object
      */
     protected function addDateField($name)
     {
-	return $this->attachField(new DateField($name));
+	return $this->attachField(new DateField($this, $name));
     }
 
 
@@ -233,7 +233,7 @@ abstract class PerfORM extends Object
      */
     protected function addDateTimeField($name)
     {
-	return $this->attachField(new DateTimeField($name));
+	return $this->attachField(new DateTimeField($this, $name));
     }
 
 
@@ -246,7 +246,7 @@ abstract class PerfORM extends Object
      */
     protected function addDecimalField($name, $maxDigits, $decimalPlaces)
     {
-	return $this->attachField(new DecimalField($name, $maxDigits, $decimalPlaces));
+	return $this->attachField(new DecimalField($this, $name, $maxDigits, $decimalPlaces));
     }
 
 
@@ -258,7 +258,7 @@ abstract class PerfORM extends Object
      */
     protected function addEmailField($name, $maxLength)
     {
-	return $this->attachField(new EmailField($name, $maxLength));
+	return $this->attachField(new EmailField($this, $name, $maxLength));
     }
 
 
@@ -270,8 +270,8 @@ abstract class PerfORM extends Object
      */
     protected function addForeignKeyField($name, $reference)
     {
-	$field= $this->attachField(new ForeignKeyField($name, $reference));
-	$this->depends[]= $field->getReference();
+	$field= $this->attachField(new ForeignKeyField($this, $name, $reference));
+	$this->depends[]= $reference;
 	return $field;
     }
 
@@ -283,7 +283,7 @@ abstract class PerfORM extends Object
      */
     protected function addIPAddressField($name)
     {
-	return $this->attachField(new IPAddressField($name));
+	return $this->attachField(new IPAddressField($this, $name));
     }
 
 
@@ -294,7 +294,7 @@ abstract class PerfORM extends Object
      */
     protected function addIntegerField($name)
     {
-	return $this->attachField(new IntegerField($name));
+	return $this->attachField(new IntegerField($this, $name));
     }
 
 
@@ -307,7 +307,7 @@ abstract class PerfORM extends Object
      */
     protected function addSlugField($name, $maxLength, $autoSource)
     {
-	return $this->attachField(new SlugField($name, $maxLength, $autoSource));
+	return $this->attachField(new SlugField($this, $name, $maxLength, $autoSource));
     }
 
 
@@ -318,7 +318,7 @@ abstract class PerfORM extends Object
      */
     protected function addSmallIntegerField($name)
     {
-	return $this->attachField(new SmallIntegerField($name));
+	return $this->attachField(new SmallIntegerField($this, $name));
     }
 
 
@@ -329,7 +329,7 @@ abstract class PerfORM extends Object
      */
     protected function addTextField($name)
     {
-	return $this->attachField(new TextField($name));
+	return $this->attachField(new TextField($this, $name));
     }
 
 
@@ -340,7 +340,7 @@ abstract class PerfORM extends Object
      */
     protected function addTimeField($name)
     {
-	return $this->attachField(new TimeField($name));
+	return $this->attachField(new TimeField($this, $name));
     }
 
 
@@ -352,7 +352,7 @@ abstract class PerfORM extends Object
      */
     protected function addURLField($name, $maxLength)
     {
-	return $this->attachField(new URLField($name, $maxLength));
+	return $this->attachField(new URLField($this, $name, $maxLength));
     }
 
 
@@ -380,8 +380,8 @@ abstract class PerfORM extends Object
 	else {
 	    $this->fields[$field->getName()]= $field;
 	}
-	$this->fields[$field->getName()]->setModel($this);
-	return $field;
+	//$this->fields[$field->getName()]->setModel($this);
+	return $this->fields[$field->getName()];
     }
 
 
@@ -459,14 +459,14 @@ abstract class PerfORM extends Object
 
 	if ( !$this->getPrimaryKey() && $this->isTable() && $this->isExtended() )
 	{
-	    $field= new IntegerField($this->defaultPrimaryKey);
+	    $field= new IntegerField($this, $this->defaultPrimaryKey);
 	    $field->setPrimaryKey();
 	    $this->attachField($field, true);
 	    $this->setPrimaryKey($this->defaultPrimaryKey);
 	}
 	elseif ( !$this->getPrimaryKey() && $this->isTable() )
 	{
-	    $field= new AutoField($this->defaultPrimaryKey);
+	    $field= new AutoField($this, $this->defaultPrimaryKey);
 	    $field->setPrimaryKey();
 	    $this->attachField($field, true);
 	    $this->setPrimaryKey($this->defaultPrimaryKey);

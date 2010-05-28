@@ -63,10 +63,10 @@ final class ForeignKeyField extends Field
      * @var string $name
      * @var PerfORM $reference
      */
-    public function  __construct($name, $reference)
+    public function  __construct($model, $name, $reference)
     {
 	$this->reference= $reference;
-	parent::__construct($name);
+	parent::__construct($model, $name);
     }
 
 

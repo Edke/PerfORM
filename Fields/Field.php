@@ -147,13 +147,14 @@ abstract class Field
      * @param array $_options
      * @return Set
      */
-    public function  __construct($name)
+    public function  __construct($model, $name)
     {
 	if (empty($name))
 	{
 	    $this->_addError("Name was not set");
 	}
 	$this->setName($name);
+	$this->model= $model;
     }
 
 

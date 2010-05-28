@@ -49,9 +49,9 @@ class DecimalField extends Field
      * @var integer $maxDigits
      * @var integer $decimalPlaces
      */
-    public function  __construct($name, $maxDigits, $decimalPlaces)
+    public function  __construct($model, $name, $maxDigits, $decimalPlaces)
     {
-	parent::__construct($name);
+	parent::__construct($model, $name);
 	$this->setDigits($maxDigits);
 	$this->setDecimals($decimalPlaces);
     }

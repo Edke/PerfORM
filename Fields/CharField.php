@@ -31,9 +31,9 @@ class CharField extends TextField {
     /**
      * Constructor, parses charfield specific options
      */
-    public function  __construct($name, $maxLength)
+    public function  __construct($model, $name, $maxLength)
     {
-	parent::__construct($name);
+	parent::__construct($model, $name);
 	$this->setSize($maxLength);
     }
 
