@@ -285,4 +285,9 @@ final class ForeignKeyField extends Field
 	$value= $this->getValue();
 	return is_object($value) ? $value->simplify($flat) : $value;
     }
+
+
+    public function __sleep() {
+	return array_merge(parent::__sleep(), array('lazyLoading'));
+    }
 }

@@ -1346,6 +1346,29 @@ abstract class PerfORM extends Object
      */
     abstract function  __toString();
 
+
+    public function __sleep() {
+	
+	return array('modified', 'fields');
+    }
+
+    public function  __wakeup() {
+	$fields= $this->fields;
+	$modified= $this->modified;
+	$this->fields= array();
+	$this->buildDefinition();
+	foreach($fields as $key => $field) {
+	    if ( !is_null($field->getValue())) {
+		$this->fields[$key]->setValue($field->getValue());
+	    }
+	    if( !$field->isModified()) {
+		$this->fields[$key]->setUnmodified();
+	    }
+	}
+	$this->modified= $modified;
+    }
+
+
     public function __destruct()
     {
 	unset($this->fields);

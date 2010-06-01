@@ -676,6 +676,11 @@ abstract class Field
     }
 
 
+    public function  __sleep() {
+	return array('value', 'modified');
+    }
+
+
     /**
      * Cleans circular references, should prevent memory leaks
      */
