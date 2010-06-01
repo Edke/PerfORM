@@ -49,13 +49,6 @@ abstract class PerfORM extends Object
 
 
     /**
-     * Alias index array to help to build aliases for object
-     * @var array
-     */
-    protected $aliasIndex= array();
-
-
-    /**
      * Default primary key field name used when autocreating
      * @var string
      */
