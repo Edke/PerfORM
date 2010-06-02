@@ -1351,7 +1351,13 @@ abstract class PerfORM extends Object
 	$this->fields= array();
 	$this->buildDefinition();
 	foreach($fields as $key => $field) {
-	    if ( !is_null($field->getValue())) {
+	    if ( !is_null($field->getValue()) && $field->getIdent() == PerfORM::ForeignKeyField &&
+		$field->isEnabledLazyLoading())
+	    {
+		$this->fields[$key]->setLazyLoadingKeyValue($field->getValue());
+		$this->fields[$key]->enableLazyLoading();
+	    }
+	    elseif ( !is_null($field->getValue())) {
 		$this->fields[$key]->setValue($field->getValue());
 	    }
 	    if( !$field->isModified()) {
