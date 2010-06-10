@@ -27,7 +27,7 @@ abstract class Field
      * Name of field used for column it's sql table
      * @var string
      */
-    protected $dbName= null;
+    protected $dbName;
 
 
     /**
@@ -370,9 +370,6 @@ abstract class Field
      */
     public function getRealName()
     {
-	if ( $this->dbName ) {
-	    return $this->dbName;
-	}
 	return $this->name;
     }
 
@@ -555,13 +552,6 @@ abstract class Field
     {
 	if ( $this->isFrozen()) throw new FreezeException();
 	trigger_error("Option db_column has been disabled as there is no support for advanced operations as rename column when it's set", E_USER_NOTICE);
-	
-	/*if( !is_null($this->dbName) )
-	{
-	    $this->_addError("has already set db_column '$this->dbName'");
-	    return false;
-	}
-	$this->dbName= $dbName;*/
     }
 
 

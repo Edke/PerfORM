@@ -322,8 +322,8 @@ final class PerfORMPostgreBuilder extends PerfORMSqlBuilder
 	'type' => 'foreign',
 	'constraint_name' => $model->getTableName() .'_'. $key->getRealName() .'_fkey',
 	'key_name' => $key->getRealName(),
-	'reference_table' => $key->getReferenceTableName(),
-	'reference_key_name' => $key->getReferenceTableKey(),
+	'reference_table' => $key->getReference()->getTableName(),
+	'reference_key_name' => $key->getReference()->getPrimaryKey(),
 	'from_table' => $from,
 	'from_constraint_name' => $from .'_'. $key->getRealName() .'_fkey',
 	);

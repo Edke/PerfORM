@@ -10,7 +10,6 @@
  * @package    PerfORM
  */
 
-
 /**
  * PerfORM
  *
@@ -20,9 +19,7 @@
  * @copyright Copyright (c) 2010 Eduard 'edke' Kracmar
  * @package PerfORM
  */
-
-abstract class PerfORM extends Object
-{
+abstract class PerfORM extends Object {
 
     const AutoField = 3;
     const BooleanField = 5;
@@ -46,99 +43,68 @@ abstract class PerfORM extends Object
      * @var string
      */
     protected $alias;
-
-
     /**
      * Default primary key field name used when autocreating
      * @var string
      */
-    protected $defaultPrimaryKey= 'id';
-
-
-    /**
-     * Array of models that this model depends on
-     * @var array
-     */
-    protected $depends= array();
-
-
+    protected $defaultPrimaryKey = 'id';
     /**
      * Storage for validation of model errors
      * @var array
      */
-    protected $errors= array();
-
-
+    protected $errors = array();
     /**
      * Instance of
      * @var PerfORM
      */
     protected $extends;
-
-
     /**
      * Storage for model fields
      * @var array
      */
-    protected $fields= array();
-
-
+    protected $fields = array();
     /**
      * Determines if model was frozen
      * @var boolean
      */
-    protected $freeze= false;
-
-
+    protected $freeze = false;
     /**
      * Hash of model for structure checking
      * @var string
      */
     protected $hash;
-
-
     /**
      * Array of model's indexes
      * @var array
      */
-    protected $indexes= array();
-
-
+    protected $indexes = array();
     /**
      * Switch for notifying if model (and which fields) was/were modified
      * @var boolean
      */
-    protected $modified= false;
-
-
+    protected $modified = false;
     /**
      * Prefix for table
      * @var string
      */
-    protected $prefix= null;
-
-
+    protected $prefix = null;
     /**
      * Name of primary key field
      * @var string
      */
-    protected $primaryKey= null;
-
-
+    protected $primaryKey = null;
     /**
      * Sql name of model and table
      * @var string
      */
-    protected $tableName= null;
-
-
+    protected $tableName = null;
     /**
      * Determines if model is view or table, table is default
      * @var boolean
      */
-    protected $view= false;
+    protected $view = false;
 
-    
+
     /**
      * Constructor
      *
@@ -146,23 +112,26 @@ abstract class PerfORM extends Object
      *
      * @param array $importValues
      */
-    public function  __construct($importValues = null)
-    {
-	$this->buildDefinition();
+    public function __construct($importValues = null) {
+        //$backtrace= debug_backtrace();
+        //Debug::barDump($backtrace);
+        //Debug::barDump(($backtrace[0]['file']));
+        //Debug::barDump(($backtrace[0]['line']));
 
-/*	if ( PerfORMController::useModelCaching() )
-	{
-	    $this->loadDefinition();
-	}
-	else
-	{
-	    $this->buildDefinition();
-	}*/
+        $this->buildDefinition();
 
-	if ( !is_null($importValues))
-	{
-	    $this->import($importValues);
-	}
+        /* 	if ( PerfORMController::useModelCaching() )
+          {
+          $this->loadDefinition();
+          }
+          else
+          {
+          $this->buildDefinition();
+          } */
+
+        if (!is_null($importValues)) {
+            $this->import($importValues);
+        }
     }
 
 
@@ -170,9 +139,8 @@ abstract class PerfORM extends Object
      * Adds error message while validating model
      * @param string $msg
      */
-    public function _addError($msg)
-    {
-	$this->errors[]= str_replace('%s', get_class($this), $msg);
+    public function _addError($msg) {
+        $this->errors[] = str_replace('%s', get_class($this), $msg);
     }
 
 
@@ -181,9 +149,8 @@ abstract class PerfORM extends Object
      * @param string $name
      * @return AutoField
      */
-    protected function addAutoField($name)
-    {
-	return $this->attachField(new AutoField($this, $name));
+    protected function addAutoField($name) {
+        return $this->attachField(new AutoField($this, $name));
     }
 
 
@@ -192,9 +159,8 @@ abstract class PerfORM extends Object
      * @param string $name
      * @return BooleanField
      */
-    protected function addBooleanField($name)
-    {
-	return $this->attachField(new BooleanField($this, $name));
+    protected function addBooleanField($name) {
+        return $this->attachField(new BooleanField($this, $name));
     }
 
 
@@ -204,9 +170,8 @@ abstract class PerfORM extends Object
      * @param integer $maxLength
      * @return CharField
      */
-    protected function addCharField($name, $maxLength)
-    {
-	return $this->attachField(new CharField($this, $name, $maxLength));
+    protected function addCharField($name, $maxLength) {
+        return $this->attachField(new CharField($this, $name, $maxLength));
     }
 
 
@@ -215,9 +180,8 @@ abstract class PerfORM extends Object
      * @param string $name
      * @return DateField
      */
-    protected function addDateField($name)
-    {
-	return $this->attachField(new DateField($this, $name));
+    protected function addDateField($name) {
+        return $this->attachField(new DateField($this, $name));
     }
 
 
@@ -226,9 +190,8 @@ abstract class PerfORM extends Object
      * @param string $name
      * @return DateTimeField
      */
-    protected function addDateTimeField($name)
-    {
-	return $this->attachField(new DateTimeField($this, $name));
+    protected function addDateTimeField($name) {
+        return $this->attachField(new DateTimeField($this, $name));
     }
 
 
@@ -239,9 +202,8 @@ abstract class PerfORM extends Object
      * @param integer $decimalPlaces
      * @return DecimalField
      */
-    protected function addDecimalField($name, $maxDigits, $decimalPlaces)
-    {
-	return $this->attachField(new DecimalField($this, $name, $maxDigits, $decimalPlaces));
+    protected function addDecimalField($name, $maxDigits, $decimalPlaces) {
+        return $this->attachField(new DecimalField($this, $name, $maxDigits, $decimalPlaces));
     }
 
 
@@ -251,9 +213,8 @@ abstract class PerfORM extends Object
      * @param integer $maxLength
      * @return EmailField
      */
-    protected function addEmailField($name, $maxLength)
-    {
-	return $this->attachField(new EmailField($this, $name, $maxLength));
+    protected function addEmailField($name, $maxLength) {
+        return $this->attachField(new EmailField($this, $name, $maxLength));
     }
 
 
@@ -263,11 +224,10 @@ abstract class PerfORM extends Object
      * @param PerfORM $reference
      * @return ForeignKeyField
      */
-    protected function addForeignKeyField($name, $reference)
-    {
-	$field= $this->attachField(new ForeignKeyField($this, $name, $reference));
-	$this->depends[]= $reference;
-	return $field;
+    protected function addForeignKeyField($name, $reference) {
+        $field = $this->attachField(new ForeignKeyField($this, $name, $reference));
+        //$this->depends[]= $reference;
+        return $field;
     }
 
 
@@ -276,9 +236,8 @@ abstract class PerfORM extends Object
      * @param string $name
      * @return IPAddressField
      */
-    protected function addIPAddressField($name)
-    {
-	return $this->attachField(new IPAddressField($this, $name));
+    protected function addIPAddressField($name) {
+        return $this->attachField(new IPAddressField($this, $name));
     }
 
 
@@ -287,9 +246,8 @@ abstract class PerfORM extends Object
      * @param string $name
      * @return IntegerField
      */
-    protected function addIntegerField($name)
-    {
-	return $this->attachField(new IntegerField($this, $name));
+    protected function addIntegerField($name) {
+        return $this->attachField(new IntegerField($this, $name));
     }
 
 
@@ -300,9 +258,8 @@ abstract class PerfORM extends Object
      * @param string $autoSource
      * @return SlugField
      */
-    protected function addSlugField($name, $maxLength, $autoSource)
-    {
-	return $this->attachField(new SlugField($this, $name, $maxLength, $autoSource));
+    protected function addSlugField($name, $maxLength, $autoSource) {
+        return $this->attachField(new SlugField($this, $name, $maxLength, $autoSource));
     }
 
 
@@ -311,9 +268,8 @@ abstract class PerfORM extends Object
      * @param string $name
      * @return SmallIntegerField
      */
-    protected function addSmallIntegerField($name)
-    {
-	return $this->attachField(new SmallIntegerField($this, $name));
+    protected function addSmallIntegerField($name) {
+        return $this->attachField(new SmallIntegerField($this, $name));
     }
 
 
@@ -322,9 +278,8 @@ abstract class PerfORM extends Object
      * @param string $name
      * @return TextField
      */
-    protected function addTextField($name)
-    {
-	return $this->attachField(new TextField($this, $name));
+    protected function addTextField($name) {
+        return $this->attachField(new TextField($this, $name));
     }
 
 
@@ -333,9 +288,8 @@ abstract class PerfORM extends Object
      * @param string $name
      * @return TimeField
      */
-    protected function addTimeField($name)
-    {
-	return $this->attachField(new TimeField($this, $name));
+    protected function addTimeField($name) {
+        return $this->attachField(new TimeField($this, $name));
     }
 
 
@@ -345,9 +299,8 @@ abstract class PerfORM extends Object
      * @param integer $maxLength
      * @return URLField
      */
-    protected function addURLField($name, $maxLength)
-    {
-	return $this->attachField(new URLField($this, $name, $maxLength));
+    protected function addURLField($name, $maxLength) {
+        return $this->attachField(new URLField($this, $name, $maxLength));
     }
 
 
@@ -356,27 +309,23 @@ abstract class PerfORM extends Object
      * @param string $fieldName
      * @param Field $field
      */
-    protected function attachField($field, $toBeginning= false)
-    {
-	if ( $this->isFrozen() )
-	{
-	    throw new Exception("Unable to attach field '".$field->getName()."' to frozen model.");
-	}
-	
-	if ( key_exists($field->getName(), $this->fields ) )
-	{
-	    throw new Exception ("Field with name '".$field->getName()."' already exists in model '".get_class($this)."'");
-	}
+    protected function attachField($field, $toBeginning= false) {
+        if ($this->isFrozen()) {
+            throw new Exception("Unable to attach field '" . $field->getName() . "' to frozen model.");
+        }
 
-	if ( $toBeginning)
-	{
-	    $this->fields= array($field->getName() => $field) + $this->fields;
-	}
-	else {
-	    $this->fields[$field->getName()]= $field;
-	}
-	//$this->fields[$field->getName()]->setModel($this);
-	return $this->fields[$field->getName()];
+        if (key_exists($field->getName(), $this->fields)) {
+            throw new Exception("Field with name '" . $field->getName() . "' already exists in model '" . get_class($this) . "'");
+        }
+
+        if ($toBeginning) {
+            $this->fields = array($field->getName() => $field) + $this->fields;
+        }
+        else {
+            $this->fields[$field->getName()] = $field;
+        }
+        //$this->fields[$field->getName()]->setModel($this);
+        return $this->fields[$field->getName()];
     }
 
 
@@ -386,29 +335,24 @@ abstract class PerfORM extends Object
      * @param string $indexName
      * @param boolean $unique
      */
-    protected function addIndex($fieldNames, $indexName, $unique)
-    {
-	$suffix= ($unique) ? '_key' : '_idx';
-	if ( !is_array($fieldNames))
-	{
-	    $fieldNames= array($fieldNames);
-	}
-	$key= is_null($indexName) ? implode('_',$fieldNames).$suffix : $indexName.$suffix;
-	foreach($fieldNames as $fieldName)
-	{
-	    if ( !$this->hasField($fieldName))
-	    {
-		$this->_addError(sprintf("%%s::%s (Index) field '%s' does not exists in model",$key, $fieldName));
-	    }
+    protected function addIndex($fieldNames, $indexName, $unique) {
+        $suffix = ($unique) ? '_key' : '_idx';
+        if (!is_array($fieldNames)) {
+            $fieldNames = array($fieldNames);
+        }
+        $key = is_null($indexName) ? implode('_', $fieldNames) . $suffix : $indexName . $suffix;
+        foreach ($fieldNames as $fieldName) {
+            if (!$this->hasField($fieldName)) {
+                $this->_addError(sprintf("%%s::%s (Index) field '%s' does not exists in model", $key, $fieldName));
+            }
 
-	    if ( key_exists($key, $this->indexes))
-	    {
-		$this->indexes[$key]->addField($this->getField($fieldName)->getRealName());
-	    }
-	    else {
-		$this->indexes[$key]= new Index($this, $this->getField($fieldName)->getRealName(), $key, $unique);
-	    }
-	}
+            if (key_exists($key, $this->indexes)) {
+                $this->indexes[$key]->addField($this->getField($fieldName)->getRealName());
+            }
+            else {
+                $this->indexes[$key] = new Index($this, $this->getField($fieldName)->getRealName(), $key, $unique);
+            }
+        }
     }
 
 
@@ -416,29 +360,30 @@ abstract class PerfORM extends Object
      * Builds recursively aliases for $model
      * @param PerfORM $model
      */
-    protected function buildAliases($model, & $aliases = array()  ) {
-	foreach($model->getFields() as $field)
-	{
-	    if ( $field->getIdent() == PerfORM::ForeignKeyField) {
-		$alias= $field->getReference()->getTableName();
-		if ( key_exists($alias, $aliases))
-		{
-		    $aliases[$alias]++;
-		    $aliasIndex= $aliases[$alias];
-		}
-		else
-		{
-		    $aliases[$alias]= 1;
-		    $aliasIndex= '';
-		}
-		$field->getReference()->setAlias($alias.$aliasIndex);
-		foreach( $field->getReference()->getFields() as $_field )
-		{
-		    $_field->getModel()->setAlias($alias.$aliasIndex);
-		}
-		$this->buildAliases($field->getReference(), $aliases );
-	    }
-	}
+    protected function buildAliases($model = null, & $aliases = array()) {
+        if (is_null($model)) {
+            $this->setAlias($this->getTableName());
+            $model = $this;
+        }
+
+        foreach ($model->getFields() as $field) {
+            if ($field->getIdent() == PerfORM::ForeignKeyField && !$field->isEnabledLazyLoading()) {
+                $alias = $field->getReference()->getTableName();
+                if (key_exists($alias, $aliases)) {
+                    $aliases[$alias]++;
+                    $aliasIndex = $aliases[$alias];
+                }
+                else {
+                    $aliases[$alias] = 1;
+                    $aliasIndex = '';
+                }
+                $field->getReference()->setAlias($alias . $aliasIndex);
+                foreach ($field->getReference()->getFields() as $_field) {
+                    $_field->getModel()->setAlias($alias . $aliasIndex);
+                }
+                $this->buildAliases($field->getReference(), $aliases);
+            }
+        }
     }
 
 
@@ -447,69 +392,58 @@ abstract class PerfORM extends Object
      *
      * Model will be cached if caching is enabled (PerfORMController::useModelCaching())
      */
-    protected function buildDefinition()
-    {
-	$this->setup();
+    protected function buildDefinition() {
+        $this->setup();
 
-	if ( !$this->getPrimaryKey() && $this->isTable() && $this->isExtended() )
-	{
-	    $field= new IntegerField($this, $this->defaultPrimaryKey);
-	    $field->setPrimaryKey();
-	    $this->attachField($field, true);
-	    $this->setPrimaryKey($this->defaultPrimaryKey);
-	}
-	elseif ( !$this->getPrimaryKey() && $this->isTable() )
-	{
-	    $field= new AutoField($this, $this->defaultPrimaryKey);
-	    $field->setPrimaryKey();
-	    $this->attachField($field, true);
-	    $this->setPrimaryKey($this->defaultPrimaryKey);
-	}
-	
-	$this->validate();
+        if (!$this->getPrimaryKey() && $this->isTable() && $this->isExtended()) {
+            $field = new IntegerField($this, $this->defaultPrimaryKey);
+            $field->setPrimaryKey();
+            $this->attachField($field, true);
+            $this->setPrimaryKey($this->defaultPrimaryKey);
+        }
+        elseif (!$this->getPrimaryKey() && $this->isTable()) {
+            $field = new AutoField($this, $this->defaultPrimaryKey);
+            $field->setPrimaryKey();
+            $this->attachField($field, true);
+            $this->setPrimaryKey($this->defaultPrimaryKey);
+        }
 
-	# indexes
-	foreach( $this->getFields() as $field)
-	{
-	    foreach($field->getIndexes() as $index)
-	    {
-		$this->addIndex($field->getName(), $index->name, $index->unique);
-	    }
-	}
+        $this->validate();
 
-	# aliases for model
-	$this->setAlias($this->getTableName());
-	$this->buildAliases($this);
+        # indexes
+        foreach ($this->getFields() as $field) {
+            foreach ($field->getIndexes() as $index) {
+                $this->addIndex($field->getName(), $index->name, $index->unique);
+            }
+        }
 
-	# model hashing
-	$model_hashes= array();
-	if ( $this->isTable())
-	{
-	    foreach( $this->getFields() as $field)
-	    {
-		$model_hashes[]= md5($field->getName().'|'.$field->getHash());
-	    }
-	    foreach( $this->getIndexes() as $index)
-	    {
-		$model_hashes[]= md5($index->getName().'|'.$index->getHash());
-	    }
-	    sort($model_hashes);
-	    $this->hash= md5(implode('|', $model_hashes));
-	}
-	elseif ( $this->isView())
-	{
-	    $view= $this->getViewSetup();
-	    $view= trim(preg_replace('#\s{2,}#m',' ', $view));
-	    $this->hash= md5($view);
-	}
-	
-	if (PerfORMController::useModelCaching())
-	{
-	    $cache= PerfORMController::getCache();
-	    $cache->save($this->getCacheKey(), $this, array(
-		Cache::FILES => array( __FILE__ ),
-	    ));
-	}
+        # aliases for model
+        $this->buildAliases();
+
+        # model hashing
+        $model_hashes = array();
+        if ($this->isTable()) {
+            foreach ($this->getFields() as $field) {
+                $model_hashes[] = md5($field->getName() . '|' . $field->getHash());
+            }
+            foreach ($this->getIndexes() as $index) {
+                $model_hashes[] = md5($index->getName() . '|' . $index->getHash());
+            }
+            sort($model_hashes);
+            $this->hash = md5(implode('|', $model_hashes));
+        }
+        elseif ($this->isView()) {
+            $view = $this->getViewSetup();
+            $view = trim(preg_replace('#\s{2,}#m', ' ', $view));
+            $this->hash = md5($view);
+        }
+
+        /*        if (PerfORMController::useModelCaching()) {
+          $cache = PerfORMController::getCache();
+          $cache->save($this->getCacheKey(), $this, array(
+          Cache::FILES => array(__FILE__),
+          ));
+          } */
     }
 
 
@@ -518,16 +452,13 @@ abstract class PerfORM extends Object
      * @param PerfORM $model
      * @return boolean
      */
-    public function dependsOn($model)
-    {
-	foreach($this->depends as $dependent)
-	{
-	    if ( $model == $dependent )
-	    {
-		return true;
-	    }
-	}
-	return false;
+    public function dependsOn($model) {
+        foreach ($this->depends as $dependent) {
+            if ($model == $dependent) {
+                return true;
+            }
+        }
+        return false;
     }
 
 
@@ -537,62 +468,56 @@ abstract class PerfORM extends Object
      * @param array $values
      * @result PerfORM
      */
-    public function fill($values)
-    {
-	if ($values === false) return;
+    public function fill($values) {
+        if ($values === false)
+            return;
 
-	foreach($this->getFields() as $field)
-	{
-	    $key= $this->getAlias().'__'.$field->getRealName();
+        foreach ($this->getFields() as $field) {
+            $key = $this->getAlias() . '__' . $field->getRealName();
 
-	    if ( $field->getIdent() == PerfORM::ForeignKeyField &&
-		!key_exists($field->getReference()->getAlias().'__'.$field->getReference()->getPrimaryKey(), $values))
-	    {
-		$field->setLazyLoadingKeyValue($values[$key]);
-		$field->enableLazyLoading();
+            if ($field->getIdent() == PerfORM::ForeignKeyField &&
+                    !key_exists($field->getReference()->getAlias() . '__' . $field->getReference()->getPrimaryKey(), $values)) {
+                $field->setLazyLoadingKeyValue($values[$key]);
+                $field->enableLazyLoading();
+            }
+            elseif ($field->getIdent() == PerfORM::ForeignKeyField &&
+                    !$field->isEnabledLazyLoading()
+            ) {
+                $child = clone $field->getReference();
+                $child->fill($values);
+                $field->setValue($child);
+            }
+            elseif ($field->getIdent() == PerfORM::ForeignKeyField &&
+                    $field->isEnabledLazyLoading()
+            ) {
+                $field->setLazyLoadingKeyValue($values[$key]);
+            }
+            elseif (key_exists($key, $values)) {
+                $this->__set($field->getName(), $values[$key]);
+            }
+            else {
 
-	    }
-	    elseif ( $field->getIdent() == PerfORM::ForeignKeyField &&
-		!$field->isEnabledLazyLoading()
-	    )
-	    {
-		$child= clone $field->getReference();
-		$child->fill($values);
-		$field->setValue($child);
-	    }
-	    elseif ( $field->getIdent() == PerfORM::ForeignKeyField &&
-		$field->isEnabledLazyLoading()
-	    )
-	    {
-		$field->setLazyLoadingKeyValue($values[$key]);
-	    }
-	    elseif ( key_exists($key, $values))
-	    {
-		$this->__set($field->getName(), $values[$key]);
-	    }
-	    else
-	    {
-		throw new Exception("The is no value in result for field '$key'");
-	    }
-	}
-	$this->setUnmodified();
+                Debug::barDump($this);
 
-	if ( $this->isExtended())
-	{
-	    $this->extends->fill($values);
-	}
+                throw new Exception("The is no value in result for field '$key'");
+            }
+        }
+        $this->setUnmodified();
+
+        if ($this->isExtended()) {
+            $this->extends->fill($values);
+        }
     }
+
 
     /**
      * Freezes model's definition after building
      */
-    protected function freeze()
-    {
-	$this->freeze= true;
-	foreach($this->getFields() as $field)
-	{
-	    $field->freeze();
-	}
+    protected function freeze() {
+        $this->freeze = true;
+        foreach ($this->getFields() as $field) {
+            $field->freeze();
+        }
     }
 
 
@@ -600,9 +525,8 @@ abstract class PerfORM extends Object
      * Sets inheritance
      * @param PerfORM $model
      */
-    protected function setInheritance($model)
-    {
-	$this->extends= $model;
+    protected function setInheritance($model) {
+        $this->extends = $model;
     }
 
 
@@ -610,9 +534,8 @@ abstract class PerfORM extends Object
      * Getter for alias
      * @return string
      */
-    public function getAlias()
-    {
-	return $this->alias;
+    public function getAlias() {
+        return $this->alias;
     }
 
 
@@ -620,9 +543,8 @@ abstract class PerfORM extends Object
      * Getter for model's cache key
      * @return string
      */
-    protected function getCacheKey()
-    {
-	return md5($this->getLastModification() .'|' .get_class($this));
+    protected function getCacheKey() {
+        return md5($this->getLastModification() . '|' . get_class($this));
     }
 
 
@@ -630,9 +552,8 @@ abstract class PerfORM extends Object
      * Getter for PerfORMController's connection
      * @return DibiConnection
      */
-    public function getConnection()
-    {
-	return PerfORMController::getConnection();
+    public function getConnection() {
+        return PerfORMController::getConnection();
     }
 
 
@@ -640,9 +561,14 @@ abstract class PerfORM extends Object
      * Getter for all dependents of model
      * @return array
      */
-    public function getDependents()
-    {
-	return $this->depends;
+    public function getDependents() {
+        $depends = array();
+        foreach ($this->getFields() as $field) {
+            if ($field->getIdent() == PerfORM::ForeignKeyField) {
+                $depends[] = $field;
+            }
+        }
+        return $depends;
     }
 
 
@@ -650,9 +576,8 @@ abstract class PerfORM extends Object
      * Getter for parent model
      * @return PerfORM
      */
-    public function getExtend()
-    {
-	return $this->extends;
+    public function getExtend() {
+        return $this->extends;
     }
 
 
@@ -660,21 +585,17 @@ abstract class PerfORM extends Object
      * Getter for field with name $name
      * @return Field
      */
-    public function getField($name, $includeExtends = false)
-    {
-	if ( key_exists($name, $this->fields))
-	{
-	    return $this->fields[$name];
-	}
-	elseif( $this->isExtended() and $includeExtends)
-	{
-	    $result= $this->extends->getField($name, true);
-	    return $result;
-	}
-	else
-	{
-	    throw new Exception("field '$name' does not exists");
-	}
+    public function getField($name, $includeExtends = false) {
+        if (key_exists($name, $this->fields)) {
+            return $this->fields[$name];
+        }
+        elseif ($this->isExtended() and $includeExtends) {
+            $result = $this->extends->getField($name, true);
+            return $result;
+        }
+        else {
+            throw new Exception("field '$name' does not exists");
+        }
     }
 
 
@@ -682,18 +603,15 @@ abstract class PerfORM extends Object
      * Getter for array of all fields of model (including inheritated fields)
      * @return array
      */
-    public function getFieldNames()
-    {
-	$fieldNames= array();
-	foreach($this->getFields() as $field)
-	{
-	    $fieldNames[$field->getName()]= $field->getName();
-	}
-	if ( $this->extends)
-	{
-	    $fieldNames= array_merge($fieldNames, $this->extends->getFieldNames());
-	}
-	return $fieldNames;
+    public function getFieldNames() {
+        $fieldNames = array();
+        foreach ($this->getFields() as $field) {
+            $fieldNames[$field->getName()] = $field->getName();
+        }
+        if ($this->extends) {
+            $fieldNames = array_merge($fieldNames, $this->extends->getFieldNames());
+        }
+        return $fieldNames;
     }
 
 
@@ -701,9 +619,8 @@ abstract class PerfORM extends Object
      * Getter for model's fields
      * @return array
      */
-    public function getFields()
-    {
-	return $this->fields;
+    public function getFields() {
+        return $this->fields;
     }
 
 
@@ -711,18 +628,15 @@ abstract class PerfORM extends Object
      * Getter for foreign keys
      * @return array
      */
-    public function getForeignKeys()
-    {
-	$keys= array();
+    public function getForeignKeys() {
+        $keys = array();
 
-	foreach($this->fields as $field)
-	{
-	    if ( get_class($field) == 'ForeignKeyField' )
-	    {
-		$keys[]= $field;
-	    }
-	}
-	return $keys;
+        foreach ($this->fields as $field) {
+            if (get_class($field) == 'ForeignKeyField') {
+                $keys[] = $field;
+            }
+        }
+        return $keys;
     }
 
 
@@ -730,9 +644,8 @@ abstract class PerfORM extends Object
      * Getter for model's hash
      * @return string
      */
-    public function getHash()
-    {
-	return $this->hash;
+    public function getHash() {
+        return $this->hash;
     }
 
 
@@ -740,9 +653,8 @@ abstract class PerfORM extends Object
      * Getter for model's indexes
      * @return array
      */
-    public function getIndexes()
-    {
-	return $this->indexes;
+    public function getIndexes() {
+        return $this->indexes;
     }
 
 
@@ -756,9 +668,8 @@ abstract class PerfORM extends Object
     /**
      * Getter for model's name
      */
-    public function getName()
-    {
-	return get_class($this);
+    public function getName() {
+        return get_class($this);
     }
 
 
@@ -767,40 +678,32 @@ abstract class PerfORM extends Object
      * @return string
      * @todo remove check for multiple primary keys on table, needed to check elsewhere
      */
-    public function getPrimaryKey()
-    {
+    public function getPrimaryKey() {
 
-	if ( is_null($this->primaryKey))
-	{
-	    $primaryKey= null;
-	    $hits= 0;
-	    foreach($this->fields as $field)
-	    {
-		if ( $field->isPrimaryKey())
-		{
-		    $primaryKey= $field->getName();
-		    $hits++;
-		}
-	    }
+        if (is_null($this->primaryKey)) {
+            $primaryKey = null;
+            $hits = 0;
+            foreach ($this->fields as $field) {
+                if ($field->isPrimaryKey()) {
+                    $primaryKey = $field->getName();
+                    $hits++;
+                }
+            }
 
-	    if ( $hits > 1 )
-	    {
-		throw new Exception("multiple primary keys on table '$this->getTableName()'");
-	    }
-	    elseif ( $hits > 0 )
-	    {
-		$this->setPrimaryKey($primaryKey);
-		return $primaryKey;
-	    }
-	    else
-	    {
-		return false;
-	    }
-	}
-	else
-	{
-	    return $this->primaryKey;
-	}
+            if ($hits > 1) {
+                throw new Exception("multiple primary keys on table '$this->getTableName()'");
+            }
+            elseif ($hits > 0) {
+                $this->setPrimaryKey($primaryKey);
+                return $primaryKey;
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            return $this->primaryKey;
+        }
     }
 
 
@@ -809,9 +712,8 @@ abstract class PerfORM extends Object
      *
      * Required for loading of serialized object's properties from cache
      */
-    public function getProperties()
-    {
-	return get_object_vars($this);
+    public function getProperties() {
+        return get_object_vars($this);
     }
 
 
@@ -819,15 +721,13 @@ abstract class PerfORM extends Object
      * Getter for all tablenames from inheritated models
      * @return array
      */
-    public function getAllTableNames()
-    {
-	$result= array();
-	if ( $this->isExtended())
-	{
-	    $result= array_merge($result, $this->getExtend()->getAllTableNames());
-	}
-	$result= array_merge($result, array($this->getTableName()));
-	return $result;
+    public function getAllTableNames() {
+        $result = array();
+        if ($this->isExtended()) {
+            $result = array_merge($result, $this->getExtend()->getAllTableNames());
+        }
+        $result = array_merge($result, array($this->getTableName()));
+        return $result;
     }
 
 
@@ -835,16 +735,14 @@ abstract class PerfORM extends Object
      * Getter for sql table name
      * @return string
      */
-    public function getTableName()
-    {
-	if ( is_null($this->tableName))
-	{
-	    $className= get_class($this);
-	    $className[0] = strtolower($className[0]);
-	    $func = create_function('$c', 'return "_" . strtolower($c[1]);');
-	    $this->tableName= preg_replace_callback('/([A-Z])/', $func, $className);
-	}
-	return is_null($this->prefix) ? $this->tableName : $this->prefix . $this->tableName ;
+    public function getTableName() {
+        if (is_null($this->tableName)) {
+            $className = get_class($this);
+            $className[0] = strtolower($className[0]);
+            $func = create_function('$c', 'return "_" . strtolower($c[1]);');
+            $this->tableName = preg_replace_callback('/([A-Z])/', $func, $className);
+        }
+        return is_null($this->prefix) ? $this->tableName : $this->prefix . $this->tableName;
     }
 
 
@@ -852,21 +750,17 @@ abstract class PerfORM extends Object
      * Checks if model has field with name $name
      * @return boolean
      */
-    public function hasField($name)
-    {
+    public function hasField($name) {
 
-	foreach($this->getFields() as $field)
-	{
-	    if ( $field->getRealName() == $name or $field->getName() == $name )
-	    {
-		return true;
-	    }
-	}
-	if ( $this->extends)
-	{
-	    return $this->extends->hasField($name);
-	}
-	return false;
+        foreach ($this->getFields() as $field) {
+            if ($field->getRealName() == $name or $field->getName() == $name) {
+                return true;
+            }
+        }
+        if ($this->extends) {
+            return $this->extends->hasField($name);
+        }
+        return false;
     }
 
 
@@ -874,25 +768,22 @@ abstract class PerfORM extends Object
      * Import (load) model with values
      * @param array $values
      */
-    public function import($values)
-    {
-	if ( !is_array($values))
-	{
-	    throw new Exception("invalid datatype of import values, array expected");
-	}
+    public function import($values) {
+        if (!is_array($values)) {
+            throw new Exception("invalid datatype of import values, array expected");
+        }
 
-	foreach($values as $path => $value)
-	{
-	    $field= $this->pathLookup($path);
+        foreach ($values as $path => $value) {
+            $field = $this->pathLookup($path);
 
-	    if ( $field->getIdent() == PerfORM::ForeignKeyField && !is_object($value) ) {
-		$field->setLazyLoadingKeyValue($value);
-		$field->enableLazyLoading();
-	    }
-	    else {
-		$field->getModel()->__set($field->getName(), $value);
-	    }
-	}
+            if ($field->getIdent() == PerfORM::ForeignKeyField && !is_object($value)) {
+                $field->setLazyLoadingKeyValue($value);
+                $field->enableLazyLoading();
+            }
+            else {
+                $field->getModel()->__set($field->getName(), $value);
+            }
+        }
     }
 
 
@@ -903,40 +794,34 @@ abstract class PerfORM extends Object
      *
      * @return mixed model's primary key value
      */
-    public function insert()
-    {
-	$insert= array();
+    public function insert() {
+        $insert = array();
 
-	foreach($this->getFields() as $key => $field)
-	{
-	    $finalColumn= $field->getRealName().'%'.$field->getType();
+        foreach ($this->getFields() as $key => $field) {
+            $finalColumn = $field->getRealName() . '%' . $field->getType();
 
-	    if ($field->isPrimaryKey() and $field->getIdent() == PerfORM::AutoField)
-	    {
-	    }
-	    elseif ( !is_null($value = $field->getDbValue(true)) )
-	    {
-		$insert[$finalColumn]= $value;
-	    }
-	    elseif( !$field->isNullable() )
-	    {
-		throw new Exception(get_class($this). " - field '$key' has no value set or default value but not null");
-	    }
-	}
+            if ($field->isPrimaryKey() and $field->getIdent() == PerfORM::AutoField) {
 
-	if (count($insert)>0)
-	{
-	    #Debug::barDump($insert, 'insert array');
-	    PerfORMController::queryAndLog('insert into %n', $this->getTableName(), $insert);
-	    $this->setUnmodified();
-	    $insertId= $this->getConnection()->insertId();
-	    $this->fields[$this->getPrimaryKey()]->setValue($insertId);
-	    return $insertId;
-	}
-	else
-	{
-	    trigger_error("The model '".get_class($this)."' has no data to insert", E_USER_NOTICE);
-	}
+            }
+            elseif (!is_null($value = $field->getDbValue(true))) {
+                $insert[$finalColumn] = $value;
+            }
+            elseif (!$field->isNullable()) {
+                throw new Exception(get_class($this) . " - field '$key' has no value set or default value but not null");
+            }
+        }
+
+        if (count($insert) > 0) {
+            #Debug::barDump($insert, 'insert array');
+            PerfORMController::queryAndLog('insert into %n', $this->getTableName(), $insert);
+            $this->setUnmodified();
+            $insertId = $this->getConnection()->insertId();
+            $this->fields[$this->getPrimaryKey()]->setValue($insertId);
+            return $insertId;
+        }
+        else {
+            trigger_error("The model '" . get_class($this) . "' has no data to insert", E_USER_NOTICE);
+        }
     }
 
 
@@ -944,9 +829,8 @@ abstract class PerfORM extends Object
      * Checks if model is extended
      * @return boolean
      */
-    public function isExtended()
-    {
-	return isset($this->extends) ? true : false;
+    public function isExtended() {
+        return isset($this->extends) ? true : false;
     }
 
 
@@ -954,9 +838,8 @@ abstract class PerfORM extends Object
      * Checks if model was frozen
      * @return boolean
      */
-    protected function isFrozen()
-    {
-	return $this->freeze;
+    protected function isFrozen() {
+        return $this->freeze;
     }
 
 
@@ -964,9 +847,8 @@ abstract class PerfORM extends Object
      * Checks if model and it's fields are modified
      * @return boolean
      */
-    public function isModified()
-    {
-	return $this->modified;
+    public function isModified() {
+        return $this->modified;
     }
 
 
@@ -974,9 +856,8 @@ abstract class PerfORM extends Object
      * Determines if model is table
      * @return boolean
      */
-    public function isTable()
-    {
-	return !$this->view;
+    public function isTable() {
+        return!$this->view;
     }
 
 
@@ -984,30 +865,25 @@ abstract class PerfORM extends Object
      * Determines if model is view
      * @return boolean
      */
-    public function isView()
-    {
-	return $this->view;
+    public function isView() {
+        return $this->view;
     }
 
 
     /**
      * Load model definition from cache if exists; if not, build model
      */
-    protected function loadDefinition()
-    {
-	$cache= PerfORMController::getCache();
-	$cacheKey= $this->getCacheKey();
-	if ( isset($cache[$cacheKey]) and is_object($cache[$cacheKey]) and get_class($cache[$cacheKey]) == get_class($this))
-	{
-	    foreach( $cache[$cacheKey]->getProperties() as $property => $value)
-	    {
-		$this->{$property}= $value;
-	    }
-	}
-	else
-	{
-	    $this->buildDefinition();
-	}
+    protected function loadDefinition() {
+        $cache = PerfORMController::getCache();
+        $cacheKey = $this->getCacheKey();
+        if (isset($cache[$cacheKey]) and is_object($cache[$cacheKey]) and get_class($cache[$cacheKey]) == get_class($this)) {
+            foreach ($cache[$cacheKey]->getProperties() as $property => $value) {
+                $this->{$property} = $value;
+            }
+        }
+        else {
+            $this->buildDefinition();
+        }
     }
 
 
@@ -1015,9 +891,8 @@ abstract class PerfORM extends Object
      * Interface to QuerySet's
      * @return QuerySet
      */
-    public function objects()
-    {
-	return new QuerySet($this);
+    public function objects() {
+        return new QuerySet($this);
     }
 
 
@@ -1029,31 +904,27 @@ abstract class PerfORM extends Object
      * @param string $delimiter
      * @result Field
      */
-    public function pathLookup($path, $delimiter = '__')
-    {
-	$pointer= null;
-	$reference= $this;
-	$fields= explode($delimiter, $path);
-	$iterator= count($fields);
-	foreach($fields as $field)
-	{
-	    $iterator--;
-	    if ($reference->hasField($field) &&
-		$reference->getField($field, true)->getIdent() == PerfORM::ForeignKeyField)
-	    {
-		$pointer= $reference->getField($field, true);
-		$reference= $pointer->getReference();
-	    }
-	    elseif ( $reference->hasField($field) &&
-		$iterator === 0 )
-	    {
-		$pointer= $reference->getField($field, true);
-	    }
-	    else {
-		throw new Exception("Invalid element '$field' in path '$path'.");
-	    }
-	}
-	return $pointer;
+    public function pathLookup($path, $delimiter = '__') {
+        $pointer = null;
+        $reference = $this;
+        $fields = explode($delimiter, $path);
+        $iterator = count($fields);
+        foreach ($fields as $field) {
+            $iterator--;
+            if ($reference->hasField($field) &&
+                    $reference->getField($field, true)->getIdent() == PerfORM::ForeignKeyField) {
+                $pointer = $reference->getField($field, true);
+                $reference = $pointer->getReference();
+            }
+            elseif ($reference->hasField($field) &&
+                    $iterator === 0) {
+                $pointer = $reference->getField($field, true);
+            }
+            else {
+                throw new Exception("Invalid element '$field' in path '$path'.");
+            }
+        }
+        return $pointer;
     }
 
 
@@ -1063,33 +934,27 @@ abstract class PerfORM extends Object
      * When primary key is set, model will be updated otherwise inserted
      * @return mixed model's primary key value
      */
-    public function save()
-    {
-	if ( $this->isView() )
-	{
-	    throw new Exception('Unable to save view.');
-	}
+    public function save() {
+        if ($this->isView()) {
+            throw new Exception('Unable to save view.');
+        }
 
-	$pk= $this->getPrimaryKey();
+        $pk = $this->getPrimaryKey();
 
-	// has primary key set, record exists -> updating
-	if ($this->fields[$pk]->getValue())
-	{
-	    if ($this->isExtended())
-	    {
-		$this->extends->save();
-	    }
-	    return $this->update();
-	}
-	// no primary key value, record does not exists -> inserting
-	else
-	{
-	    if ($this->isExtended())
-	    {
-		$this->{$pk}= $this->extends->save();
-	    }
-	    return $this->insert();
-	}
+        // has primary key set, record exists -> updating
+        if ($this->fields[$pk]->getValue()) {
+            if ($this->isExtended()) {
+                $this->extends->save();
+            }
+            return $this->update();
+        }
+        // no primary key value, record does not exists -> inserting
+        else {
+            if ($this->isExtended()) {
+                $this->{$pk} = $this->extends->save();
+            }
+            return $this->insert();
+        }
     }
 
 
@@ -1097,28 +962,23 @@ abstract class PerfORM extends Object
      * Setter for model alias
      * @param string $alias
      */
-    public function setAlias($alias)
-    {
-	$this->alias= $alias;
+    public function setAlias($alias) {
+        $this->alias = $alias;
     }
 
 
-    public function setLazyLoading()
-    {
-	$paths= func_get_args();
-	if (empty($paths))
-	{
-	    foreach($this->getForeignKeys() as $field)
-	    {
-		$field->enableLazyLoading();
-	    }
-	    return;
-	}
+    public function setLazyLoading() {
+        $paths = func_get_args();
+        if (empty($paths)) {
+            foreach ($this->getForeignKeys() as $field) {
+                $field->enableLazyLoading();
+            }
+            return;
+        }
 
-	foreach($paths as $path)
-	{
-	    $this->pathLookup($path, '->')->enableLazyLoading();
-	}
+        foreach ($paths as $path) {
+            $this->pathLookup($path, '->')->enableLazyLoading();
+        }
     }
 
 
@@ -1126,9 +986,8 @@ abstract class PerfORM extends Object
      * Setter for primary key field name
      * @param string $primaryKey
      */
-    protected function setPrimaryKey($primaryKey)
-    {
-	$this->primaryKey= $primaryKey;
+    protected function setPrimaryKey($primaryKey) {
+        $this->primaryKey = $primaryKey;
     }
 
 
@@ -1142,18 +1001,15 @@ abstract class PerfORM extends Object
     /**
      * Set model and all it's fields to unmodified
      */
-    public function setUnmodified()
-    {
-	$this->modified= false;
-	foreach( $this->getFields() as $field)
-	{
-	    $field->setUnmodified();
-	}
+    public function setUnmodified() {
+        $this->modified = false;
+        foreach ($this->getFields() as $field) {
+            $field->setUnmodified();
+        }
 
-	if ( $this->extends)
-	{
-	    $this->extends->setUnmodified();
-	}
+        if ($this->extends) {
+            $this->extends->setUnmodified();
+        }
     }
 
 
@@ -1162,25 +1018,22 @@ abstract class PerfORM extends Object
      * @param boolean $flat
      * @return stdClass
      */
-    public function simplify($flat = false)
-    {
-	$result= new stdClass;
+    public function simplify($flat = false) {
+        $result = new stdClass;
 
-	foreach($this->getFieldNames() as $fieldName)
-	{
-	    if ( $flat && $this->getField($fieldName, true)->getIdent() == PerfORM::ForeignKeyField ) {
-		$_result= $this->getField($fieldName, true)->simplify($flat);
-		foreach($_result as $key => $value) {
-		    $result->{$fieldName.'__'.$key} = $value;
-		    $result->{$fieldName} = $this->getField($fieldName, true)->getDbValue(true);
-		}
-	    }
-	    else {
-		$result->{$fieldName} = $this->getField($fieldName, true)->simplify($flat);
-	    }
-	    
-	}
-	return $result;
+        foreach ($this->getFieldNames() as $fieldName) {
+            if ($flat && $this->getField($fieldName, true)->getIdent() == PerfORM::ForeignKeyField) {
+                $_result = $this->getField($fieldName, true)->simplify($flat);
+                foreach ($_result as $key => $value) {
+                    $result->{$fieldName . '__' . $key} = $value;
+                    $result->{$fieldName} = $this->getField($fieldName, true)->getDbValue(true);
+                }
+            }
+            else {
+                $result->{$fieldName} = $this->getField($fieldName, true)->simplify($flat);
+            }
+        }
+        return $result;
     }
 
 
@@ -1192,42 +1045,35 @@ abstract class PerfORM extends Object
      *
      * @return mixed model's primary key value
      */
-    public function update()
-    {
-	$update= array();
+    public function update() {
+        $update = array();
 
-	foreach($this->fields as $key => $field)
-	{
-	    $finalColumn= $field->getRealName().'%'.$field->getType();
+        foreach ($this->fields as $key => $field) {
+            $finalColumn = $field->getRealName() . '%' . $field->getType();
 
-	    if ($field->isPrimaryKey())
-	    {
-		$primaryKey= $field->getRealName();
-		$primaryKeyValue= $field->getDbValue(false);
-		$primaryKeyType= $field->getType();
-	    }
-	    elseif ( !is_null($dbValue = $field->getDbValue(false)) && $field->isModified() )
-	    {
-		$update[$finalColumn]= $dbValue;
-	    }
-	    # if field has nullCallback defined, include it in update no matter if modified or not
-	    elseif ( $field->getNullCallback() )
-	    {
-		$update[$finalColumn]= $dbValue;
-	    }
-	}
+            if ($field->isPrimaryKey()) {
+                $primaryKey = $field->getRealName();
+                $primaryKeyValue = $field->getDbValue(false);
+                $primaryKeyType = $field->getType();
+            }
+            elseif (!is_null($dbValue = $field->getDbValue(false)) && $field->isModified()) {
+                $update[$finalColumn] = $dbValue;
+            }
+            # if field has nullCallback defined, include it in update no matter if modified or not
+            elseif ($field->getNullCallback()) {
+                $update[$finalColumn] = $dbValue;
+            }
+        }
 
-	if (count($update)>0)
-	{
-	    #Debug::barDump($update, 'update array');
-	    PerfORMController::queryAndLog('update %n set', $this->getTableName(), $update, "where %n = %$primaryKeyType", $primaryKey, $primaryKeyValue);
-	    $this->setUnmodified();
-	    return $primaryKeyValue;
-	}
-	else
-	{
-	    trigger_error("The model '".get_class($this)."' has no unmodified data to update", E_USER_NOTICE);
-	}
+        if (count($update) > 0) {
+            #Debug::barDump($update, 'update array');
+            PerfORMController::queryAndLog('update %n set', $this->getTableName(), $update, "where %n = %$primaryKeyType", $primaryKey, $primaryKeyValue);
+            $this->setUnmodified();
+            return $primaryKeyValue;
+        }
+        else {
+            trigger_error("The model '" . get_class($this) . "' has no unmodified data to update", E_USER_NOTICE);
+        }
     }
 
 
@@ -1236,22 +1082,18 @@ abstract class PerfORM extends Object
      *
      * Throws Exception with all validation errors
      */
-    protected function validate()
-    {
-	foreach($this->getFields() as $field)
-	{
-	    $this->errors= array_merge($this->errors, $field->validate());
-	}
-	
-	if ( $this->isView() && !(method_exists($this,'getViewSetup') and is_string($this->getViewSetup())) )
-	{
-	    $this->_addError('%s - invalid view definition');
-	}
+    protected function validate() {
+        foreach ($this->getFields() as $field) {
+            $this->errors = array_merge($this->errors, $field->validate());
+        }
 
-	if (count($this->errors)>0)
-	{
-	    throw new Exception(implode("; ", $this->errors));
-	}
+        if ($this->isView() && !(method_exists($this, 'getViewSetup') and is_string($this->getViewSetup()))) {
+            $this->_addError('%s - invalid view definition');
+        }
+
+        if (count($this->errors) > 0) {
+            throw new Exception(implode("; ", $this->errors));
+        }
     }
 
 
@@ -1260,26 +1102,21 @@ abstract class PerfORM extends Object
      * @param string $name
      * @param mixed $value
      */
-    public function __set($name, $value)
-    {
-	$name= strtolower($name);
-	if ($this->hasField($name))
-	{
-	    if (key_exists($name, $this->fields))
-	    {
-		$valid= true;
-		$this->getField($name)->setValue($value);
-		$this->modified= true;
-	    }
-	    if( $this->isExtended() and $this->extends->hasField($name))
-	    {
-		$this->extends->{$name}= $value;
-	    }
-	}
-	else
-	{
-	    throw new Exception ("Model '".get_class($this)."' does not contain field '$name'.");
-	}
+    public function __set($name, $value) {
+        $name = strtolower($name);
+        if ($this->hasField($name)) {
+            if (key_exists($name, $this->fields)) {
+                $valid = true;
+                $this->getField($name)->setValue($value);
+                $this->modified = true;
+            }
+            if ($this->isExtended() and $this->extends->hasField($name)) {
+                $this->extends->{$name} = $value;
+            }
+        }
+        else {
+            throw new Exception("Model '" . get_class($this) . "' does not contain field '$name'.");
+        }
     }
 
 
@@ -1288,89 +1125,80 @@ abstract class PerfORM extends Object
      * @param string $name
      * @return mixed
      */
-    public function &__get($name)
-    {
-	$name= strtolower($name);
-	if ($this->hasField($name))
-	{
-	    if (key_exists($name, $this->fields)){
-		$field= $this->getField($name);
-		if( $field->getIdent() == PerfORM::DateTimeField ||
-		    $field->getIdent() == PerfORM::TimeField ||
-		    $field->getIdent() == PerfORM::DateField
-		    )
-		{
-		    return $field;
-		}
-		elseif(
-		    $field->getIdent() == PerfORM::ForeignKeyField &&
-		    $field->isEnabledLazyLoading() &&
-		    !is_null($lazyLoadingKeyValue = $field->getValue())
-		)
-		{
-		    $referenceModel= get_class($field->getReference());
-		    $model= new $referenceModel;
-		    $model->objects()->load('id=%i', $lazyLoadingKeyValue);
-		    $field->setValue($model);
-		    $field->disableLazyLoading();
-		}
-		$result= $field->getValue();
-		return $result;
-	    }
-	    elseif( $this->isExtended())
-	    {
-		$result= $this->extends->__get($name);
-		return $result;
-	    }
-	    else
-	    {
-		throw new Exception('logic exception');
-	    }
-	}
-	else
-	{
-	    throw new Exception ("Model '".get_class($this)."' does not contain field '$name'.");
-	}
+    public function &__get($name) {
+        $name = strtolower($name);
+        if ($this->hasField($name)) {
+            if (key_exists($name, $this->fields)) {
+                $field = $this->getField($name);
+                if ($field->getIdent() == PerfORM::DateTimeField ||
+                        $field->getIdent() == PerfORM::TimeField ||
+                        $field->getIdent() == PerfORM::DateField
+                ) {
+                    return $field;
+                }
+                elseif (
+                        $field->getIdent() == PerfORM::ForeignKeyField &&
+                        $field->isEnabledLazyLoading() &&
+                        !is_null($lazyLoadingKeyValue = $field->getValue())
+                ) {
+                    $referenceModel = get_class($field->getReference());
+                    $model = new $referenceModel;
+                    $model->objects()->load('id=%i', $lazyLoadingKeyValue);
+                    $field->setValue($model);
+                    $field->disableLazyLoading();
+                }
+                $result = $field->getValue();
+                return $result;
+            }
+            elseif ($this->isExtended()) {
+                $result = $this->extends->__get($name);
+                return $result;
+            }
+            else {
+                throw new Exception('logic exception');
+            }
+        }
+        else {
+            throw new Exception("Model '" . get_class($this) . "' does not contain field '$name'.");
+        }
     }
+
 
     /**
      * Model needs object to string conversion
      * @abstract
      */
-    abstract function  __toString();
+    abstract function __toString();
 
 
     public function __sleep() {
-	
-	return array('modified', 'fields');
-    }
-
-    public function  __wakeup() {
-	$fields= $this->fields;
-	$modified= $this->modified;
-	$this->fields= array();
-	$this->buildDefinition();
-	foreach($fields as $key => $field) {
-	    if ( !is_null($field->getValue()) && $field->getIdent() == PerfORM::ForeignKeyField &&
-		$field->isEnabledLazyLoading())
-	    {
-		$this->fields[$key]->setLazyLoadingKeyValue($field->getValue());
-		$this->fields[$key]->enableLazyLoading();
-	    }
-	    elseif ( !is_null($field->getValue())) {
-		$this->fields[$key]->setValue($field->getValue());
-	    }
-	    if( !$field->isModified()) {
-		$this->fields[$key]->setUnmodified();
-	    }
-	}
-	$this->modified= $modified;
+        return array('modified', 'fields');
     }
 
 
-    public function __destruct()
-    {
-	unset($this->fields);
+    public function __wakeup() {
+        $fields = $this->fields;
+        $modified = $this->modified;
+        $this->fields = array();
+        $this->buildDefinition();
+        foreach ($fields as $key => $field) {
+            if (!is_null($field->getValue()) && $field->getIdent() == PerfORM::ForeignKeyField &&
+                    $field->isEnabledLazyLoading()) {
+                $this->fields[$key]->setLazyLoadingKeyValue($field->getValue());
+                $this->fields[$key]->enableLazyLoading();
+            }
+            elseif (!is_null($field->getValue())) {
+                $this->fields[$key]->setValue($field->getValue());
+            }
+            if (!$field->isModified()) {
+                $this->fields[$key]->setUnmodified();
+            }
+        }
+        $this->modified = $modified;
     }
 
+
+    public function __destruct() {
+        unset($this->fields);
+    }
 }

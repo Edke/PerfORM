@@ -133,7 +133,7 @@ final class QuerySet
 		    $field->getReference()->getTableName(),
 		    $field->getReference()->getAlias(),
 		    $field->getReference()->getAlias(),
-		    $field->getReferenceTableKey(),
+		    $field->getReference()->getPrimaryKey(),
 		    $model->getAlias(),
 		    $field->getRealName()
 		);
