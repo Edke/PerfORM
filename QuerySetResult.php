@@ -21,7 +21,7 @@
  * @package PerfORM
  */
 
-final class QuerySetResult implements IteratorAggregate, Countable
+class QuerySetResult implements IteratorAggregate, Countable
 {
 
     /**
@@ -41,7 +41,7 @@ final class QuerySetResult implements IteratorAggregate, Countable
 	$this->modelName= $modelName;
     }
 
-    final public function getIterator($offset = NULL, $limit = NULL)
+    public function getIterator($offset = NULL, $limit = NULL)
     {
 	return new QuerySetResultIterator($this, $offset, $limit);
     }

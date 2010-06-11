@@ -21,7 +21,7 @@
  * @package PerfORM
  */
 
-final class QuerySetResultIterator implements Iterator, Countable
+class QuerySetResultIterator implements Iterator, Countable
 {
 
     /**
@@ -52,7 +52,7 @@ final class QuerySetResultIterator implements Iterator, Countable
 	$this->result= $result;
 	$this->offset = (int) $offset;
 	$this->limit = $limit === NULL ? -1 : (int) $limit;
-	$this->profiler= Environment::getConfig('perform')->profiler;
+	//$this->profiler= Environment::getConfig('perform')->profiler;
     }
 
 
@@ -90,7 +90,7 @@ final class QuerySetResultIterator implements Iterator, Countable
 	$modelName= $this->result->getModelName();
 	$model = new $modelName;
 	$model->fill($this->row);
-	$this->profiler();
+	//$this->profiler();
 	return $model;
     }
 
