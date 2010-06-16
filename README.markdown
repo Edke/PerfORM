@@ -45,6 +45,7 @@ Nette project may vary, this is the way I suggest to use:
     PerfORM/Css/fshl_COHEN_style.css.
  8. add configuration to your application's config.ini:
 
+<pre><code>
     perform.memcache_host= localhost
     perform.memcache_port= 11211
     perform.cache_prefix= perform
@@ -52,6 +53,7 @@ Nette project may vary, this is the way I suggest to use:
     perform.profiler = false
     perform.storage_profiler = false
     perform.modelCache = %appDir%/temp/PerfORM
+</code></pre>
 
  9. create folder app/temp/PerfORM as set in config and make it writable for webserver 
     or your user when cli management is used
@@ -71,9 +73,7 @@ Model examples
 Model templates are stored in app/models or any other app/SomeModule/models folder. Model 
 template's name has to be PerfORMModelName. Example:
 
-
-<?php
-
+<pre><code>
 /**
  * PerfORMDisk
  *
@@ -116,13 +116,13 @@ abstract class PerfORMDisk extends PerfORM {
                                 $this->roztec, $this->off_set)));
     }
 }
-?>
+</code></pre>
 
 When executing PerfORMController::syncdb (from console via PerfORMConsoleModule or from your admin application), 
 final model classes will be created in app/temp/PerfORM and also database structure is inserted into your configured
 database. These final classes are used in your application as models. Example of generated model class:
 
-<?php
+<pre><code>
 /**
  * Disk
  *
@@ -164,7 +164,7 @@ final class Disk extends PerfORMDisk {
 	return '1276610205';
     }
 }
-?>
+</code></pre>
 
 PerfORMController
 -----------------
@@ -197,7 +197,7 @@ Basic model manupulation
 
 This example shows loading and filling of models with use of foreign keys.
 
-
+<pre><code>
 $tread = new Dezen();
 if (!$tread->objects()->load('nazov=%s', 'AH11')) {
 
@@ -226,7 +226,7 @@ $tyre->li = '126/124';
 $tyre->si = 'M';
 $tyre->prevedenie = '12PR';
 $tyre->save();
-
+</code></pre>
 
 Lazy loading
 -------------
@@ -236,32 +236,34 @@ we don't need whole model tree while interacting in view/template. Lazy loading 
 these situtions, setting parts of tree not to be loaded by default. But they will be loaded
 when needed later on.
 
+<pre><code>
 $tyre = new Pneumatika();
 $tyre->setLazyLoading(); //sets lazy loading for all foreign keys of model
 
 $tyre->objects()->load('sap = %s', 'HAN-2000981');
 echo $tyre->dezen->vyrobca; //when accessing foreign key dezen of model Pneumatika, it will load before accessing
+</code></pre>
 
 Choices
 -------
 
 See model Dezen.
 
-
+<pre><code>
 $tread = new Dezen();
 $tread->objects()->load('nazov=%s', 'AH11');
 
 echo $tread->sezona;
 echo $tread->sezona->display();
 echo $tread->sezona->getChoices();
-
+</code></pre>
 
 Inheritance
 -----------
 
 See models PressRelease, TyreTest and Document.
 
-
+<pre><code>
 $pressRelease= new PressRelease();
 $pressRelease->title= 'Hankook Tire Announces 2010 Motorsports Sponsorships';
 $pressRelease->content= 'LAS VEGAS, Nov. 5, 2009 - After celebrating its most successful motorsports ...';
@@ -295,8 +297,7 @@ foreach($result as $document)
     $document->rating= 97;
     $document->save();
 }
-
-
+</code></pre>
 
 
 License
