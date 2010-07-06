@@ -208,6 +208,6 @@ class CharField extends TextField {
 
     public function __toString()
     {
-	return parent::getValue();
+	return is_string(parent::getValue()) ? parent::getValue() : '';
     }
 }
