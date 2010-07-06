@@ -148,7 +148,7 @@ class CharField extends TextField {
 
     public function setValue($value)
     {
-	if ( isset($this->choices) && !key_exists($value, $this->choices) )
+	if ( isset($this->choices) && !key_exists($value, $this->choices) && !empty($value) )
 	{
 	    throw new Exception("Invalid value '$value', does not exists in choices.");
 	}
